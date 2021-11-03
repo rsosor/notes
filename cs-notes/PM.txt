@@ -1,0 +1,198 @@
+（build、docs、src、tools）
+build
+script 檔、臨時檔	// build script 例如建立 nuget 或者 執行測試
+
+docs
+用 markdown 和 專案放在一起版控
+docs
+	asset
+	topic 1
+		asset
+		sub topic 1
+				...
+		READEME.md
+	READEME.md
+	SUMMARY.md
+asset: markdown 裡用到的圖片、檔案，方便鏈接
+README.md: 每一個 chapter 或者每一個部分的起始頁，類似 index.html 在網站地位
+SUMMARY.md: 整個文件的目錄的概念
+
+src
+有些專案叫 lib、app
+src
+	{project name}.Bll
+	{project name}.Web
+	...
+	{project name}.sln
+{project name}: xxx.Bll 作為 bll 層的 csproj 位置，xxx.Web 作為網站的 csproj 位置
+{project name}.sln: src 進去之後的唯一檔案就是他，很明確如何開啟這個專案，如果有多個 sln 也不會混在一起
+
+tools
+例如網站套版放 ui
+第三方 dll、exe 也可以放
+
+
+（.gitignore、.gitattributes、README.md）
+.gitignore: 忽略 bin 檔之類
+
+.gitattributes: 能設定 git 在操作某些檔案的時候要做那些處理
+
+README.md:
+介紹專案的目的
+可以讓後來看的時候馬上知道這個專案是不是你在找的那個專案。
+專案狀態的 badge
+例如目前最新版本的 build 狀態，還是透過 gitter 溝通的網址，這些都可以用 badge 快速呈現讓使用者一看知道一些資訊。
+
+badge可以參考http://shields.io/
+
+如何快速上手
+怎麼讓人能夠快速使用這個專案，例如透過 nuget 安裝然後使用
+其他資訊的鏈接
+例如要看文件提供一個鏈接連到 docs 的 README.md 檔案；看變更記錄提供鏈接到對應檔案。
+
+
+（特殊檔案: 通常大寫）
+LICENSE.md: 授權模式
+
+CONTRIBUTING.md: 基本上是介紹如何貢獻到你的專案。貢獻有很多形式：翻譯、寫文件、改 code 介紹如何 build 和改 code。
+這邊也可以提供一些專案目標（roadmap）的資訊，讓其他人知道你的目標。也可以提到一些這個專案不接受什麼貢獻。
+
+CHANGELOG.md
+是否能夠讓人家一眼了解版號之間變更的主要目的就是這個檔案要傳達的消息。
+和 git的log 有什麼差別？
+切記，git log 是細部的說明每次調整什麼，但是這個檔案則是從大局來看到底變動了什麼，所以他絕對不是 git log 貼上去就好。
+github 的 release 不就可以寫說明，幹嘛還要有這個檔案？
+github release 非常巧妙的利用了git tag 的資訊讓大家方便找每一個 release，但是問題是 假設今天你的 repo 要搬到別的地方去呢，假設那個 hosting 不支援 release，因此這個檔案提供一種萬用（universal）資訊的提供位置。
+這個檔案應該寫什麼？
+基本上，每一個版號會有個時間記錄，然後這個版號下面會有 對應的 變更類型（Added、Changed、Deprecated、Removed、Fixed和 Security）
+
+CODE_OF_CONDUCT.md
+大家在這個 repo 合作的合作公約。
+
+ISSUE_TEMPLATE
+github上面才會吃的檔案，當使用者建立一個 issue，會有一個範本跑出來。這個檔案就是定義範本內容。
+
+NEW_PULL_REQUEST
+github上面才會吃的檔案，當使用者建立一個 pull request 呈現的內容，這個範本就是定義那些內容。
+
+
+github 的 java .gitignore 和 網路上的 java .gitignore：
+（Java 的 .gitignore）
+# Compiled class file
+*.class
+
+# Log file
+*.log
+
+# BlueJ files
+*.ctxt
+
+# Mobile Tools for Java (J2ME)
+.mtj.tmp/
+
+# Package Files #
+*.jar
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
+hs_err_pid*
+
+
+
+### Java template
+*.class
+
+# Mobile Tools for Java (J2ME)
+.mtj.tmp/
+
+# Package Files #
+*.jar
+*.war
+*.ear
+
+# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
+hs_err_pid*
+### JetBrains template
+# Covers JetBrains IDEs: IntelliJ, RubyMine, PhpStorm, AppCode, PyCharm, CLion, Android Studio and Webstorm
+# Reference: https://intellij-support.jetbrains.com/hc/en-us/articles/206544839
+
+# User-specific stuff:
+.idea/workspace.xml
+.idea/tasks.xml
+.idea/dictionaries
+.idea/vcs.xml
+.idea/jsLibraryMappings.xml
+
+# Sensitive or high-churn files:
+.idea/dataSources.ids
+.idea/dataSources.xml
+.idea/dataSources.local.xml
+.idea/sqlDataSources.xml
+.idea/dynamic.xml
+.idea/uiDesigner.xml
+
+# Gradle:
+.idea/gradle.xml
+.idea/
+
+# Mongo Explorer plugin:
+.idea/mongoSettings.xml
+
+## File-based project format:
+*.iws
+
+## Plugin-specific files:
+
+# IntelliJ
+/out/
+
+# mpeltonen/sbt-idea plugin
+.idea_modules/
+
+# JIRA plugin
+atlassian-ide-plugin.xml
+
+# Crashlytics plugin (for Android Studio and IntelliJ)
+com_crashlytics_export_strings.xml
+crashlytics.properties
+crashlytics-build.properties
+fabric.properties
+### Windows template
+# Windows image file caches
+Thumbs.db
+ehthumbs.db
+
+# Folder config file
+Desktop.ini
+
+# Recycle Bin used on file shares
+$RECYCLE.BIN/
+
+# Windows Installer files
+*.cab
+*.msi
+*.msm
+*.msp
+
+# Windows shortcuts
+*.lnk
+### Maven template
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+# ignore eclipse files
+.project
+.classpath
+.settings
+.metadata

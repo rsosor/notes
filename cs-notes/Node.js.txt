@@ -1,0 +1,171 @@
+node --experimental-modules my app.mjs
+
+使用NVM安裝NPM
+使用NVM管理不同版本的node與npm
+NPM=Node Package Manager
+
+install
+安裝node.js自帶npm
+nvm use 8.9.4
+node -v
+npm -v
+想下載json-server
+$ npm install -g json-server	// -g每個專案都能用的
+
+每一個專案前端都能用json server去開想要的json檔，當db當api功能測試
+""不能用''
+{}物件
+[] 陣列
+Example
+Create a db.json file
+{
+	"posts": [
+		{ "id": 1, "title": "json-server", "author": "typicode" }
+	],
+	"comments": [
+		{ "id": 1, "body": "some comment", "postId": 1 }
+	],
+	"profile": { "name": "typicode" }
+}
+Start JSON Server
+$ json-server --watch db.json	// json-server --watch ./data/data.json	./是現在的位置
+
+Now if you go to http://localhost:3000/posts/1, you'll get
+{ "id": 1, "title": "json-server", "author": "typicode" }
+Also when doing requests, it's good to know that:
+If you make POST, PUT, PATCH or DELETE requests, changes will be automatically and safety saved to db.json using lowdb.
+___________________________________________________________________________________________________________________________________________________________________________________________________________________
+使用require("fs")載入fs模塊，模塊中所有方法都有同步和異步兩種。
+異步：有一個回調函數
+var fs = require("fs");		// 載入fs模塊
+
+fs.unlink('/tmp/shiyanlou', function(err) {
+	if(err) {
+		throw err;
+	}
+	console.log("成功刪除了 /tmp/shiyanlou");
+});
+
+同步：
+var fs = require("fs");
+
+fs.unlinkSync("/tmp/shiyanlou");
+console.log("成功刪除了 /tmp/shiyanlou");
+
+var fs = require("fs");
+
+readFile讀取文件
+fs.readFile(filename, [option], callback)
+參數說明:
+filename String 文件名
+option Object
+encoding String |null default=null
+flag String default='r'
+callback Function
+
+readFile的回調函數接收兩個參數，err是讀取文件出錯時觸發的錯誤對象，data是從文件讀取的數據。
+fs.readFile('./test.txt', function(err, data) {
+	if (err) {
+		throw err;
+	}
+	console.log(data);
+});
+
+這是原始二進制數據在緩衝區中的內容
+要顯示文件內容可以使用toString()或者設置輸出編碼
+toString()寫法:
+fs.readFile("./test.txt", function(err, data) {
+	if (err) {
+		throw err;
+	}
+	console.log(data.toString());
+});
+
+設置UTF-8編碼寫法:
+fs.readFile("./test.txt", "utf-8", function(err, data) {
+	if (err) {
+		throw err;
+	}
+	console.log("utf-8:", data.toString());
+	// 直接用console.log(data);也可
+});
+
+readFile同步的寫法就是沒有回調函數(callback)： fs.readFileSync(filename, [options])
+___________________________________________________________________________________________________________________________________________________________________________________________________________________
+Socket.IO 是一個面向即時 web 應用的 JavaScript 庫
+它使得伺服器和客戶端之間即時雙向的通信成為可能。他有兩個部分：在瀏覽器中執行的客戶端庫，和一個面向Node.js的伺服器端庫。兩者有著幾乎一樣的API。像Node.js一樣，它也是事件驅動的
+socket.io 通訊協定基礎 websocket
+server on		client emit
+
+Socket.io是一个WebSocket库，包括了客户端的js和服务器端的nodejs，它的目标是构建可以在不同浏览器和移动设备上使用的实时应用。 它会自动根据浏览器从WebSocket、 AJAX 长轮询、Iframe流等等各种方式中选择最佳的方式来实现网络实时应用
+
+其他延伸
+我們也可以加入其他的功能：
+			顯示其他人在輸入中
+			顯示用戶上線／下線
+			設定用戶不重複的名字
+			寄送私人訊息
+			傳送圖片、gif
+
+server：
+var fs = require("fs")
+// var http = require("http")
+// 如果不需要用http的話，要改成引用https喔
+var https = require("https")
+var socketio = require("socket.io")
+
+// https的一些設定，如果不需要使用ssl加密連線的話，把內容註解掉就好
+var options = {
+	key: fs.readFileSync("用這個網域的ssl key位置"),
+	cert: fs.readFileSync("這個網域的ssl fullchain位置")
+}
+
+// http & socket port
+var server = http.createServer(options);
+server.listen(4040)
+var io = socketio(server);
+console.log("Server socket 4040, api 4000")
+
+// api port
+var app = require("express")();
+var port = 4040;
+app.listen(port, function() {
+	console.log("API listening on *:" + port);
+});
+
+// 用 api 方式取得
+app.get("/api/messages", function(req, res) {
+	let messages = "hello world"
+	res.send(messages);
+})
+
+var messages = [
+	{ name: "Majer", message: "Welcome!" }
+]
+
+var typing = false
+var timer = null
+// 用socket 方式取得
+io.on("connection", function(socket) {
+	console.log("user connected")
+	socket.emit("allMessage", message)
+
+	socket.on("sendMessage", function(message) {
+		console.log(message)
+		messages.push(message)
+		io.emit("newMessage", message)
+	})
+
+	socket.on("sendTyping", function() {
+		console.log("typing")
+		typing = true
+		io.emit("someoneIsTyping", typing)
+		clearTimeout(timer)
+		timer = setTimeout(() => {
+			typing = false
+			io.emit("someoneIsTyping", typing)
+		}, 3000)
+	})
+})
+
+client：

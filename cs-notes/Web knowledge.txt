@@ -1,0 +1,586 @@
+雙絞線類別
+►類別1(CAT.1)：適用於最高達到2Mbps的語音通訊。
+►類別3(CAT.3)：適用於最高達到16Mbps的資料傳
+輸，例如：10Base-T記號環網路。
+►類別4(CAT.4)：適用於最高達到20Mbps的資料傳
+輸，例如：100Base-T4記號環網路。
+►類別5(CAT.5)：適用於最高可達100Mbps的資料傳
+輸，例如：100Base-TX高速乙太網路。
+► 雙絞線類別（續）
+►類別5e(CAT.5e)：適用於最高可達1000Mbps的資
+料傳輸，e表加強型。例如：1000Base-T乙太網路。
+►類別6(CAT.6)：適用於最高可達1Gbps的資料傳輸。
+例如：1000Base-T乙太網路。若採用CAT.6a，其
+最高傳輸速率可達10Gbps。
+►類別7(CAT.7)：如同CAT.6a的最高資料傳輸速率，
+但CAT.7的頻寬比較高，可達600MHz。
+
+
+中繼器
+►訊號在網路上傳輸時，會因線路材質本身的阻抗
+關係，使得所傳送的訊號受到衰減，而導致訊號
+失真。使用中繼器恢復成原來的訊號強度
+
+集線器(Hub)
+►集線器(Hub)亦是運作在OSI模型中的實體層。它
+可以看成多埠的中繼器
+
+橋接器
+►越大型的區域網路就需要分割成多個小型的區域
+網路，這稱為網路分割(network segmentation)，
+所用的設備可以使用橋接器(Bridge)。
+►當橋接器收到訊框時，會根據橋接表中的目的端
+的MAC位址來決定訊框需不需要傳送到另一網路
+區段，如果不需要(即目的端與訊框屬同一網路
+區段)，橋接器就把它擋掉，以減少網路的流量，
+這樣的功用稱為過濾(filtering)；反之，會將訊框
+送到適當的網路區段，稱為轉送(forwarding)。
+
+第2層交換器
+►交換器可以分為兩種，即第2層交換器和第3層交
+換器。所謂「第2層交換器」，可以把它想像成
+是一個多埠的橋接器，或稱為交換式集線器。若
+一個100Mbps的第2層交換器有N埠，理論上的最
+大傳輸頻寬為100×N Mbps。
+
+假設一個完全由集線器構成的網路，這些Hub
+與電腦是使用100Mbps的乙太網路。一部Server
+(伺服器)與7部電腦共享100Mbps的頻寬，
+一旦網路的傳輸流量增加，網路上封包的碰撞機率
+也跟著增加，網路速度自然變慢了。為減少網路的
+碰撞率，將最上層的Hub換成第2層交換器(假設都
+為 100Mbps)， 這時上方的 Server將獨享
+100Mbps的頻寬而不受干擾。每一部Hub都
+換成第2層交換器，因此，Server與所有的電腦都獨
+享100Mbps的頻寬。
+
+路由器
+►路由器顧名思義，它是運作在OSI網路層的網路
+設備。路由器的主要功能可解析封包上的標頭資
+訊，經計算並判斷找出哪條路徑最佳，封包再由
+來源端轉送至目的端網路。
+
+比較「集線器」與「第2層交換器」和「路由器」間的主要不同點：
+1. 第2層交換器是將訊框從一個埠交換到同一交換網路
+的另一個埠，主要目的是要讓LAN的使用者有較多的
+頻寬。而路由器是將封包繞送到另一個網路。
+2. 集線器下的每部電腦都連到同一個碰撞網域與廣播網
+域。而第2層交換器的每個埠都各自代表一個碰撞網
+域，但所有電腦仍屬同一的廣播網域。
+3. 路由器上的每個LAN介面不但分割廣播網域，而且分
+割碰撞網域。
+
+數據機
+►數據機就是用來將發送端(電腦)送出去的數位訊
+號轉換成類比訊號，並經由電話線傳送出去；接
+收端(電腦)再將電話線傳過來的類比訊號轉換成
+數位訊號。一旦電腦連上數據機之後，我們就可
+以利用電話線傳輸數據資料。
+
+閘道器
+►閘道器用來連結兩個或多個不同網路系統的裝置，
+並做通訊協定轉換的工作。
+
+CSU/DSU與DTE/DCE
+►CSU/DSU通常包裝成在同一個裝置，主要提供
+WAN與LAN間的介面，並提供傳輸資料所需要的
+時脈。CSU負責向WAN發送或從WAN接收訊號、
+也可以測試迴路連線是否正常；DSU則用來管理
+傳輸資料線路功能與偵測。
+___________________________________________________________________________________________________________________________________________________________________________________________________________________
+	交付
+效	權限	   資
+能	運算	   安
+           資料 | 儲存
+
+	軟工
+
+Web：形象、電商、部落格(CMS)、遊戲、課程、社群
+
+
+（交付）
+網站如何被交付到使用者
+
+API:工程師跟第三方以程式對接
+Web:打開瀏覽器顯示的網頁
+Desktop:桌面應用(exe等)
+App:手機網頁、手機應用
+
+（權限）
+Client 2 Server
+本機會員登入
+透過第三方登入
+手機APP上登入
+
+Server 2 Server
+後端跟後端對接驗證
+
+
+Authentication 驗證
+
+Authorization 授權
+
+
+HTTP狀態碼：
+
+Token類型：
+
+Event based: OTP(One Time Password) e.x. 點轉帳觸發Email | 簡訊驗證碼
+
+Time based: Token e.x. 忘記密碼，收到一封信→點選此連結→此連結在XX內有效
+
+Static: Password
+
+
+雜湊(Hash)		單
+
+編碼(Encode Decode)	雙
+
+加密(Encrypt Decrypt)	雙+Key
+
+如何儲存密碼：
+編碼：Base-64(+=a-zA-z0-9)	十六進制
+加密：AES Key
+雜湊：md5、sha256、sha512	加salt再hash、hash完再hash
+
+
+（Server 2 Server內部系統的登入頁面）
+因為在防火牆內部系統登錄有白名單機制，所以在安全和使用者差別下選擇簡易。
+
+1. API Key：			// 使用Key驗證，Key會裸露所以用Server 2 Server
+
+Custom(自定義)→X
+Http Header：
+X-Api-Key:KeyName
+___________________________________________________________________________________________________________________________________________________________________________________________________________________
+
+Web	→Key	Payment	    ←→	DB	// 內部系統對內部系統
+___________________________________________________________________________________________________________________________________________________________________________________________________________________
+
+Server1	→Key	Facebook	    ←→	DB	// 第三方串接API
+	           產生API Key介面
+	     失效原因：1.DEL 2.EXP
+管理建立Key：
+1. 寫死	// 內部後台系統比較可能用此方式。環境檔或直接把Key定好後交給Web Team自己管理。
+2. DB	// 一般常用。放到資料庫能自由建立、取消、驗證時間。串接第三方服務時，有產生API Key的介面點Generate產生等等。
+___________________________________________________________________________________________________________________________________________________________________________________________________________________
+
+
+2. HTTP Basic Authentication：			// 使用username、password就有「使用者」(多用戶權限驗證)。多了Challenge機制(彈跳登入視窗，沒有登出選項而不必一直登入)，不必開發登入系統UIUX。
+
+Http Header：
+Authorization:Basic 「Token」
+		base64(username:password)	// 防止使用者輸入非法字元使用base64。// 還是不建議使用在Client因為密碼可以反推。
+
+Client	→Basic	Server(可以設定彈跳視窗要填username、password)	←→	DB
+管理建立Key：
+1. 寫死
+2. DB
+
+
+（Client 2 Server的登入頁面：）
+
+1. /login?username=rsosor&password=1234		// 帳號密碼會在網址上所以不好，Https保護Header也是一樣，瀏覽器設定隱藏URL的帳密也很危險，因為瀏覽器、Server會有歷史紀錄Log。
+
+2. /login	// Header裡面加上Authorization:Basic「Token」	// 此方式會放在/private頁面下ex: /orderes、/sales不希望外部人看到的頁面。
+
+3. /login	// Body的方式把帳號密碼放進去 {username:"kk",password:"1234"}。
+
+所以是以3的方式實作此POST
+
+
+（保存登入狀態等等的權限驗證 JWT (Json Web Token)）
+
+會有儲存方法的問題
+使用In-Memory解決的話UX會很差，重新整理Token就不見了
+
+Http Header：
+Authorization:Bearer 「Token」
+
+	Algo: HMAC、RS 吃 Hash function => HMAC SHA256、512
+	   base64({algorithm,type})     base64(data)				         把Header、Payload綁起來 + secret 去 Hash 成 Signature。
+JWT組成：Header(Algorithm、Type)、Payload(Token裡隱含資訊，不能放機密資訊)、Signature
+
+
+JOSE規範
+JWA Algorithm	產生Token
+JWK Key		產生Key
+JWE Encryption	如何進行加密
+JWS Signature	如何進行簽署
+
+通常有兩種方式存放Token：
+___________________________________________________________________________________________________________________________________________________________________________________________________________________
+1. 最一般的JWT：
+
+	 /login
+Browser	    →	Server
+            Response Body
+	  Token				// 存進Browser 「Local Storage」，代表瀏覽器可以存取這個資料、Body的資料存在Local storage，可以用javascript拿到Token(有資安風險)
+
+
+    Authorization:Bearer Token			// 手動程式設定
+          Request Header
+	/private
+Browser	    →	Server
+         回傳你要的資訊
+___________________________________________________________________________________________________________________________________________________________________________________________________________________
+2. 違反標準的JWT：
+
+	 /login
+Browser	    →	Server
+          Response Header
+Set-Cookie:token=xxx + HttpOnly		// HttpOnly代表瀏覽器不能存取Cookie資料。
+
+
+        Cookie:token=xxx			// Browser自動帶入Cookie，Server不懂這個Cookie是Session ID還是JWT要不要驗證，非標準方式就是實作改掉把token=xxx當JWT去驗證(把本來驗證Body的Token方法改驗證此Cookie？
+          Request Header
+	/private
+Browser	    →	Server
+         回傳你要的資訊
+___________________________________________________________________________________________________________________________________________________________________________________________________________________
+
+JWT註：
+希望使用者不要頻繁的跟伺服器要資料，所以把資料放到Token的Payload裡面，還有就是「無狀態」(不需要database)驗證。
+Payload不要放機密資訊，Payload可能被拿走。
+JWT=[HEADER].[PAYLOAD].[SIGNATURE]
+Signature=HMACSHA256(base64UrlEncode(header) + "." + base64UrlEncode(payload), 'secret')
+secret 要保存在 server 端，JWT 的簽發驗證都必須使用這個 secret，當其他人得知這個 secret，那就意味著客戶端是可以自我簽發 jwt ，因此在任何場景都不應該外流。
+
+
+
+標準是In-Memory：但是重新整理Token就不見
+___________________________________________________________________________________________________________________________________________________________________________________________________________________
+3. In-Memory運用Cookie、Session ID、JWT結合：
+
+	  /login
+Browser	    →	Server	 ←→	DB	// DB產生UID=xxx	e.x. Redis快取型資料庫
+	    ←
+            Response Header
+Set-Cookie:token=xxx + HttpOnly		// Refresh Token	不一定是JWT格式，可能是UID，可以設期限大概1個月
+
+
+          Cookie:token=xxx			// Refresh Token
+            Request Header
+             /refresh-token
+Browser	    →	Server	 ←→	DB	// DB驗證UID
+	    ←
+            Response JWT			// Auth Token	跟權限有關的資料在這個Token裡面，這個Token通常是短時間的15分鐘之類達到強制全裝置登出防止有人的Memory還有Auth Token，補充：不發請求也不會被登出
+
+
+    Authorization:Bearer Token			// Auth Token	手動程式Bearer
+           Request Header
+	/private
+Browser        →	Server	 ←→
+	    ←
+          回傳你要的資訊
+
+會有一個網頁有更新Refresh Token的按鈕介面，防止這個Refresh Token遭濫用，在你登出的時候/log out API會幫你把Refresh Token給註銷掉達到全裝置登出。
+可以達到Session和JWT的好處和避免壞處。
+___________________________________________________________________________________________________________________________________________________________________________________________________________________
+（保存登入狀態等等的權限驗證Session）
+Session會話/對話
+「開始到結束」的一個「狀態」	ex: 「工作階段」已過期，登入代表Session開始，定義一段時間結束登出、瀏覽器分頁打開Session開始，關掉代表Session結束。
+
+HTTP屬於無狀態的模型，每個請求是獨立的。
+1. 使用Token幫忙驗證(手動存Token)
+2. 瀏覽器會有Cookie，使用瀏覽器幫忙儲存的驗證(自動存Cookie)
+
+Cookie：
+儲存在Browser
+小份資料(簡單的字串)
+
+Local Storage：
+儲存在Browser
+大份資料(key=value)
+
+___________________________________________________________________________________________________________________________________________________________________________________________________________________
+Cookie的驗證模型：
+
+	 /login
+Browser	    →	Server
+                   ←
+            Response Header
+         Set-Cookie:login=true			// 可以試搭配HttpOnly
+
+
+         Cookie:login=true			// Browser自動幫你帶入
+           Request Header
+	/private
+Browser	    →	Server
+(login=true)  ←	 Server
+         回傳你要的資訊
+___________________________________________________________________________________________________________________________________________________________________________________________________________________
+進化：
+
+1. Session-based Cookie(較少在用)：
+如果用Hash，Server沒辦法解析Cookie裡面內容，只能判斷對或錯，所以通常是把e.x. login=true「加密」回傳給Browser(不能用HttpOnly ?)，之後請求時再「解密」此Cookie。手動麻煩、Cookie資安風險、加密Cookie佔容量、要DB。
+
+2. Session Store：
+不要用Cookie存到瀏覽器，而是存到我們伺服器端產生的SID，第一次login req 後 res Session ID，之後再拿id req時Server把id跟Session Store裡的Session data做比對res結果，缺點是每一次的有權限操作都要跟Server、Storage做溝通。
+產SID的話通常是用Redis！刪掉SID可以一次性的把所有帳號登出、或者針對某一帳號登出！
+___________________________________________________________________________________________________________________________________________________________________________________________________________________
+2.
+	 /login
+Browser	    →	Server	 ←→	DB	// DB產生SID=xxx	e.x. Redis快取型資料庫
+          Response Header
+        Set-Cookie:sid=xxx			// 能不能用HttpOnly?，畢竟DB驗證要有那筆資料，另外真的沒辦法讀到嗎？可以設期限大概一個月
+
+
+          Cookie:sid=xxx
+          Request Header
+	/private
+Browser	    →	Server	 ←→	DB	// DB驗證SID，缺點是「每一次」的有權限操作都要到Server、Storage做驗證，還有中心化Session Storage的問題無法水平擴充。
+         回傳你要的資訊
+___________________________________________________________________________________________________________________________________________________________________________________________________________________
+第一方Cookie：網域一樣
+第三方Cookie：網域不一樣，預設把跨網域追蹤關掉，它就沒辦法把你的資料傳給第三方的追蹤的東西
+屬性:
+依作用域：
+Domain=api.example.com	// 就會把cookie帶上去，沒指定就不會
+Path=/login、/orders		// 符合就會把cookie帶上去，預設是都會帶上去
+Secure			// 一定要https才會把cookie帶上去
+SameSite:Strict(只允許第一方Cookie會送)/None(不管怎樣網域都會帶)/Lax(部分會看網域:其餘、部分不看網域:GET)	// 不過Server的設定跟瀏覽器不一樣，瀏覽器關閉第三方的話，SameSite:None還是不會送Cookie
+
+依時間：
+Persistent Cookie：持久化，關掉打開還會存活。沒設定持久化叫做 Session Cookie：關掉瀏覽器就關掉
+Expires:2020/11/1
+Max-Age:1 day
+
+HttpOnly，任何人都無法拿到此Cookie，不會被javascript存取。
+前後端分離(React、Angular、Vue)純靜態網頁使用API呼叫後端，靜態頁面可以放在CDN(內容傳播網路)幫我們做快取，通常採用JWT驗證
+SSR後端渲染通常採用Session/Cookie驗證
+
+
+（Oauth 第三方登入）
+
+可能是原本網頁SPA或是開新分頁，會導向第三方的登入網頁，第三方再幫你導回一個網頁：
+/?redirect=xxx		// xxx = Browser的URL，讓第三方知道該導向哪裡
+/?back=xxx
+導向網頁使用傳統的code模式或token模式，要怎麼決定用哪種？要看第三方登入支援哪種而使用：
+/?redirect=xxx&type=token
+/?redirect=xxx&type=code
+第三方會回傳給你code | token：
+e.x. code=foo		// code模式需額外使用code=foo跟FB要token，再拿token去要東西
+拿code | token跟Oauth Provider要，能夠要哪些資料？scope=
+/?redirect=xxx&type=token&scope=email,profile			// xxx = Browser的URL讓第三方知道該導向哪裡、type代表跟Provider要資料的方式、scope代表要的資料
+
+	告訴URL、type、scope	    	    拿code=foo | token		 用code=foo | token
+Browser	    	→	          第三方登入FB	→	導向自己想的URL		→	跟FB(Oauth Provider)要資料
+
+Google之類它們都有符合Open ID規範，拿到的Token符合JWT機制資料會在Payload上。
+後端模式常見的會把我們的Oauth跟一般的帳密去做綁定。
+
+面試題：導(redirect)回來的xxx網頁，要做在前端還是後端？
+直接導回原來的網頁操作(前端模式)；或者是在我們後端API去要資料，再通過後端用301(轉址Redirect)回去前端(後端模式)。
+
+前端模式優點是不需要額外開一個End Point處理Oauth登入的部分，缺點是token | code會碰到Client端(用Memory方式儲存可以勉強避免，不需要存到Local Storage)。
+後端模式優點是可以在後端那塊做白名單設定，只能從第三方那個URL打過來，所以也不會有人做釣魚網站。缺點是需要多一步跳轉回前端的步驟。
+
+
+
+（運算）
+
+Queue 排隊
+Pub/Sub 訂閱與發佈
+WebSocket 快速通道低延遲
+
+Client(本地(Browser))：瀏覽器、APP、嵌入式裝置等。平行運算：P2P區塊鏈
+Fog(霧: 本地跟雲端混合)：智慧車等、規格不能太強大小不能太大(運算能力本地端不夠就需要雲端)
+Server(雲端)：不用吃本地端效能，可以有非常多台機器運算，讓更多人去連接不會只在本地端發生，缺點是沒網路就沒運算。平行運算(Webhook)
+
+單一(垂直擴充)、平行(平行運算策略，水平擴充)、網格(單一平行結合)
+
+運算模型：Webhook(通常使用到第三方服務)，屬事件驅動。缺點是要跟第三方系統溝通好，當然大公司可以在自己各系統使用此模型。
+e.x. 第三方服務：有個Webhook網址，Server2要開一支API(/listen)讓Server1把資料打過來。
+
+					               Webhook
+Client	   →	Action1        →	Server1	    →	Action2	→	Server2	   →	DB
+	              Client操作	            第三方服務		第三方		自己的	             自己的
+			   會有一個Webhook網址  {name, type,payload等}	/listen
+			    名字、資料由3rd決定      HTTP POST
+			URL：https://server2/listen
+
+				↓
+
+				DB
+
+如果是GitHub的話，就是Code丟上去會自動送去我們後端部署(CI/CD)
+incoming/outgoing
+inbound/outbound
+
+inbound/outbound要看是以誰的角度，通常使用別人做出來的第三方服務，是以第三方他們為主持。
+
+（資料）動態Record
+
+SQL	RDBMS					用於管理 關聯式資料庫管理系統 （RDBMS），或在 關係流資料管理系統 （RDSMS）中進行流處理
+NOSQL	Not only SQL	快取、分散式系統		NoSQL 資料庫非常適合行動、Web、遊戲等需要彈性、可擴展性、高效能和高功能資料庫的新型應用程式
+
+
+（儲存）靜態File	圖片、影片、聲音、PDF、DOC等等	PATH會存在資料上
+GCP
+AWS
+___________________________________________________________________________________________________________________________________________________________________________________________________________________
+（瀏覽器輸入URL～Server流程）
+Browser(電腦版 | 手機版)：執行HTML、CSS的軟體	Chrome、Safari
+
+Wifi
+
+Router
+
+Proxy(幫你把這個Response打出去，去對應到相應的的Client Browser，也能在req,res流間幫做快取的東西、防止惡意攻擊)。
+
+Router
+
+DNS(URL、IP轉換)
+
+Router
+
+(Load Balance)	將Request指向特定的Server。		↓如果沒有LB我們就一定得在一台Server開啟多個Web Server，所以IP都一樣，那就需要設Port來分辨不同的URL同個IP對應到哪個服務。
+													www.test.com→1.2.3.4:8080
+													course.test.com→1.2.3.4:8081
+													ticket.test.com→1.2.3.4:8082
+
+Reverse Proxy	「在Server裡」幫你把DNS轉換的不同URL相同IP這個Request打出去，去對應到相應的Web Server Port。也可以把快取、憑證、靜態檔案交給RP去執行
+
+Server(Web Server)、Server(Web Server)、Server(Web Server)...回傳Response
+
+
+網路模型
+OSI七層架構(早期)
+TCP/IP四層架構
+應用層 RTSP、HTTP、FTP				Application
+傳輸層 TCP(三次握手)、UDP				Transport
+網路層 IP						Internet
+連接層 光纖					Link
+
+封裝封裝封裝封裝					解封解封解封解封
+
+
+應用層常見協議：S=SSL簽章
+HTTP/HTTPS	傳輸HTML網頁，req,res短連接 ex:網站傳輸	一包一包傳輸。
+FTP/SFTP		檔案傳輸
+Telnet		HTTP之前，ex: telnet://ptt.cc
+SMTP/POP3	寄信/收信
+WS/WSS		WebSocket，基於HTTP同意不同意後，建立通道WS，長連接。雖然速度快低延遲、但是占用接口 ex:遊戲類伺服器。
+SSH		連進伺服器用的協議，通常也是基於SSL技術。
+RTSP/RTMP	處理及時串流部分，RTSP:hls,mp4 RTMP:flv	小段小段分別傳輸。
+
+HTTP method
+GET
+POST
+PUT
+PATCH
+DELETE
+COPY
+HEAD
+OPTIONS
+LINK
+UNLINK
+PURGE
+LOCK
+UNLOCK
+PROPFIND
+VIEW
+
+URL=Protocol://hostname:port/path?search
+HTTP
+header	GET/POST/PUT/PATCH/DELETE/等等	Host(域名)、Path(/後)、Origin(從哪IP、URL等打來)、User-Agent(哪瀏覽器打來，爬蟲可能沒有＊可以偽造User-Agent)、權限、快取、Cookie、Content-Type等等meta information。
+body	GET不會用到body，application/json格式、HTML、multipart檔案、text、csv、圖片等等
+
+
+（資料如何由Client前端傳遞到Server後端）
+
+URL?參數
+Http傳送協定中的其中一種－－GET，這種傳送方式會在網址的後端帶上參數到Server，格式為：
+
+URL?key1=value1&key2=value2
+
+其中?是區隔網址與參數，而參數與參數中間利用&區隔，參數與值中間用=區隔。
+
+form submit
+form（表單）是HTML標籤中的其中一種，它會將在form裡宣告的<input … >...</input>、<select … > … </select>、<textarea … > … </textarea>這三種類型的資料送出給Server端，不過有幾點要注意的是：
+
+<input … >...</input>、<select … > … </select>、<textarea … > … </textarea>，這些標籤必須被包含在<form> … </form>裡，並利用submit的方式送出。
+
+<input … >...</input>、<select … > … </select>、<textarea … > … </textarea>，這些標籤必須包含一個name的屬性，原因是這個屬性的值會被當做送到Server端參數的key，所以如果沒有key的話，這個值當然也沒辦法被送出。
+___________________________________________________________________________________________________________________________________________________________________________________________________________________
+HTML/CSS/JS 靜態檔案，使用Browser開啟，HTML/CSS不算程式語言
+純靜態檔案不經過Server就能看到頁面使用file://這協議；如果連到Server拿是用http://這協議。當然其他也有RTSP等等。
+在vscode打!tab自動出現html格式
+
+動態網頁代表HTML本身是被產生出來的，透過PHP、PYTHON、JAVA等
+靜態網頁是已經把現成HTML丟到Client
+React是一個靜態網頁，我們要把React源碼放到Server，Nest.js就是去把這個東西用Nest.js產出來，Nest.js第一次渲染是Server Side後面變成Client Side。
+
+閉標籤有開有閉: tag
+charset/content: attr(Attributes)
+內容: content(React裡叫Children)
+
+javascript extensions
+
+							C(整個)
+
+切版：					             A1     A2		  B1      B2
+Header(可有可無)會有Navigation(導覽列)	Logo | Home About		通知 購物車 搜尋
+
+						 A		             B
+
+Main
+
+									D
+
+Footer(可有可							          Terms About
+
+
+<body>
+	<header>
+		this is a header
+		<div class="navbar">
+			<nav></nav>
+			<nav></nav>
+		</div>
+
+		<nav>
+			<div class="navitem"></div>
+			<div class="navitem"></div>
+		</nav>
+	</header>
+	<main>
+
+	</main>
+	<footer>
+
+	</footer>
+</body
+
+有切版有做靜態網頁，要注意SEO，structure如果太爛(例如都是div)，SEO會很差，通常可以能用tag表示就用tag表示
+A: Nav/NavBar/都不是
+A1: Nav/NavBar/都不是
+A2: Nav/NavBar/都不是
+B: Nav/NavBar/都不是
+B1: Nav/NavBar/都不是
+B2: Nav/NavBar/都不是
+C: Nav/NavBar/都不是
+D: Nav/NavBar/都不是
+
+不同派：
+NavItem
+Nav
+NavBar
+兩個一組使用，不要三個一起用就好
+
+A/B我們會說是NavBar、Controller等
+導覽意思是會跳頁
+統一：ABD是NavBar
+精準：AD是NavBar
+也是SEO考量
+
+
+
+
+
+
+
+
+
+

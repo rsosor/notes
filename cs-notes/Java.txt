@@ -1,0 +1,128 @@
+cmd這邊無分大小寫
+cd ..		// 移動到上一層
+cd path		// 移動到指定層
+echo %path%	// 顯示目前系統PATH環境變數
+-verbose		// 操作時指定，看到過程
+-d		// 產生的檔案放入的資料夾
+C:\Users\admin>cd C:\program files\Java\jdk-15.0.1
+
+javac 可以指定-sourcepath 資料夾(到那找)、-classpath(-cp 已有.class就不重新編譯浪費時間)、-d(指定.class放置資料夾，並且自動建立對應套件的資料夾階層)
+模組平台系統：可以指定--module-source-path、--module-path(-p)指定模組資料夾、--module(-m)java時指定模組的程式進入點、-d(javac時指定模組資料夾包裝.class，自動建立對應套件的資料夾階層)
+
+
+（編譯 javac）
+在文字模式下鍵入一個指令而沒有指定路徑資訊時，作業系統會依照PATH環境變數設定的路徑順序，依序尋找各路徑下是否有這個指令。可以執行echo %PATH%來看看目前系統PATH環境變數中包括哪些路徑資訊。
+"C:\program files\Java\jdk-15.0.1\bin\javac" HelloWorld.java
+系統內容->進階->環境變數設定PATH：系統變數「附加」使用者變數	// 系統變數優先於使用者變數，系統變數套用登入使用者，使用者變數影響個別使用者。
+SET PATH = 路徑							// 使用set指令則以set設定的結果，多個路徑以;區隔，通常會附加%PATH%在後面，但關閉文字模式設定就失效了。
+javac HelloWorld.java						// 沒訊息代表編譯成功。
+
+JVM。	//預設的classpath就是讀取目前資料夾中的.class。自行指定以指定為主、也從目標資料夾開始尋找使用.、*代表全部。
+import path; 編譯器在剖析.java時看到import宣告時，會先記得import的名稱，後續剖析程式時，若看到其他的class名稱，原本會不知道是甚麼東西，但編譯器會記得import的宣告，如果遇到不認識會比對import過的名稱，結果可以在指定的類別路徑中資料夾下找到.class檔，於是可以編譯。cmd的-cp或-classpath去指定位置(默認可能都有.)。
+如果類別位於同一套件，彼此使用並不需要import，當編譯器看到一個沒有套件管理的類別名稱，會先在同一套件中尋找類別，如果找到就用，若沒找到，再試著從import陳述進行比對。java.lang可視為預設就有import，沒有寫任何import陳述時，也會試著比對java.lang的組合。
+java HelloWorld
+java HelloWorld.java		//單一原始碼 >Java SE 11以後可以java直接執行.java(將自動編譯為.class放入記憶體供JVM執行)
+java -cp(-classpath) C:\program files\java\jdk-15.0.1 HelloWorld
+java -cp(-classpath) .;C:\program files\java\jdk-15.0.1 HelloWorld	
+java -cp(-classpath) .;C:\program files\java\jdk-15.0.1\* cc.openhome.JNotePad
+set classpath=路徑
+
+
+（執行 java (JVM)）
+執行期的錯誤可以用exception(例外)處理。
+JVM預設的CLASSPATH就是讀取目前資料夾中的.class，自行指定CLASSPATH就以指定的為主。
+編譯Main.java如果需要使用到其他類別程式庫，也需指定classpath
+執行Main.class也需要指定classpath
+javac -cp classes Main.java
+java -cp .;classes Main	//指定classpath只會在指定層尋找使用到的.class，有時候希望也從目前資料夾尋找，使用「.」。
+javac -verbose -sourcepath src -d classes src/Main.java		// -verbose看編譯過程、-sourcepath指定從src資料夾尋找.java、-d指定了編譯完成的位元碼存放資料夾(.class)，編譯器會將使用到的相關類別原始碼(.java)也一併編譯。
+1. 先搜尋-sourcepath指定的src資料夾是否有使用到的類別原始碼(.java)。
+2. 然後搜尋是否有已編譯的類別位元碼(.class)，預設搜尋位元碼路徑包刮JDK資料夾中的lib\modules以及目前的路徑(也就是.)。
+3. 確認原始碼與位元碼搜尋路徑後，檢查類別位元碼的搜尋路徑是否有編譯完成的Main類別(.class)，存在且上次編譯後原始碼沒改，無須重新編譯，不存在，重新編譯Main類別，上例類別位元碼的路徑中沒有classes資料夾，因此找不到Main類別位元碼，所以重新編譯出Main.class存放在classes中。
+4. 接著檢查類別位元碼路徑中，是否有已經編譯完成的console類別(.class)，同上，上例而言類別位元碼路徑不包括classes資料夾，因此找不到Console類別位元碼，重新編譯出Console.class存放在classes中。
+實際專案太多類別，重編譯太費時，因此編譯時若類別路徑已經存在位元碼，且上次編譯後沒有修改，無須重新編譯節省時間，因此就上例而言，可以指定-cp為classes。
+javac -verbose -sourcepath src -cp classes -d classes src/Main.java
+
+如果使用Java開發了程式庫，這些程式庫中的類別檔案，會封裝為JAR(Java Archive)檔案。JAR檔案實際使用ZIP格式壓縮，當中包含一堆.class檔案，那麼如果有個JAR檔案，如何在CLASSPATH中設定？
+答案是將JAR檔案當作特別的資料夾，例如有abc.jar與xyz.jar放在C:\lib底下，執行時若要使用JAR檔案中的類別檔案，可以如下：
+java -cp C:\workspace;C:\lib\abc.jar;C:\lib\xyz.jar SomeApp
+
+如果有些類別路徑很常使用，也可以透過環境變數設定：
+SET CLASSPATH=C:\classes;C:\lib\abc.jar;C:\lib\xyz.jar
+
+在啟動JVM時，也就是執行java時，若沒使用-cp或-classpath指定CLASSPATH，就會讀取CLASSPATH環境變數。同樣地，文字模式中的設定在關閉文字模式之後就會失效。若希望每次開啟文字模式都可以套用，可以設定在系統變數或使用者變數。如果執行時，使用了-cp或-classpath指定CLASSPATH，會以-cp或-classpath的指定為主。
+
+如果資料夾中有許多.jar檔案，從 Java SE 6 開始，可以使用*表示使用資料夾中所有.jar檔案。例如指定使用C:\jars下所有JAR檔案：
+java -cp .;C:\jars\* cc.openhome.JNotePad
+Java SE 6 以後CLASSPATH新的指定方式，也適用在系統環境變數的設定。(*取代一個一個輸入把JAR檔當特別資料夾的路徑)
+
+package		//假設定義src資料夾放原始碼檔案、classes資料夾放位元碼檔案
+Console.java輸入package cc.openhome.util;	//表示Console類別將放在cc.openhome.util的分類下(套件、文件下)
+Main.java輸入package cc.openhome;		//同上
+套件的命名通常會用組織或單位的網址命名，openhome.cc，套件就cc.openhome，網址獨一無二比較不會與其他組織或單位同名
+package定義名稱與class定義名稱，會結合成類別的完全吻合名稱(fully qualified name)
+＊編譯時不用手動建立對應套件階層資料夾，若使用-d指定位元碼的存放位置，就會自動建立出對應套件階層的資料夾，並將編譯出來的位元碼檔案放置應有的位置。
+javac -sourcepath src -cp classes -d classes src/cc/openhome/Main.java	// 預設的-cp是lib\module,.就可能把.class重複放到classes資料夾所以設定-cp classes(此時-cp為lib\modules,classes)給他搜尋才節省時間(編譯重複大量的.class很費時)。
+java -cp classes cc.openhome.Main
+
+import cc.openhome.util.Console;
+import cc.openhome.util.*
+
+module-path
+（模組平台系統）
+一個未支援模組的程式專案，進入Hello2資料夾後可以使用底下指令編譯並執行：
+javac -d classes src/cc/openhome/Main.java
+java -cp classes cc.openhome.Main
+這是基於類別路徑的方式，若想設定模組資訊，首先要決定模組名稱，這邊假設模組名稱為cc.openhome，為了便於識別，在src中建立一個與模組名稱相同的資料夾cc.openhome，然後將原先src中的cc資料夾放到cc.openhome資料夾中
+，在cc.openhome資料夾中建立一個module-info.java。
+並且撰寫module cc.openhome {}	//在原始碼層面上，就建立第一個模組了，雖然附檔名為.java，實際上只是個設定檔，其中module關鍵字僅在這個設定檔中設定之用，不是java程式語言的一部份，附檔名.java，單純為了相容性，讓javac等工具程式易於處理這個設定檔罷了。
+module關鍵字定義了模組名稱為cc.openhome，除此之外沒有其他設定{}，這表示目前只能存取「同一模組」中的API，並且依賴在Java標準API的「java.base」模組，java.base模組包含且exports了java.lang等常用套件。有必要可以在module-info.java中自行設定模組可以公開那些API(exports)，或者是依賴在哪個模組。
+
+可以將編譯出來的類別.class，放在mods資料夾中對應模組名稱的資料夾之中：
+javac -d mods/cc.openhome src/cc.openhome/module-info.java
+javac -d mods/cc.openhome src/cc.openhome/cc/openhome/Main.java
+這麼一來mods中的cc.openhome就是編譯成功的模組了(裡面放.class檔案)，其他開發者若要使用這模組，可在執行java時，透過--module-path或-p指定模組路徑。
+可以發現module-info.java也必須編譯，會產生module-info.class，在模組封裝之後，實際上工具會載入、讀取module-info.class中的資訊，以模組描述檔(Module descriptor)代稱module-info.java或module-info.class。
+
+由於Main.java撰寫了程式進入點，如想執行可以透過--module或-m指定模組的程式進入點：
+java --module-path(-p) mods --module(-m) cc.openhome/cc.openhome.Main		// 完全吻合名稱前要指定模組名稱。完全吻合名稱可以用"."而不用"/"，系統自然會掃描指定套件中.java。
+
+如果使用jar工具程式，使用--main-class指定程式進入點主類別，將模組封裝為JAR檔案，那麼-m就只需指定模組名稱。
+cc.openhome.Main也可以基於類別路徑來使用，方式與先前相同：
+java -cp mods\cc.openhome cc.openhome.Main
+
+按照規範，在類別路徑下被發現的類別，都會被自動歸類到一個未具名模組(Unnamed module)，基於相容性，未具名模組可以讀取其他模組；相對地，在模組路徑下被發現的類別，都屬於某個具名模組(Named module)，例如先前--module-path(-p)指定的mods中，cc.openhome模組就是一種命名模組，名稱為cc.openhome。
+請暫時不要混用類別路徑與模組路徑，明確定義的模組不能requires未具名模組，因為未具名模組沒有名稱。
+
+
+module-info.java
+module cc.openhome.util {
+	exports cc.openhome.util;	// 宣告哪些套件中的public類別、方法或值域可以存取。如此撰寫之後，此模組中的cc.openhome.util套件下的API，就可以被其他模組使用。而此模組要依賴也能requires？
+}
+現在對cc.openhome.util模組進行編譯：
+javac -d mods/cc.openhome.util src/cc.openhome.util/cc/openhome/util/Console.java		// 可以指定-sourcepath src、-p(跟-cp一樣有.class就不用浪費時間編譯)看看？
+javac -d mods/cc.openhome.util src/cc.openhome.util/module-info.java
+
+module-info.java			// 依賴於cc.openhome.util模組。而此模組要被依賴也能exports？
+module cc.openhome {
+	requires cc.openhome.util;
+}
+編譯與執行cc.openhome模組
+javac --module-path mods -d mods/cc.openhome src/cc.openhome/module-info.java		// --module-path(-p)指定模組路徑
+javac --module-path mods -d mods/cc.openhome src/cc.openhome/cc/openhome/Main.java
+java --module-path mods -m cc.openhome/cc.openhome.Main				// --module(-m)指定模組的程式進入點
+可以看到，在使用javac也可以使用--module-path指定模組路徑
+
+你也許會想問，javac編譯時，可以-sourcepath指定原始碼路徑，那麼在編譯模組時有類似的引數嗎？也許是因為你拿到了其他模組的原始碼(而不是編譯或進一步封裝好的模組)，想自行編譯出.class檔案。
+--module-source-path		// 指定模組的原始碼路徑
+
+以剛範例來說，若不想分別對cc.openhome.util與cc.openhome模組分別進行編譯，只要如下指定--module-source-path：
+javac -d mods --module-source-path src src/cc.openhome/cc/openhome/Main.java
+java --module-path mods -m cc.openhome/cc.openhome.Main
+
+實際上，在能夠運用--module-path與--module-source-path引數之後，搭配-d引數時，本來就只需指定頂層資料夾，編譯器會自動建立起對應於模組名稱的資料夾。
+javac -d mods --module-source-path src --module-path mods src/cc.openhome.util/cc/openhome/util/Console.java
+javac -d mods --module-source-path src --module-path mods src/cc.openhome/cc/openhome/Main.java
+
+暫時將--module-path --module-source-path
+想成是-classpath 	 -sourcepath的對應

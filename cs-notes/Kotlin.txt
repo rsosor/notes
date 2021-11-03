@@ -1,0 +1,131 @@
+import android.support.v7.app.AppCompatActivity;
+import android.os.Bundle;
+import android.widget.Button;
+import android.view.View;
+import android.widget.Toast;
+
+public class MainActivity extends AppCompatActivity {
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.activity_main);
+
+	// Implement the onClickListener using a lambda expression
+
+		Button button = (Button) findViewById(R.id.button);
+		if (button != null) {
+			button.setOnClickListener((View view) -> Toast.makeText(this,
+				"I was written in Java 8!", Toast.LENGTH_LONG).show());
+		}
+	}
+}
+___________________________________________________________________________________________________________________________________________________________________________________________________________________
+一個只要跑在 Android webview 的 web application，開發過程當然是使用桌機瀏覽器加上打開 dev tool 的 mobile simulator， 點擊事件就偷懶地只監聽 click 而沒有監聽 touchend，反正 click event 在 Android webview 上也會觸發。
+不過結果證明，使用者體驗就不太美好了，後來使用者反應在平板上對 button 做 tap 動作時，偶爾會沒有反應，也就是 DOM 沒有 fire click event。
+為了有更好的使用者體驗，不想讓使用者按了叉叉卻關不掉頁面，氣得再也不回來。
+註：這裡的測試target皆為<button>
+1. Touch和Mouse event的觸發順序
+Touch Events 在 w3c spec 中有一段 # Interaction with Mouse Events 提到：
+If the user agent intreprets a sequence of touch events as a click, then it should dispatch mousemove, mousedown, mouseup, and click events (in that order) at the location of the touchend event for the corresponding touch input.
+The default actions and ordering of any further touch and mouse events are implementation-defined, except as specified elsewhere.
+
+一個 single tap 將被瀏覽器解讀為 click，以手機瀏覽器實測，其引發的 touch / mouse events 順序為：
+touchstart		手指放上螢幕
+touchmove	手指在螢幕上移動(optional，若手指完全沒有位移則不會觸發)
+touchend		手指抬離螢幕
+mouseover
+mousemove(只會發生一次)
+mousedown
+mouseup
+click
+
+關於mousemove，假設做了一個單指放上螢幕 -> 拖移 -> 抬起的動作，儘管 touchmove 會隨著手指的移動不斷地被 dispatch，但在 touchend 之後發生的mousemove 只會 dispatch 一次，且在大部分的 user agent 中，就算 touchmove 沒有觸發，user agent 還是會發送 mousemove 事件。
+由於 mousemove 只會發送一次，若用 mousemove 介面實作了隨著滑鼠一邊移動會一邊產生的 fancy 效果，那在手機版會是沒有作用的。
+
+再來，上方引述 w3c spec 的原文中，並沒有提到 mouseover ，但實際上是有觸發的，不過，在 mobile browser 上，一個 clickable Element 只有在 沒有 focus => 得到 focus 的那次會觸發 mouseover。
+
+Q1： Single Tap 一個沒有 focus 的 button 會觸發哪些 Events ?
+
+touchstart => touched => mouseover => mousemove => mousedown => mouseup => click
+
+Q2 : Single Tap 一個得到 focus 的 button 會觸發哪些 Events ?
+
+touchstart => touchend => mousemove => mousedown => mouseup => click
+
+比Q1少了mouseover event
+
+
+2. 使用 preventDefault() 停止 mouse event 的派送
+若是桌機版、手機版採取分別監聽 mouse , touch interface 去使用不同的 custom handlers，通常的情況下，執行了 touch handler 就不想再執行 mouse handler 。
+舉例來說，在手機上點擊了加入購物車按鈕，程式只能對 touch or mouse hanlder 擇一執行，否則同樣的商品會被加入購物車兩次。
+
+Event Type          Sync/Async	        Bubbling phase	     Trusted proximal event target types      Dom interface       Cancelable   Default Action
+
+touchstart		Sync		Yes		Document, Element		TouchEvent	Yes	undefined
+touchend		Sync		Yes		Document, Element		TouchEvent	Yes	Varies: mousemove (If point has been moved), mousedown, mouseup, click
+touchmove	Sync		Yes		Document, Element		TouchEvent	Yes	undefined
+touchcancel	Sync		Yes		Document, Element		TouchEvent	Yes	none
+
+從上方 W3C ORG 的表格可得知，我們可以在 touchend handler 中執行 event.preventDefault() 去取消 mouse event 的發送。
+
+
+3. 傳說中的 click 事件 300ms 延遲
+在搜尋 click event on mobile device 時有許多老文章提到了 click 事件 fire 的時間會比 touchend 晚 300ms ，這個延遲起因於瀏覽器要偵測你是否有做 double tap 的動作，double tap 的作用是 zoom in 網頁內容，所以許多人用了 FastClick 這類 library 來解決這個問題。
+不過 modern mobile browsers 都已經做過調整，從 Google Developer 在 2013年 的 web update 中可得知 Android Chrome 當年做了一個調整讓 tap delay 消失：
+在網頁中宣告 <meta name = "viewport" content="width=device-width"> ，瀏覽器就會省略這個延遲。
+Android版Chrome 32+瀏覽器，設置viewport meta的值为width=device-width
+所有版本的Android Chrome瀏覽器，如果設置viewport meta的值有user-scalable=no，瀏覽器也是會馬上觸發點擊事件
+
+
+4. 長按是否會觸發 mouse event ?
+測試目的：當手指停留較長時間再抬起，是否會被 user agent 判定為合法的 click ？
+網頁設定 : <meta name=”viewport” content=”width=device-width, user-scalable=yes”>
+裝置 1：Sony Xperia C4, Android 5.1
+裝置 2： iPhone 6s, iOS 11.2.2
+
+		Safari iOS		Chrome		Opera Mini	Firefox		Edge
+
+
+Android5.1	X		touchstart		touchstart		touchstart		touchstart
+				mouseover		mouseover		touchend		mouseover
+				mousemove	mousemove			mousemove
+				mousedown	mousedown			touchend
+				touchend		touchend
+
+iOS11.2.2		touchstart		touchstart		touchstart		touchstart		touchstart
+		touchend		touchend		touchend		touchend		touchend
+
+Long tap 在不同平台與瀏覽器之測試結果 (於2018.10.19測試)
+
+在 iOS 上 long tap 一個 button 會引發文字選取功能，因而阻斷了 mouse event，若時間長按的停留時間沒有長到引發文字選取，就會 dispatch mouse events，造成 click handler 被呼叫。
+而每個 user agent 對於何時出現文字選取功能的 time tolerance 會有點不太一樣。
+在 Android 5.1 ，以上瀏覽器中，長按一個 button 皆不會引發文字選取，但有幾個會引發 mouse events (以綠色標示)。
+
+
+5. 手指明顯位移後抬起是否會觸發 mouse event？
+測試將手指放上螢幕 => 拖移 0.5 ~ 1 個手指寬 => 抬起，是否會引發 mouse event
+
+		Safari iOS		Chrome		Opera Mini	Firefox		Edge
+
+Android5.1	No		No		No		No		No
+
+iOS11.2.2		Yes		Yes		Yes		Yes		Yes
+
+測試手指明顯位移後抬起是否會觸發 mouse events (於2018.10.19測試)
+
+iOS 上 mouse event 的觸發取決於「手指停留的時間 + 位移的距離」 綜合起來判斷，若判斷為一個合法的 click ，則會發送。
+
+
+6. touchend 即使在手指移出 target element boundary 後依然會觸發
+Touch events always target the element where that touch STARTED, while mouse events target the element currently under the mouse cursor.
+— 引用自 html5rocks.com
+
+touchmove 和 touchend 事件是綁定在引發 touchstart 的那個 element 上，而整個 screen 都是觸控點的感應範圍，所以儘管手指移出了 touchstart 的 target element ，user agent 依然會 dispatch touchmove 和 touchend 事件。
+mousemove、click 的 target element 是當下滑鼠指標所在的 element。
+mousemove 只要滑鼠指標在 element 的 boundary 中移動就會一直觸發 (不論是否有按下滑鼠左鍵)，所以並沒有綁定在引發 mousedown 的 element 上。
+而 click 在滑鼠指標移出 button 後放開滑鼠左鍵，自然也不會觸發 button 的 click handler。
+
+總結
+如果說把監聽 click 改成監聽 touchend 有什麼好處，對我而言最明顯的大概就是使用者 tap 行為的體驗，因為有很多情況下，click 事件不會發送，但對使用者來說，可能覺得自己是有按到那個 element 的。
+
+但是也會有造成困擾的時候，做了一個超過一百個國旗圖示的國旗球列表，每個都加了 touchend listener，是給使用者選取自己手機號碼的國家，讓程式幫使用者加上電話國碼，使用者在捲動這個列表時手一放下就是按在圖示上，所以捲動一次手指抬起來後，剛才那個被壓下的國家就被選到了，但這並不是期望行為。

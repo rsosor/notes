@@ -1,0 +1,264 @@
+增刪改查
+CRUD：	create	delete	update	read
+SQL：	insert	delete	update	select
+
+where(select、update、delete)、not, and, or、is null、is not null、order by ASC | DESC、inner join . on、left join、right join、full join、like
+select . from .
+select distinct . from .
+select count(distinct .) from .
+select count(distinct .) as . from (select distinct . from .)
+
+insert into table_name (column1, column2, ...) values (value1, value2, ...)
+insert into table_name values (value1, value2, ...)
+insert into table_name (column1, column3) values (value1, value3)
+
+update table_name set column1 = value1, column2 = value2, ... where condition
+update Customers set ContactName = 'Alfred Schmidt', City = 'Frankfurt' where CustomerID = 1;
+update Customers set ContactName = 'Juan';
+// Be careful when updating records. If you omit the WHERE clause, ALL records will be updated!
+
+delete from . where condition
+delete from Customers where CustomerName = 'Alfreds Futterkiste';
+delete from Customers;
+// It is possible to delete all rows in a table without deleting the table. This means that the table structure, attributes, and indexes will be intact:
+
+SQL TOP, LIMIT, FETCH FIRST or ROWNUM Clause (指定要返回的紀錄數)
+// Not all database systems support the SELECT TOP clause. MySQL supports the LIMIT clause to select a limited number of records, while Oracle uses FETCH FIRST n ROWS ONLY and ROWNUM(older oracle syntax).
+
+SQL Server / MS Access Syntax:
+select top number|percent column_name(s) from table_name where condition;
+
+MySQL Syntax:
+select column_name(s) from table_name where condition limit number
+
+Oracle 12 Syntax:
+select column_name(s) from table_name order by column_name(s) fetch first number rows only
+
+
+Functions：
+min(column_name)、max(column_name)、count(column_name)、avg(column_name)、sum(column_name)
+
+
+
+
+___________________________________________________________________________________________________________________________________________________________________________________________________________________
+JDBC 連接 mysql 數據庫有 4 種 url 寫法：
+
+localhost
+jdbc:mysql://localhost:3306/數據庫名
+
+127.0.0.1
+jdbc:mysql://127.0.0.1:3306/數據庫名
+
+mysql 不支持以下兩種是因為默認只接收本地訪問，要給 mysql 授予遠程訪問的權限。
+使用計算名
+在數據庫中運行：GRANT ALL PRIVILEGES ON *.* TO '帳號'@'%' IDENTIFIED BY '密碼';
+jdbc:mysql://LAPTOP-8MP85G2C:3306/數據庫名
+
+使用本機 ip 地址
+本機 ip 地址和127.0.0.1不同，這是實實在在綁定在你的網卡上的 ip 地址，而127.0.0.1只是一個保留 ip，如果電腦上沒有網卡一樣能用127.0.0.1。
+jdbc:mysql://ip:3306/數據庫名
+
+
+如果要手動加載驅動 (https://zhuanlan.zhihu.com/p/47097818) (Spring Boot 是直接在 application.properties 裡設定)：
+先去下載 JDBC 驅動包，放到 lib 文件夾後 builder path 編譯路徑，導入成功！
+JDBC 連接 MySQL：
+1. 加載驅動，將這份字節碼加載進 JVM。當字節碼被加載到 JVM ，會執行字節碼中的靜態代碼塊
+public class ConnectionClass {
+	public static void main(String[] args) throws Exception {
+		Class.forName("com.mysql.cj.jdbc.Driver");	// 第一次寫這段代碼會報異常，雙擊直接拋出。
+	}
+}
+使用 CTRL + SHIFT + T，彈出 Open Type 對話框，輸入Driver點擊進去，沒有查看到源文件，因為我們並沒有添加進來，Java 包是我們手動添加的，但是源文件還沒有手動添加。
+點 Attach Source，選擇 External File...，找到當時下載的壓縮文件 mysql-connector-java-"version".zip。
+現在可以看到源碼了，靜態代碼塊幫你 new Driver()。
+package com.mysql.cj.jdbc;
+import java.sql.SQLException;
+
+public class Drvier extends NonRegisteringDriver implements java.sql.Driver {
+	static {
+		try {
+			java.sql.DriverManager.registerDriver(new Driver());
+		} catch (SQLException E) {
+			throw new RuntimeException("Can't register drvier!");
+		}
+但是他還沒有連接到數據庫 MySQL。2. 獲取連接對象
+		String url = "jdbc:mysql://localhost:3306/jdbcdemo";
+		String user = "root";
+		String password="123456";
+		Connection conn = DriverManager.getConnection(url, user, password);
+		System.out.println(conn);	// 能打印代表連接數據庫成功
+		// Thread.sleep(50000);	// 重新運行 Java 再運行 navicat(圖形化資料庫管理及發展軟體)的查詢語句 SHOW PROCESSLIST; 就顯示出來了。
+	}
+}
+
+
+mysql中grant all privileges on赋给用户远程权限
+改表法。
+当你的帐号不允许从远程登陆，只能在localhost连接时。这个时候只要在 mysql 服务器上，更改 mysql 数据库里的 user 表里的 host 项，从 localhost 改成 % 即可实现用户远程登录，或是 % 改成指定 ip 。
+
+在安装mysql的机器上运行：
+
+1. mysql -u root -p  
+
+2. select host,user from user where user='root';
+
+3. update user set host = '%' where user='root' and host='localhost';  
+
+4. select host, user from user where user='root';
+
+授權法
+[root@aaa-server ~]# mysql -u root -p
+MariaDB [(none)]> grant all privileges on *.* to 'root'@'%' identified by 'root密碼' with grant option;
+Query OK, 0 rows affected (0.00 sec)
+
+MariaDB [(none)]> flush privileges;
+Query OK, 0 rows affected (0.01 sec)
+
+MariaDB [(none)]> exit
+Bye
+
+
+授权法
+例如，你想user使用mypwd从任何主机连接到mysql服务器的话。
+
+在安装mysql的机器上运行：
+
+1. GRANT ALL PRIVILEGES ON *.* TO 'user'@'%' IDENTIFIED BY 'mypwd' WITH
+
+      GRANT OPTION;  
+
+2.FLUSH   PRIVILEGES;
+
+
+模板：
+grant all privileges on 库名.表名 to '用户名'@'IP地址' identified by '密码' with grant option;
+flush privileges;
+
+
+如果你想允许用户user从ip为192.168.1.4的主机连接到mysql服务器，并使用mypwd作为密码
+在安装mysql的机器上运行：
+
+ GRANT ALL PRIVILEGES ON *.* TO 'user'@'192.168.1.3' IDENTIFIED BY 'mypwd' WITH GRANT OPTION;   
+
+ FLUSH   PRIVILEGES;
+
+注意授权后必须FLUSH PRIVILEGES;否则无法立即生效。
+
+
+修改完访问权限，还需要配置阿里云的安全组规则。
+阿里云的安全组规则的配置：
+登入阿里云控制台，网络与安全—>安全组—>配置规则—>添加安全组规则，开放MySQL的3306端口。
+
+打开本地的MySQL Workbench新建阿里云MySQL的连接（把原本的localhost也就是图中的xxxxx修改为阿里云的公有ip）。此时就能打开阿里云MySQL了。
+
+到工程，把application.properties和Database中的localhost修改为阿里云的公网ip，重新运行，测试OK就可以打包了。
+最后在IDEA的Terminal窗口中使用mvn clean package命令进行打包，打包完成后会在target目录下生成jar包。然后把生成xxx-xx-SNAPSHOT.jar复制到阿里云服务器上，打开cmd运行。
+java -jar xxx-xx-SNAPSHOT.jar
+
+打开浏览器，输入http://阿里云公网ip:8091/getuserlist，8091为端口号，因为一般不使用8080端口号。端口号的设置可以在application.properties中通过server.port=8091设定。看看测试结果。
+
+你有可能踩到的坑：
+1、Could not create connection to database server。
+是因为MySQL的版本与工程中使用的版本不一致。可以修改pom.xml中mysql的版本
+
+2、运行时出现 org.springframework.orm.jpa.JpaSystemException: could not execute statement; nested exception is org.hibernate.exception.GenericJDBCException: could not execute statement
+数据表的主键没有设置，可以把其设置为自增（AI 打钩）
+___________________________________________________________________________________________________________________________________________________________________________________________________________________
+（萬用字元 SQL Wildcards）
+%			// 代替「零個」至「多個」字元
+_			// 代替「一個」字元
+[charlist]			// 代替「一個」在列舉範圍內的字元
+[^charlist] 或 [!charlist]	// 代替「一個」不在列舉範圍內的字元
+
+模式(pattern)
+abc%	所有以 abc 開頭的字串。如 abc、abcx 或 abcxxx 等字串。
+%abc%	所有包含 abc 的字串。如 abc、xxabcy 或 abcxxxx 等字串。
+a_	以 a 為開頭的兩個字。如 ab、ac 或 ad 等字串皆符合此模式，但 a 不符合，因為此模式限定 a 之後一定要接任一字元。
+a[bcd]	以 a 為開頭其後接著 b 或 c 或 d 其中一個字元。如 ab、ac 或 ad 等字串，但 ae 不符合。
+a[^bcd]	以 a 為開頭其後接著非 b 或 c 或 d 的任何一個字元。如 ax、ay 或 az 等字串，但 ab 不符合。
+
+SELECT * FROM customers WHERE Address LIKE '新北%';
+
+在標準 SQL 中，字符串使用的是單引號。如果字符串本身包括單引號，則使用兩個單引號。但在其他數據庫可能有對 SQL 的擴展，比如 MySQL 中允許使用單引號和雙引號。
+如果 SQL 伺服器模式啟用了 ANSI_QUOTES，只能用單引號引用字符串。用雙引號引用的字符串被解釋為一個識別符(類似反引號)。
+___________________________________________________________________________________________________________________________________________________________________________________________________________________
+插入多筆記錄時，使用單筆 INSERT 敘述的方式比較快。
+insert into table_name (column_list) values (value_list), (value_list2)
+
+1.系統OO化.別人都用正規化.正規化我不會,我習慣用物件導向方式
+2.小系統用Int,流水號,不要用字串,int 是電腦處理基礎單位,所以排序,索引..最快
+3.分散式DB用GUID 全世界每一個資料拋過來都不會沖到,而且是Client 端,App端產生
+4.PK給App 給 DB 關聯看,所以只要不重複,容易電腦計算,如果給Users識別用,我會再用一組有規律的Key讓Users記
+___________________________________________________________________________________________________________________________________________________________________________________________________________________
+use mysql; 
+ 
+update user set authentication_string='' where user='root';	// 看是否為空
+ 
+ALTER user 'root'@'localhost' IDENTIFIED BY 'root';	// 修改密碼為 root
+___________________________________________________________________________________________________________________________________________________________________________________________________________________
+（進階）
+
+delimiter //
+使用預存程式怕跟子句的 ; 衝突
+delimiter ;
+
+（索引）
+（預存程序和函數）
+	變數
+	定義條件、處理常式
+create table test_db.t (s1 int, primary key (s1));
+
+DELIMITER //
+
+create procedure handlerdemo ()
+BEGIN
+DECLARE CONTINUE HANDLER FOR SQLSTATE '23000' SET @x2 = 1;
+SET @x = 1;
+INSERT INTO test_db.t VALUES (1);
+SET @x = 2;
+INSERT INTO test_db.t VALUES (1);
+SET @x = 3;
+END;
+//
+
+DELIMITER ;
+
+/* 呼叫 SP(stored procedure) */
+CALL handlerdemo();
+
+/* 檢視呼叫過程結果 */
+select @x;
++-----+
+|  @x |
++-----+
+ |  3   |
++-----+
+	游標（宣告、開啟、使用、關閉）
+DECLARE cursor_name CURSOR FOR select_statement
+OPEN cursor_name{游標名稱}
+FETCH cursor_name INTO var_name [, var_name] ...{參數名稱}
+CLOSE cursor_name{游標名稱}
+	流程控制（IF、CASE、LOOP、LEAVE、ITERATE、REPEAT、WHILE）
+IF expr_condition THEN statement_list
+	[ELSEIF expr_condition THEN statement_list] ...
+	[ELSE statement_list]
+END IF
+
+
+
+	呼叫、檢視、修改、刪除預存程序和函數
+（視圖）
+（MySQL 觸發器）
+（MySQL 許可權與安全管理）
+（資料備份與恢復）
+（MySQL 記錄檔）
+（效能最佳化）
+（MySQL Replication）
+（MySQL Workbench）
+（MySQL 管理利器 MySQL Utilities）
+（讀寫分離的利器 MySQL Proxy）
+（精通 MySQL 儲存引擎）
+綜合專案1: 開發線上購物
+綜合專案2: 討論區管理系統資料庫設計
+綜合專案3: 新聞發佈系統資料庫設計

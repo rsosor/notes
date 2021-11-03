@@ -1,0 +1,85 @@
+網頁請求頭Header手動添加與自動添加cookie登入隱私介面
+
+手動添加cookie：
+
+手動獲取網頁cookie：
+登入網頁→點擊滑鼠右鍵→檢查→NetWork→Doc，然後重新加載url，會出現內容，單擊第一項，右側header會出現cookie，可以將其複製下來，然後直接放入請求頭，下面實例訪問人人網已登入的介面：
+from urllib import request
+
+if__name__ == '__main__':
+	url = 'http://www.renren.com/969895831'
+	headers = {
+		'Cookie':'anonymid=jsom9rkf-d0es5r; depovince=GW; _r01_=1; ln_uact=18000212424; ln_hurl=http://head.xiaonei.com/photos/0/0/men_main.gif; jebe_key=9794e124-df7d-4ec4-9948-ff3b2284fa46%7Cfd1ca2fac6d637ef39a053379b245585%7C1551358890355%7C1%7C1551358888541; _de=8D7D172A55D3EEB1C788ADE5096897F1; jebecookies=2899c925-ea94-4b83-804e-fd161b0a3d94|||||; JSESSIONID=abccODxv45lH65F3LB0Kw; ick_login=130b9cd5-5b07-4176-bc30-f635f7288d2b; p=b84be9a332dd21cd337088e8ace635f11; first_login_flag=1; t=e8bf5973f8e824ad22c5d3c90005ff271; societyguester=e8bf5973f8e824ad22c5d3c90005ff271; id=969895831; xnsid=cb919a22; ver=7.0; loginfrom=null; wp_fold=0'
+	}
+	req = request.Request(url=url, headers=headers)
+	res = request.urlopen(req)
+	html = res.read().decode('utf-8')
+	with open('rsp.html', 'w', encoding='utf-8') as f:	# 使用該方法打開文件，需加上encoding = 'utf-8'指定編碼格式，否則爬取下來的html網頁會出現亂碼
+		f.write(html)
+
+自動添加cookie：
+
+http模塊包含一些關於cookie的模塊，通過這些方法可以自動為請求頭header加入cookie
+	CookieJar
+		管理和儲存cookie，向傳出的http請求添加cookie
+		cookie儲存在內存中，CookieJar實例回收後，cookie將消失
+	FileCookieJar(filename, delayload, policy=None)
+		使用文件管理cookie
+		filename是保存cookie的文件
+	MozillaCookieJar(filename, delayload, policy=None)
+		創建與mozilla瀏覽器cookie.txt兼容的FileCookieJar實例
+	LwpCookieJar(filename, delayload, policy=None)
+		創建與libwww - perl標準兼容的Set-Cookie3格式的FileCookieJar實例
+	這些方法之間的關係: CookieJar→FileCookieJar→MozillaCookieJar,LwpCookieJar
+下面的實例利用CookieJar訪問人人網
+自動使用cookie登入，大致流程是：
+	打開用戶登入頁面後自動通過用戶名密碼登入
+	自動提取反饋回來的cookie
+	利用提取的cookie登入隱私頁面
+
+from urllib import request,parse
+from http import cookiejar
+
+# 創建cookiejar的實例
+cookie = cookiejar.CookieJar(0
+# 生成cookie管理器
+cookie_handler = request.HTTPCookieProcessor(cookie)
+# 創建http請求管理器
+http_handler = request.HTTPHandler()
+# 生成https管理器
+https_handler = request.HTTPSHandler()
+
+# 創建網頁請求管理器
+opener = request.build_opener(http_handler, https_handler, cookie_handler)
+
+def login():
+	'''
+	負責初次登入
+	需要輸入用戶名密碼，用來獲取登入cookie憑證
+	:return:
+	'''
+	# 此url需要從登入form的action屬性中提取
+	url = 'http://www.renren.com/PLogin.do'
+	# 此鍵值需要從登入form兩個對應的input中提取
+	data = {
+		'email': 'rsosor0222',
+		'password': 'rsosorlegend'
+	}
+	data = parse.urlencode(data)				# 為用戶名和密碼編碼
+	req = request.Request(url = url, data = data.encode('utf-8'))	# 使用utf-8編碼風格
+
+	# 使用opener發起請求
+	res = opener.open(req)
+
+def getHomePage():
+	url = 'http://www.renren.com/969895831'
+
+	# 如果已經執行了login函數，則opener自動已經包含了相應的cookie
+	res = opener.open(url)
+	html = res.read().decode()
+	with open('res.html', 'w', encoding='utf-8') as f:
+		f.write(html)
+
+if __name__ == '__main__':
+	login()						# 執行登入函數
+	getHomePage()					# 執行獲取網頁函數

@@ -1,0 +1,2373 @@
+Java 的註解類似 C# 的 Attribute特性
+
+．Spring 核心註解
+
+1. stereotype(模式註解): @Controller、@Service、@Repository、@Component、@Configuration
+
+2. IOC: @Autowired、@Qualifier、@Resource、@Value、@Lookup
+
+3. 事務: @EnableTransactionManagement、@Transactional、@TransactionalEventListener
+
+4. @Order
+
+5. @AliasFor
+
+6. @Indexed 為 Spring 模式註解添加索引，提升應用啟動性能
+
+
+
+．Spring 上下文註解
+
+1. 配置相關: @Configuration、@Bean、@ComponentScan、@PropertySource、@PropertySources、@Conditional、@Import、@ImportSource、@Profile、@Lazy、@Description、@Scope、@Primary
+
+2. 其他: @EventListener、@EnableAspectJAutoProxy 用於開啟支援 AspectJ 的 @Aspect 切面配置支援，使用 Spring Boot 引入了 AOP 啟動器就不需要顯式開啟
+
+
+．Spring Web 註解
+
+1. 定義 Bean 特殊生命週期的複合註解: @RequestScope、@SessionScope、@ApplicationScope
+
+2. @XXXMapping，或直接使用 @RequestMapping 然後手動設定 method
+
+3. @ResponseStatus
+
+4. Spring MVC 給了我們各種註解方便我們從 HTTP 請求各種地方獲取引數: @RequestBody、@RequestHeader、@CookieValue、@SessionAttribute、@RequestAttribute、@RequestParam、@PathVariable、@MatrixAttribute
+
+5. @ControllerAdvice、@RestControllerAdvice、
+
+6. 其他: @CrossOrigin
+
+
+．Spring Boot 註解
+
+1. 來看一下上下文相關的註解: @ConfigurationProperties
+
+2. 再看看自動配置相關的註解，@EnableAutoConfiguration，@SpringBootApplication；@AutoConfigureOrder、@AutoConfigureAfter、@AutoConfigureBefore
+
+3. 最後來看一下十幾種配置條件
+
+
+．Spring Cloud 註解
+
+1. 首先是 Netflix 包下的一些註解: @RibbonClient
+
+2. client 包下的 @SpringCloudApplication
+
+3. sleuth 包下的註解和鏈路跟蹤相關，比較常用的是通過 @SpanName 手動設定 span 的名稱，其它註解對於業務開發並不常用
+
+
+@Indexed 使用場景：
+有大量使用 @ComponentScan 掃描的 package 包含的類越多的時候，Spring 模式註解解析耗時就越長。
+
+<dependencies>
+    <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-context-indexer</artifactId>
+        <version>5.1.12.RELEASE</version>
+        <optional>true</optional>
+    </dependency>
+</dependencies>
+
+對使用模式註解的類加上 @Indexed：
+@Indexed
+@Controller
+public class HelloController {
+}
+
+在项目中使用了@Indexed之后，编译打包的时候会在项目中自动生成 META-INT/spring.components 文件。
+当 Spring 应用上下文执行 ComponentScan 扫描时，META-INT/spring.components 将会被 CandidateComponentsIndexLoader 读取并加载，转换为 CandidateComponentsIndex 对象，这样的话 @ComponentScan 不在扫描指定的 package，而是读取 CandidateComponentsIndex 对象，从而达到提升性能的目的。
+
+注意點：
+假設 Spring 應用中存在一个包含 META-INT/spring.components 資源的 a.jar，b.jar 僅存在模式註解，那麼使用 @ComponentScan 掃描這兩個 JAR 中的 package 時，b.jar 中的模式註解不會被識別。
+
+
+
+在類別加上特定的標記，將會被視為「元件」（bean）
+Spring Boot啟動時，會掃描程式專案中有哪些類別具有像這樣的標記。找到的話，會默默地建立這些類別的物件。
+以下列出常見的標記，被標記的類別或方法會被Spring Boot建立成元件。
+@RestController：標記在用來接收請求與回傳資料(通常XML、JSON、plain text)的表示層。於第3課介紹。
+@Service：標記在負責資料處理的業務邏輯層。於第5課介紹。
+@Repository：標記在能與資料庫互動的資料持久層。於第8課介紹。
+@Configuration：標記在專門讀取應用程式設定值的類別。於第13課介紹。
+@Component：如果一個類別不太好歸類到以上類型，可以使用這個名稱比較通俗的標記，它的中文意思就是「元件」而已。
+@Bean：標記在方法上，其回傳值將被建立成元件。該方法通常被宣告在Configuration類別中。好處是能自行進行元件的建構。於第14課介紹。
+使用「@Autowired」標記能將元件注入到需要的類別。但並非每個類別都能這麼做，只有元件才能把另一個元件注入進來。
+SpringBootFirstAppApplication.java
+import org.springframework.boot.SpringApplication;
+@SpringBootApplication			// 啟動 Spring Boot 的類別
+public class SpringBootFirstAppApplication {
+	public static void main(String[] args) {
+		SpringApplication.run(SpringBootFirstAppApplication.class,args);
+	}
+}
+WelcomeController.java
+import org.springframework.web.bind.annotation.RestController;
+@RestController
+public class WelcomeController {
+	@GetMapping("/welcome")
+	public String welcome() {
+		return "welcome to spring boot app development";
+	}
+}
+localhost:8080/welcome
+@PreAuthorize("hasAuthority('ROLE_AUTH_DOWNLOAD')")
+
+多線程會有同步、異步問題，同步可以避免線程搶佔完成交易性需要的ACID
+
+程序
+進程、線程
+併發、並行
+同步、異步
+
+高併發相關常用的一些指標有響應時間（Response Time），吞吐量（Throughput），每秒查詢率QPS（Query Per Second），併發用戶數等。
+多線程在這裏只是在同/異步角度上解決高併發問題的其中的一個方法手段，是在同一時刻利用計算機閑置資源的一種方式
+
+進程之間不能共享內存，但線程之間共享內存非常容易。
+系統創建進程時需要給進程重新分配系統資源，但創建線程代價小得多，所以使用多線程實現多任務併發比多進程效率高
+
+
+
+SpringBoot 默認
+
+@SpringBootApplication 註解内部是 3 大註解功能的集成
+
+@ComponentScan: 開啟組件掃描
+@SpringBootConfiguration: 作用等同於 @Configuration 註解，也是用於標記配置類
+@EnableAutoConfiguration: 內部導入 AutoConfigurationImportSelector，該類中有個 getCandidateConfigurations 方法，讀取 jar 包中 META-INF/spring.factories 文件中配置類，再根據條件進行加載和配置，比如: AOP / PropertyPlaceholder / FreeMarker / HttpMessageConverter / Jackson / DataSource / DataSourceTransactionManager / DispatcherServlet / WebMvc 等等
+
+SpringApplication.run(…)的作用
+
+啟動 SpringBoot 應用
+加載自定義的的配置類，完成自動配置功能
+把當前項目部署到嵌入的 Tomcat 伺服器
+啟動 Tomcat 伺服器跑項目
+
+
+@Aspect
+@Autowired
+@Bean
+@Cacheable
+@CacheEvict
+@CachePut
+@Component
+@ComponentScan
+@Configuration
+@Controller
+@ControllerEndpoint
+@CookieValue
+@EnableAutoConfiguration
+
+
+@GetMapping、@PostMapping、@PutMapping、@DeleteMapping、@PatchMapping	// 只能在class內，Annotation maps HTTP GET requests onto specific handler methods. It is a composed annotation that acts as a shortcut for 									// @RequestMapping(method = RequestMethod.GET).
+可以寫在MyController.java內。MyController provides mappings between request paths and handler methods.
+The @GetMapping maps a / root path from a GET request to the index() method.
+
+如果我們想使用傳統的@RequestMapping註釋實現URL處理程序，那麼它應該是這樣的：
+@RequestMapping(value="/get/{id}", method=RequestMethod.GET)
+新方法可以簡化為：
+@GetMapping("/get/{id}")
+
+所有上述註釋都已在內部註釋了@RequestMapping以及方法元素中的相應值。
+
+源碼：
+@Target({ java.lang.annotation.ElementType.METHOD})
+@Retention(RetentionPolicy.RUNTIME)
+@Documented
+@RequestMapping(method = { RequestMethod.GET })
+public @interface GetMapping {
+	// abstract codes
+}
+
+所有其他註釋都以相同方式創建，即@PostMapping使用RequestMethod.POST進行註釋等。
+
+使用方式
+下面是結合RestController的簡單使用：
+@RestController
+@RequestMapping("users")
+public class UserController {
+	@Autowired
+	UserService userService;
+
+	@GetMapping("/status/check")
+	public String status() {
+		return "working";
+	}
+
+	@GetMapping("/{id}")
+	public String getUser(@PathVariable String id) {
+		return "HTTP Get was called";
+	}
+
+	@PostMapping
+	public String createUser(@RequestBody UserDetailsRequestModel requestUserDetails) {
+		return "HTTP POST was called";
+	}
+
+	@DeleteMapping("/{userId}")
+	public String deleteUser(@PathVariable String userId) {
+		return "HTTP DELETE was called";
+	}
+
+	@PutMapping("/{userId}")
+	public String updateUser(@PathVariable String userId, @RequestBody UserDetailsRequestModel requestUserDetails) {
+		return "HTTP PUT was called";
+	}
+}
+下面是使用@Controller的代碼：
+@Controller
+public class HomeController {
+	@GetMapping("/")
+	public String homeInit(Model model) {
+		return "home";
+	}
+}
+在上面的代碼中，HomeController類充當請求控制器。它的homeInit()將處理所有傳入的URL請求"/"。它接受a Model 並返回視圖名稱home。使用配置的「視圖解析器」解析視圖名稱"home"的頁面。
+
+寫法對比
+@RequestMapping：
+@RequestMapping(value = "/workflow",
+		produces = {"application/json"},
+		consumes = {"application/json"},
+		method = RequestMethod.POST)
+
+@PostMapping：
+@PostMapping(path = "/members", consumes = "application/json", produces = "application/json")
+public void addMember(@RequestBody Member member) {
+	// code
+}
+
+
+
+@Lazy
+@Qualifier
+@Repository
+
+
+@RequestMapping		// 用於映射url到控制器類或一個特定的處理程序方法，而這個動作相等於 Servlet中在web.xml的配置。屬於Spring MVC以前版本，到了新版被@GetMapping、@PostMapping、@PutMapping、					// @DeleteMapping、@PatchMapping新註釋替代。
+源碼：
+@Target({ElementType.METHOD, ElementType.TYPE})
+@Retention(RetentionPolicy.RUNTIME)
+@Documented
+@Mapping
+public @interface RequestMapping {
+	String name() default "";
+	@AliasFor("path")
+	String[] value() default {};
+	@AliasFor("value")
+	String[] path() defalut {};
+	RequestMethod[] method() default {};
+	String[] params() default {};
+	String[] headers() default {};
+	String[] consumes() default {};
+	String[] produces() default {};
+指定http請求的類型使用
+public enum RequestMethod {
+	GET, HEAD, POST, PUT, PATCH, DELETE, OPTIONS, TRACE
+}
+範例：
+	@RequestMapping("/")
+	public String hello() {
+		return "Hey, Spring Boot 的 Hello World !";
+	}
+
+
+@Required
+
+@ResponseBody		// 告訴Spring MVC不是渲染模型到視圖，而是返回的對象寫入響應主體。它是通過使用Spring的消息轉換器之一來實現的。因為Jackson 2在類路徑中，MappingJackson2HttpMessageConverter所以Greeting如			// 果請求的Accept標頭指定應返回JSON ，它將處理對像到JSON的轉換。
+
+@RestController		// 表示當下的java是一個控制器(Controller)。@RestController is used for creating restful controllers, which do not use a view technology. The methods typically return XML, JSON, or plain text.
+
+@RestControllerEndpoint
+@Service
+
+
+@SpringBootApplication	// Spring Boot應用標註在某個類上說明這個類是SpringBoot的主設定類，SpringBoot 就應該執行這個類的main方法來啟動SpringBoot應用。
+相關設定啟動都是由該註解來幫我們完成的，點進去了解一下
+源碼：
+@Target(ElementType.TYPE)
+@Retention(RetentionPolicy.RUNTIME)
+@Documented
+@Inherited
+@SpringBootConfiguration
+@EnableAutoConfiguration
+@ComponentScan(excludeFilters = {
+		@Filter(type = FilterType.CUSTOM, classes = TypeExcludeFilter.class),
+		@Filter(type = FilterType.CUSTOM, classes = AutoConfigurationExcludeFilter.class)})
+public @interface SpringBootApplication {
+}
+點進去會發現他的註解類當中還有很多註解，就是一個自定義組合註解。
+不使用這個註解能否啟動專案？
+把@SpringBootApplication換成以下三個註解，照樣可以正常啟動。
+@Configuration
+@EnableAutoConfiguration
+@ComponentScan
+
+
+
+
+@Value
+1.The @Value annotation works directly on fields…​
+
+2.Or on constructor arguments.
+
+go through your (hierarchical) environment and look for the appropriate property - or throw an error message if such a property does not exist.
+environment
+property
+
+
+
+
+
+
+用在其他Annotation上的Annotation：
+
+@Retention		// 確定標註的生命週期，用Enum的RetentionPolicy設定。
+註解按生命週期來劃分可分為3類：
+RetentionPolicy.SOURCE: 註解只保留在原始檔，當Java檔案編譯成class檔案的時候，註解被遺棄
+RetentionPolicy.CLASS: 註解被保留到class檔案，但jvm載入class檔案時候被遺棄，這是預設的生命週期
+RetentionPolicy.RUNTIME: 註解不僅被儲存到class檔案中，jvm載入class檔案之後，仍然存在
+
+@Documented		// 這個註解只是用來標註生成javadoc的時候是否會被記錄。
+在自定義註解的時候可以使用@Documented來進行標註，如果使用@Documented標註了，在生成javadoc的時候就會把@Documented註解給顯示出來
+
+
+@Target			// 說明了Annotation（註解）所修飾的物件範圍。用Enum的ElementType設定。
+有：
+CONSTRUCTOR
+FIELD
+LOCAL_VARIABLE
+METHOD
+PACKAGE
+PARAMETER
+TYPE
+
+@Inherited		// @Inherited是一個標識，用來修飾註解，自定義註解當中會用到。
+首先是自定義一個註解
+@Target(ElementType.TYPE)
+@Retention(RetentionPolicy.RUNTIME)
+@Inherited
+public @interface ATable {
+	public String name() default "";
+}
+以下是在使用自定義註解的一個場景
+類繼承關係中@Inherited的作用
+類繼承關係中，子類會繼承父類別使用的註解中被@Inherited修飾的註解
+@ATable
+public class InheritedBase {
+}
+public class MyInheritedClass extends InheritedBase {
+}
+
+介面繼承關係中@Inherited的作用
+介面繼承關係中，子介面不會繼承父介面中的任何註解，不管父介面中使用的註解有沒有被@Inherited修飾
+@ATable
+public interface IInheritedInterface {
+}
+public interface IInheritedInterfaceChild extends IInheritedInterface {
+}
+
+類實現介面關係中@Inherited的作用
+類實現介面時不會繼承任何介面中定義的註解
+@ATable
+public interface IInheritedInterface {
+}
+public class MyInheritedClassUseInterface implements IInheritedInterface {
+}
+
+@SpringBootConfiguration				// 標註在某個類上，表示這是一個Spring Boot的設定類。點進去會發現，他其實也是一個自定義註解。
+@Configuration學spring的應該對他不陌生
+作用：指定當前類是一個設定類，在使用spring的時候剛開始都是xml設定，也正是這個註解，開啟了類設定方式。
+源碼：
+@Target(ElementType.TYPE)
+@Retention(RetentionPolicy.RUNTIME)
+@Documented
+@Configuration
+public @interface SpringBootConfiguration {
+}
+
+
+@EnableAutoConfiguration				// 以前我們需要設定的東西，Spring Boot會幫我們自動設定；@EnableAutoConfiguration告訴SpringBoot開啟自動設定功能，這樣自動設定才能生效。
+點進去會發現@Import，說白了他就是藉助@Import的支援，收集和註冊特定場景相關的bean定義。
+@SuppressWarnings("deprecation")
+@Target(ElementType.TYPE)
+@Retention(RetentionPolicy.RUNTIME)
+@Documented
+@Inherited
+@AutoConfigurationPackage
+@Import(EnableAutoConfigurationImportSelector.class)	// EnableAutoConfigurationImportSelector：匯入哪些元件的選擇器。
+public @interface EnableAutoConfiguration {
+}
+會給容器中匯入非常多的自動設定類（xxxAutoConfiguration）。
+大概的流程就是：
+Spring Boot在啟動的時候，通過EnableAutoConfigurationImportSelector類，從類路徑下的META-INF/spring.factories中獲取EnableAutoConfiguration指定的值（就是上方截圖），
+以全類名反射的建立方式，將這些值作為自動設定類匯入到容器中，自動設定類就生效，幫我們進行自動設定工作。
+
+以前我們需要自己設定的東西，自動設定類都幫我們設定好了，這也就是使用springboot在使用spring，springmvc不用設定「檢視解析器」、「資料庫連線池」、「事務」等設定的原因。直接開箱即用。
+當然springboot也給我提供了修改設定的方法，那就是通過yml或者propertie檔案來進行修改springboot為我們設定好的設定預設值。
+
+
+@ComponentScan		// 用於通過註解指定spring在建立容器時要掃描的包。
+我們可以通過basePackages等屬性來細粒度的客製化@ComponentScan自動掃描的範圍，如果不指定，則預設Spring框架實現會從宣告@ComponentScan所在類的package進行掃描。
+@ComponentScan("com.gzl")
+這也就是springboot啟動類為什麼放在包外的原因。
+
+@Import			// 用於匯入其他的設定類。而@EnableAutoConfiguration也是藉助@Import的幫助，將所有符合自動設定條件的bean定義載入到IoC容器，僅此而已！
+@SessionScope
+
+
+
+@Inject
+	針對資料的標註，@JsonProperty改變JSON名稱
+public class Name {
+	@JsonProperty("firstName")
+	public String _first_name;
+}
+	自訂標註則需要用到@interface
+public @interface Test {
+
+}
+
+
+___________________________________________________________________________________________________________________________________________________________________________________________________________________
+
+
+資料庫增加新用戶
+grant select,insert,update,delete on *.* to user1@localhost Identified by "password1"
+
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
+
+public class SpringMailSender {
+	@Autowired
+	private JavaMailSender mailSender;
+
+	public void sendInvoice(User user, File pdf) throws Exception {
+		MimeMessage mimeMessage = mailSender.createMimeMessage();
+
+		MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true);
+
+		helper.setTo("john@rambo.com");
+		helper.setText("Check out your new invoice!");
+		FileSystemResource file = new FIleSystemResource(pdf);
+		helper.addAttachment("invoice.pdf", file);
+
+		mailSender.send(mimeMessage);
+	}
+}
+XML、Java Config、Annotations(component-scanning)不要在同個專案混和用，以標註為主流。
+
+create*()、getInstance()使得不需要import就能生成一個類，還可以在方法內添加額外東西而呼叫者看不到，原本的用意是不讓別人以new呼叫建構式(private)且調用多次返回同一個對象。算是依賴注入。
+
+使用clone（）clone（）可用於創建現有對象的副本。
+1.MyObject object = new MyObject（）;
+2.MyObject anotherObject = new MyObject（）; MyObject對象= anotherObject.clone（）;
+3.MyObject object =（MyObject） Class.forName（「subin.rnd.MyObject」）。newInstance（）;
+4.ObjectInputStream inStream = new ObjectInputStream（anInputStream）; MyObject object =（MyObject）inStream.readObject（）;
+___________________________________________________________________________________________________________________________________________________________________________________________________________________（@RestController == @ResponseBody + @Controller）
+1.如果只是使用 @RestController 註解 Controller，Controller 中的方法無法返回 jsp、html，配置的視圖解析器 InternalResourceViewResolver 不起作用，返回的內容就是 return 裡的內容。
+2.如果需要返回指定頁面，需要使用@Controller配合視圖解析器InternalResourceViewResolver。
+	如果需要返回JSON、XML、或自定義mediaType內容到頁面，則需要在對應的方法上加上@ResponseBody。
+1. 使用 @Controller，在對應的方法上，視圖解析器可以解析 return 的 jsp、html，並且跳轉到相應頁面。
+若返回 json 等內容到頁面，則需要加 @ResponseBody。
+
+@CrossOrigin
+@Controller
+public class FileUploadController {
+	// 跳轉到上傳文件的頁面
+	@RequestMapping(value="/gouploading", method = RequestMethod.GET)
+	public String goUploading() {
+		//跳轉到templates目錄下的uploading.html
+		return "uploading";
+	}
+	// 處理文件上傳
+	@RequestMapping(value = "/testuploading", method = RequestMethod.POST)
+	public @ResponseBody String uploading(@RequestParam("file") MultipartFile file, HttpServletRequest request) {
+		System.out.println("調用文件上傳方法");
+		String contentType = file.getContentType();
+		String fileName = file.getOriginalFilename();
+	}
+}
+2. @RestController，返回 json 數據不需要在方法前面加 @ResponseBody，但使用 @RestController 就不能返回 jsp、html 頁面，視圖解析器無法解析 jsp、html 頁面。
+
+@CrossOrigin
+@RestController	// @Controller + @ResponseBody
+public class HospitalController {
+	@Autowired
+	private HospitalService hospitalService;
+	/**
+	 *  查詢所有醫院信息(未分頁)
+	 */
+
+	@RequestMapping(value = "findAllHospital", method = RequestMethod.GET)
+	public List<Hospital> findAllHospital() {
+		List<Hospital> hospitalList = hospitalService.findAllHospital();
+		return hospitalList;
+	}
+}
+___________________________________________________________________________________________________________________________________________________________________________________________________________________
+public class MyControllerTest {
+	private MockMvc mockMvc
+
+	@Before
+	public void setup() {
+		this.mockMvc = MockMvcBuilders.standaloneSetup(new MyController()).build();
+	}
+
+	@Test
+	puublic void testHomePage() throws Exception {
+		this.mockMvc.perform(get("/")).andExpect(status().isOk())
+					.andExpect(content().string("This is Home Page"));
+	}
+
+	@Test
+	public void testHelloPage() throws Exception {
+		this.mockMvc.perform(get("/hello")).andExpect(status().isOk())
+					.andExpect(content().string("Hello there!"));
+	}
+}
+MyControllerTest tests the two pages.
+$ curl localhost:8080
+This is Home Page
+$ curl localhost:8080/hello
+Hello there!
+
+___________________________________________________________________________________________________________________________________________________________________________________________________________________
+關於 spring bean 作用域，基於不同的容器，會有所不同，如 BeanFactory 和 ApplicationContext 容器就有所不同，這邊主要介紹 ApplicationContext 容器的 bean 作用域。
+在spring中主要包括singleton、prototype、session、request、global這邊主要講解常用的兩種，Singleton、Prototype。
+public class UserDao {
+	public UserDao() {
+		System.out.println("UserDao無參構造函數被調用");
+	}
+	public String getUserName() {
+		return "RsosoR"
+	}
+}
+
+applicationContext.xml
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <bean class="com.demo.dao.UserDao" id="userDao" scope="singleton"/>
+</beans>
+
+text：
+public class MyTest {
+	@Test
+	public void test() {
+		ApplicationContext applicationContext = new ClassPathXmlApplicationContext("applicationContext.xml");		// 加載bean，Singleton模式實例化bean
+
+		UserDao userDao = applicationContext.getBean(UserDao.class);						//	     Prototype模式實例化bean
+		System.out.println(userDao.getUserName());
+
+		UserDao userDao2 = (UserDao) applicationContext.getBean("userDao");
+		System.out.println(userDao2.getUserName());
+		System.out.println("第一個實例: "+userDao+"\n"+"第二個實例: "+userDao2);
+	}
+}
+Singleton模式的bean，在ApplicationContext加載bean時，就實例化了bean			// 即單例模式，在容器中，只實例化一次(做一次構造函數)。
+Prototype模式的bean，要完成getBean()才會實例化bean					// 即原型模式，在容器中，調用多少次bean，就實例化多少次。
+singleton比prototype消耗性能，web開發推薦使用singleton；app開發推薦使用prototype。
+___________________________________________________________________________________________________________________________________________________________________________________________________________________
+再新建 class 文件 UserController，寫入 getUserList()，點擊運行，並在瀏覽器中輸入 URL:http://localhost:8080/getuserlist 測試一下。
+@RestController
+public class UserController {
+	@RequestMapping("/getuserlist")
+	public String getUserList() {
+		return "獲取成功";
+	}
+}
+再新建 ApiResult 返回通用的結果。code為錯誤碼、status為狀態碼、data為需要返回的訊息，所以類型為Object、message為相關信息。
+public class ApiResult {
+	private int code;
+	private String status;
+	private Object data;
+	private String message;
+	public void setCode(int code) {
+		this.code = code;
+	}
+	public int getCode() {
+		return code;
+	}
+
+	public void setStatus(String status) {
+		this.status = status;
+	}
+	public String getStatus() {
+		return status;
+	}
+
+	public void setData(Object data) {
+		this.data = data;
+	}
+	public Object getData() {
+		return data;
+	}
+
+	public void setMessage(String message) {
+		this.message = message;
+	}
+	public String getMessage() {
+		return message;
+	}
+}
+最後回到 UserController，修改 getUserList()。
+@RestController
+public class UserController {
+	@RequestMapping("/getuserlist")
+	public ApiResult getUserList() {
+		// 返回結果
+		ApiResult apiResult = new ApiResult();
+		apiResult.setCode(300);
+		apiResult.setStatus("Success");
+		apiResult.setData("123456");
+
+		return apiResult;
+	}
+}
+但我們想要的是SQL數據庫中存儲的信息，而不是固定的字符串。
+所以就到 SQL 的處理了
+先在 resources 文件夾下的 application.properties 中配置 SQL 的信息。
+XXX 為 SQL 的地址，本地則為 localhost，阿里雲則為外網 ip。demoapp 為數據庫名，yyy 為數據庫的密碼。
+serverTimezone=UTC 用於設定時區，如果刪除可能會出現You must configure either the server or JDBC driver to use a more specific time zone value if you want to utilize time zone support的報錯。
+# 配置sql
+# ?serverTimezone=UTC 為設定時區
+spring.datasource.url=jdbc:mysql://XXX:3306/demoapp?serverTimezone=UTC
+spring.datasource.username=root
+spring.datasource.password=yyy
+spring.datasource.driver-class-name=com.mysql.jdbc.Driver
+然後再添加數據源，在右側的Database中點擊+號Data Source→MySQL，填上數據庫的信息。Test Connection出現Successful就OK了(如果Test Connection為灰色不可點擊，點擊下方的提示，下載driver即可)，之後就可以IDEA的Database中支持查看此數據庫。
+
+對數據庫的操作有JDBC和JPA兩種方法，其中JPA為SpringBoot推薦的使用方法，這裡先使用JPA。
+首先添加JPA的依賴
+<dependency>
+	<groupId>org.springframework.boot</groupId>
+	<artifactId>spring-boot-starter-data-jpa<artifactId>
+</dependency>
+然後修改application.properties，新增JPA的配置。注意: 如果表格有數據，不要使用create模式，同名表格會被覆蓋。
+# 在建表的時候，將默認的存儲引擎切換為InnoDB
+spring.jpa.database-platform=org.hibernate.dialect.MySQLInnoDBDialect
+# 程序啟動時刪除並且創建實體類對應的表(注意: 配置了這個之後，如果有同名的表，會被刪除覆蓋，慎用)
+# spring.jpa.hibernate.ddl-auto=create
+
+之後新建兩個class文件，實體對象UserDAO.java和數據庫訪問層UserRepository.java(如果上面沒有使用create模式，要到MySQL Workbench中新建user_info表格
+UserDAO: 實體類需要使用@Entity註解標註。並且實體類的屬性也要進行標註，使用@Id標註主鍵，使用@Column標註非主鍵：
+import javax.persistence.*;
+
+/**
+ *  USER表格
+ */
+
+@Entity
+@Table(name="user_info")	// 指定表名
+public class UserDao {
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Integer userId;
+
+	@Column(name = "user_name")
+	private String userName;
+
+	@Column(name = "user_password")
+	private String userPassword;
+
+	@Column(name = "user_mailbox")
+	private String userMailbox;
+
+	@Column(name = "user_phone")
+	private String userPhone;
+
+	@Column(name = "user_token")
+	private String userToken;
+
+	@Column(name = "user_repository_time")
+	private String userRepositoryTime;
+
+	@Column(name = "user_login_last_time")
+	private String userLoginLastTime;
+
+	public void setUserId(Integer userId) {
+		this.userId = userId;
+	}
+	public Integer getUserId() {
+		return userId;
+	}
+
+	public void setUserName(String userName) {
+		this.userName = userName;
+	}
+	public String getUserName() {
+		return userName;
+	}
+
+	public void setUserPassword(String userPassword) {
+		this.userPassword = userPassword;
+	}
+	public String getUserPassword() {
+		return userPassword;
+	}
+
+	public void setUserMailbox(String userMailbox) {
+		this.userMailbox = userMailbox;
+	}
+	public String getUserMailbox() {
+		return userMailbox;
+	}
+
+	public void setUserPhone(String userPhone) {
+		this.userPhone = userPhone;
+	}
+	public String getUserPhone() {
+		return userPhone;
+	}
+
+	public void setUserToken(String userToken) {
+		this.userToken = userToken;
+	}
+	public String getUserToken() {
+		return userToken;
+	}
+
+	public void setUserRepositoryTime(String userRepositoryTime) {
+		this.userRepositoryTime = userRepositoryTime;
+	}
+	public String getUserRepositoryTime() {
+		return userRepositoryTime;
+	}
+
+	public void setUserLoginLastTime(String userLoginLastTime) {
+		this.userLoginLastTime = userLoginLastTime;
+	}
+	public String getUserLoginLastTime() {
+		return userLoginLastTime;
+	}
+}
+
+UserRepository.java: Repository為數據庫訪問層，它在內部封裝了數據查詢和存儲的邏輯，也可以在這裡自定義 DAO 的實現方法。
+@Repository
+public interface UserRepository extends JpaRepository<UserDao, Integer> {
+
+}
+
+最後 JPA 增刪查改 的基本使用：
+
+增加User： 使用Repository.save()
+@Autowired
+private UserRepository userRepository;
+public void addUser(UserDao userInfo) {
+	UserDao userDao = new UserDao();
+	userDao.setUserName(userInfo.getUserName());
+	userRepository.save(userDao);
+}
+
+刪除User：使用Repository.delete()
+@After
+public void after() {
+	userRepository.deleteById(1);
+}
+
+查找User：使用Repository.findByXXX或者Repository.findAll;
+默認只提供Repository.findById()，如果要根據UserName查詢，需要在UserRepository中自定義，UserRepository中方法的命名有一定的規則。如果表中為id則為findById。如果表中為user_name則為findByUserName。
+自定義方法：
+@Repository
+public interface UserRepository extends JpaRepository<UserDao, Integer> {
+	public List<UserDao> findByUserName(String userName);
+	public List<UserDao> findByUserMailbox(String userMailbox);
+	public List<UserDao> findByUserToken(String token);
+}
+
+查詢方法：
+public List<UserDao> getUser(String name) {
+	List<UserDao> userInfos = userRepository.findByUserName(name);
+	return userInfos;
+}
+
+更新方法：
+JPA沒有默認的更新方法，需要在UserRepository中自定義更新方法。或者使用save方法代替。
+其中自定義更新方法@Query中value為SQL語法，nativeQuery為是否原生的SQL語句
+// 更新指定UserName的userLoginLastTime
+@Query(value = "update " + TableInfo.userTable + " set " + TableInfo.userTable_loginLastTime + "=?2 where " + TableInfo.userTable_name + "=?1 ", nativeQuery = true)
+@Transactional
+@Modifying
+public void updateLoginLastTime(String name, String userLoginLastTime);
+
+最後還是回到UserController，修改getUserList方法。
+@Autowired
+private UserRepository userRepository;
+
+@RestController
+public class UserController {
+	@RequestMapping("/getuserlist")
+	public ApiResult getUserList() {
+		int code = 0;
+		String status = "unknown error";
+		UserDao data = new UserDao();
+		try {
+			data = userRepository.findByUserName();
+			code = 300;
+		} catch (Exception e) {
+			status = String.valueOf(e);	// 把 Exception 丟進 String.valueOf()，轉成文字。
+		}
+		// 返回結果
+		ApiResult apiResult = new ApiResult();
+		apiResult.setCode(code);
+		apiResult.setStatus(status);
+		apiResult.setData("123456");
+
+		return apiResult;
+	}
+}
+重新點擊運行，並在瀏覽器中輸入 URL:http://localhost:8080/getuserlist 測試能否獲取返回成功。
+
+把後臺部署到阿里雲服務器
+上面只是在本地跑通了，但後臺是要部署到伺服器上才能真正發揮它的作用。所以你需要一個阿里雲服務器(沒使用過可以參考 手遊SDK-Maven私有倉庫的搭建 中的阿里雲服務器部分)
+
+首先在阿里雲上安裝MySQL。
+配置訪問權限，不配置訪問權限你是連接不上的。
+
+打開cmd進入到MySQL安裝目錄的bin文件夾下
+輸入mysql命令和帳號密碼
+mysql -u root -p
+切換到mysql庫
+use mysql;
+查看當前用戶表，當前的host(root)還是localhost
+select host, user from user;
+我們需要更新user用戶表，把root變為允許外網ip訪問。如果只需要指定ip才能訪問，那把%還成指定ip即可
+update user set host = '%' where user = 'root' LIMIT 1;
+分配訪問權限(如已分配過了，可跳過)
+GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' IDENTIFIED BY 'root密碼' WITH GRANT OPTION;
+最後強制刷新權限
+flush privileges;
+再次查詢用戶表，此時的root的host已更改為%(或者指定的ip)
+select host,user from user;
+修改完訪問權限，還需要配置阿里雲的安全組規則。
+阿里雲的安全組規則的配置：
+登入阿里雲控制台，網絡與安全→安全組→配置規則→添加安全組規則，開放MySQL的3306端口。
+
+打開本地的MySQL Workbench新建阿里雲MySQL的連接(把原本的localhost也就是圖中的xxxxx修改為阿里雲的公有ip)。此時就能打開阿里雲MySQL了。
+
+然後回到工程，把application.properties和Database中的localhost修改為阿里雲的公網ip，重新運行，測試OK就可以打包了。
+最後在IDEA的Terminal窗口中使用mvn clean package命令進行打包，打包完成後會在target目錄下生成jar包。然後把生成xxx-xx-SNAPSHOT.jar複製到阿里雲服務器上，打開cmd運行。
+java -jar xxx-xx-SNAPSHOT.jar
+
+打開瀏覽器，輸入http://阿里雲公網ip:8091/getuserlist，8091為端口號，因為一般不使用8080端口號。端口號的設置可以在application.properties中server.port=8091設定。看看測試結果。
+
+你有可能踩到的坑：
+1. Could not create connection to database server。
+是因為 MySQL 的版本與工程中使用的版本不一致。可以修改 pom.xml 中 mysql 的版本
+2. 運行時出現 org.springframework.orm.jpa.JpaSystemException: could not execute statement; nested exception is org.hibernate.exception.GenericJDBCException: could not execute statement
+數據表的主鍵沒有設置，可以把其設置為自增。
+___________________________________________________________________________________________________________________________________________________________________________________________________________________
+（IOC - Inversion of Control）控制反轉
+倒轉的是實例依賴物件的「控制流程」
+
+控制反轉 (Inversion of Control)與依賴反轉 (Dependency Inversion)兩者不相等卻有大關係。
+
+依賴倒置原則 (Dependency Inversion Principle, DIP) ：
+高階模組不應該依賴於低階模組→高、低階模組都依賴抽象、抽象不應該依賴於具體實作方式→具體實作方式依賴抽象
+倒轉的是「依賴關係」
+
+舉例來說，此程式違反了依賴倒置(DIP)原則
+它使高階模組(Computer)依賴 低階模組(英雄聯盟)
+class Computer {
+	// 依賴於低階模組: 具體的英雄聯盟，而非抽象的遊戲
+	private 英雄聯盟 lol;
+
+	public Computer() {
+		lol = new 英雄聯盟();
+	}
+
+	public Computer(英雄聯盟 lol) {
+		this.lol = lol;
+	}
+
+	public void playGame() {
+		if (lol != null)
+			lol.play();
+	}
+}
+
+class 英雄聯盟 {
+	public void play() {
+		System.out.println("德瑪西雅~");
+	}
+}
+然而，它還是能透過IoC/DI被動取得類別英雄聯盟的實例lol
+解除了高階模組(Computer)主動對低階元件(英雄聯盟)的實例方式，卻解除不了高階模組對低階模組的依賴關係。
+因為高階模組依賴的是具體實作(英雄聯盟)，而非抽象（介面 || 抽象類別)。
+
+還記得 依賴倒置原則 (Dependency Inversion Principle, DIP) 的結尾嗎？
+僅僅將『 高階模組的依賴對象，由具體改為抽象 』，是 不夠 的，
+因為高階模組 欲使用 低階模組的物件時，還是 需要自己 new 具體實作類別。
+
+依賴並未解除
+
+想解除這種依賴，即可透過 IoC/DI ，
+直接將 所需低階元件 傳遞給 高階模組使用，
+高階模組 啥都沒幹，就可以直接使用 低階模組。
+
+
+兩者結合後也就是:
+
+高階模組，依賴於抽象，而非低階模組。
+但 要使用 該抽象的 具體產品 (低階模組) 時，
+
+1. 不用也不需要知道是哪種 具體產品
+2. 不再自己實例 具體產品，而是 服務容器 會提供給他 。
+
+高階模組 不再去 "找尋" 插件，
+而是插件會自己注入到 高階模組中。
+這就是 好萊塢原則 (Hollywood Principle):
+
+IoC/DI ，並非實現 "DIP" 的唯一解，
+還有 工廠方法模式 (Factory Method Pattern)、服務定位模式 (Service Locator Pattern)，
+以及各種的 建立型模式 (Creational Pattern)…，皆可以消除 實例具體產品 (插件 Plugin) 的依賴關係。
+
+
+（DI - Dependency Injection）依賴注入
+將所需的 依賴實例，注入到高階模組中。
+有以下三種形式：
+
+建構元注入 (Constructor Injection)
+設值方法注入 (Setter Injection)
+介面注入 (Interface Injection)
+
+這裡我以 “網咖” 做為舉例，
+高階模組 (Computer) 依賴 抽象介面 (Game)，
+且有許多 具體產品 (Plugin) 實作此 抽象介面 (Game):
+class Computer implements GameInjector {
+	private Game game;	// 依賴 抽象 而非 具體
+
+	// 建構元注入
+	public Computer(Game game) {
+		this.game = game;
+	}
+
+	// 設值方法注入
+	public void setGame(Game game) {
+		this.game = game;
+	}
+
+	// 介面注入
+	@Override
+	public void injectGame(Game game) {
+		this.game = game;
+	}
+
+	public void playGame() {
+		if (game != null) {
+			game.play();
+		}
+	}
+}
+// 遊戲注入者
+// 可以規範: 任何需要 遊戲 的模組 都必須實作此介面
+interface GameInjector {
+	void injectGame(Game game);
+}
+		(C)爆爆王	(C)世紀帝國	(C)英雄聯盟
+		play()		play()		play()
+			\	     |	       /
+(C)Computer			(I)IGame
+				play()
+
+可以看到程式中，沒有任何 “具體實作類別” 的名稱，
+而是由 依賴注入 取得 插件實例，
+高階模組，完全沒有與具體實作 耦合，
+實現了 依賴倒置原則 (Dependency Inversion Principle, DIP) ！
+
+建構元注入 (Constructor Injection) vs 設值方法注入 (Setter Injection)
+It’s important to support both mechanisms, even if there’s a preference for one of them.
+—— Martin Fowler
+即使你有較偏好的選擇，同時支持這兩種機制都是必要的。
+
+IoC/DI vs 工廠方法模式 (Factory Method Pattern)
+工廠只負責『生產』，不牽涉到 實例依賴物件的 『控制流程』。
+高階模組是否依賴於工廠，全憑你怎麼使用它、在哪使用它。
+
+舉幾個簡單的例子:
+1. 傳統控制流程的 『使用工廠 實例插件』:
+class Computer {
+	private Game game;					// 依賴Game、GameFactory、ImplGameFactory
+
+	public Computer() {
+		GameFactory factory = new ImplGameFactory();	// 實例 遊戲工廠(注意多型)
+		this.game = factory.createGame();		// 透過工廠，取得遊戲
+	}
+	...
+}
+2. 控制反轉 的 『使用工廠 實例插件』 — [型一] 插件注入：
+public class Main {
+	public static void main(String[] args) {
+		GameFactory factory = new ImplGameFactory();	// 實例 遊戲工廠(注意多型)
+		Game game = factory.createGame();		// 透過工廠，取得遊戲
+		Computer computer = new Computer(game);	// game 依賴注入
+	}
+}
+
+class Computer {
+	private Game game;					// 只依賴Game
+	// 建構元注入
+	public Computer(Game game) {
+		this.game = game;
+	}
+	...
+}
+3. 控制反轉 的 『使用工廠 實例插件』 — [型二] 工廠注入：
+public class Main {
+	public static void main(String[] args) {
+		GameFactory factory = new ImplGameFactory();	// 實例 遊戲工廠(注意多型)
+		Computer computer = new Computer(factory);	// factory 依賴注入
+	}
+}
+
+class Computer {
+	private Game game;					// 依賴Game、GameFactory
+	// 建構元注入
+	public Computer(GameFactory factory) {
+		this.game = factory.createGame();		// 透過工廠，取得遊戲
+	}
+	...
+}
+
+可以看到
+第一種、傳統控制流程的 『使用工廠 實例插件』：
+高階模組 (Computer) 不依賴於 低階模組，而是依賴於抽象 (Game)。 (Good)
+高階模組 (Computer) 依賴於 抽象 (GameFactory)。 (Good)
+高階模組 (Computer) 依賴於 具體實作工廠 (ImplGameFactory)。 (Bad)
+
+第二種 及 第三種 的方式，一樣使用了工廠，卻可解除 高階模組 與 具體工廠 的依賴關係！
+
+
+IoC容器(IoC Container)
+IoC 容器 (又稱： 服務容器 Service Container)，是 組裝 & 配置元件，透過 依賴注入 (Dependency Injection)，提供所需服務給模組的地方。
+
+廣義上來說， IoC 容器，就是有進行 依賴注入 的地方，你隨便寫一個類別，透過它將所需元件注入給 高階模組，便可說是容器。
+
+但現在所說的 『容器』，往往是泛指那些強大『框架』的容器：
+根據設定『自動生產』物件 (非單一產品)，將其提供給所需模組，並管理該物件整個生命週期的 超級自動化工廠。
+
+大部分框架的 IoC 容器，幾乎都透過 『反射 (Reflection) 機制』，
+來 動態生成實例、或由配置文件 (e.g., json、xml、properties、ini、php) 尋找依賴關係，
+描述該如何建構實例、或檢查是否該為當前模組注入依賴 …。
+ 
+因此容器，通常會有個 bind (或 register、config …etc.) 的函數，
+供 註冊依賴關係、或告訴容器: 何種情境需要該實例。
+ 
+再來，通常也會有有個 make (或 create、resolve …etc.)，
+讓容器 解析物件，或實例已綁定之物件。
+
+
+網咖容器範例		// 實際的容器，需要兼顧很多細節，並且根據不同 語言、功能、用途，容器的寫法也不盡相同，大部分框架都寫得很棒，請別重造輪子了。
+實際上的使用：
+public class Main {
+	public static void main(String[] args) {
+		ServiceContainer container = new ServiceContainer();		// 實例 容器
+		// 註冊依賴關係: 當遇到「Game」，讓容器給我「爆爆王」
+		container.bind(Game.class, 爆爆王.class);
+
+		// 註冊依賴關係: 當遇到「Computer」，讓容器給我「Computer(Game, 100)」
+		// 並且 因為上面已註冊過Game，容器會直接傳回「爆爆王」給我
+		container.bind(Computer.class, Game.class, 100);
+
+		Computer computer = (Computer) container.make(Computer.class);	// 讓容器製作 Computer
+		computer.playGame();	// 使用已被注入依賴的Computer物件
+	}
+}
+
+// Result: 
+/*
+ * 開始實例物件: Computer
+ * 建構元數量為4
+ *
+ * 尋訪 0 參數 建構元
+ * 未綁定0 參數
+ *
+ * 尋訪 1 參數 建構元
+ * 未綁定1 參數
+ *
+ * 尋訪 2 參數 建構元
+ * 尋訪 被綁定參數 list
+ * 參數型態: Game
+ * 進入 make 遞迴 實例參數
+ * 開始實例物件: Game
+ * 建構元數量為0
+ *
+ * 爆爆王 為 Game 的子類！
+ * ====實例物件====
+ * 爆爆王
+ * ===============
+ *
+ * 實例 Game 成功
+ *
+ * boolean
+ * Integer
+ * ===============
+ * 建構參數 與 綁定 list 數量相同，但型態不同 (多載)
+ * 略過此次迴圈尋訪
+ * ===============
+ *
+ * 尋訪 2 參數 建構元
+ * 尋訪 被綁定參數 list
+ *
+ * 參數型態: Game
+ * 進入 make 遞迴 實例參數
+ * 開始實例物件: Game
+ * 建構元數量為0
+ *
+ * 爆爆王 為 Game 的子類！
+ * ====實例物件====
+ * 爆爆王
+ * ===============
+ *
+ * 實例 Game 成功
+ *
+ * 此遊戲需要 100元
+ * 實例 Computer 成功
+ *
+ * 海盜船 14
+ */
+
+可以看到上面，範例中，第一個參數，為要綁定的『條件』，XXX.class ，是我做的簡易『型別提示』，其他皆是 建構子的參數。
+
+以 bind(Computer.class, Game.class,100) 為例，第一個參數，為要綁定的『條件』，後面都是建構元 參數。
+但是，實際上的建構子，是長這樣:
+
+public Computer(Game game, Integer money){...
+
+需傳入的，是 Game 實例，而非 Game.class，容器會去解析 Game.class，看有沒有相關的 具體實作，幫你依賴注入。
+
+
+再舉個例：
+public class Main {
+	public static void main(String[] args) {
+		ServiceContainer container = new ServiceContainer();		// 實例 容器
+
+		// 註冊依賴關係： 當遇到 『 Game 』，讓容器給我 『 英雄聯盟 』
+		container.bind(Game.class, 英雄聯盟.class);
+
+		// 註冊依賴關係： 當遇到 『 Computer 』，讓容器給我 『 Computer(Game,true) 』
+		// 並且 因為上面已註冊過 Game ， 容器會直接傳回『英雄聯盟』給我
+		container.bind(Computer.class, Game.class, true);
+
+		Computer computer1 = (Computer) container.make(Computer.class);	// 讓容器製作 Computer
+		computer1.playGame();	// 使用已被注入依賴的Computer元件
+	}
+}
+
+// Result:
+/*
+ * 開始實例物件: Computer
+ * 建構元數量為4
+ *
+ * 尋訪 0 參數 建構元
+ * 未綁定0 參數
+ *
+ * 尋訪 1 參數 建構元
+ * 未綁定1 參數
+ *
+ * 尋訪 2 參數 建構元
+ * 尋訪 被綁定參數 list
+ *
+ * 參數型態: Game
+ * 進入 make 遞迴 實例參數
+ * 開始實例物件: Game
+ * 建構元數量為0
+ *
+ * 英雄聯盟 為 Game 的子類！
+ * ====實例物件====
+ * 英雄聯盟
+ * ===============
+ *
+ * 實例 Game 成功
+ *
+ * 這是線上遊戲
+ * 實例 Computer 成功
+ *
+ * 德瑪西雅~
+ */
+
+總結：
+
+我只是要開發個 小系統，又不想學這個框架，
+難道要自刻一個容器，才能使用 IoC/DI 嗎？
+
+沒用框架也沒差，
+要記得 『控制反轉 』指的是:
+反轉『實例物件的控制流程』，
+並非一定要有框架般的強大容器，才做得到，這是個錯誤的迷思～ 😮。
+ 
+簡單加入一個 『第三方類別』進行實例元件、依賴注入，就可以達到。
+這時 工廠方法模式 (Factory Method Pattern)，就非常好用。
+(再次強調，工廠 與 IoC/DI 並非互斥，甚至時常透過 工廠 實現 IoC/DI)
+ 
+如果熟悉了 IoC/DI 的概念，
+就知道了，學習框架，除了學習他的運作流程、提供的方法…，
+再來就是學習，如何讓它 自動 調用你寫的類別，
+這也是 框架 (Framework) 與 函式庫 (Library) 最大的差異之處。
+
+（AOP - Aspect Oriented Programming）
+分離為業務邏輯與其他不相干的代碼。
+___________________________________________________________________________________________________________________________________________________________________________________________________________________
+在 SpringBoot 之前，可能在接觸 Spring、SpringMVC 等框架的 web 項目都會涉及到一個 web.xml，為了將我們的 DispatcherServlet 註冊進來，我們會在 web.xml 裡添加一些東西如下：
+<servlet>
+        <servlet-name>SpringMVC</servlet-name>
+        <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+        <init-param>
+            <param-name>contextConfigLocation</param-name>
+            <param-value>classpath:spring-mvc.xml</param-value>
+        </init-param>
+        <load-on-startup>1</load-on-startup>
+        <async-supported>true</async-supported>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>SpringMVC</servlet-name>
+        <url-pattern>/</url-pattern>
+    </servlet-mapping>
+
+而使用SpringBoot的我們都知道，我們並沒有接觸到web.xml。也沒有搞一個Tomcat進去，而是直接就能使用SpringMVC的註解進行項目開發，那SpringBoot到底做了什麼事情？下面來探討SpringBoot如何內置tomcat以及整合SpringMVC的核心設計。
+
+沒有web.xml也可以啟動SpringMVC
+通常我們的DispatcherServlet作為一個servlet需要在tomcat的web.xml裡面聲明，但現在有更新的方式就是透過Java代碼進行註冊，實現很簡單只需要實現WebApplicationInitializer這個接口，下面我們驗證一下這個問題，我們用一個簡單的web項目進行實現。
+
+package com.controller;
+
+import org.springframework.web.WebApplicationInitializer;
+
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+
+public class MyWebApplicationInitializer implements WebApplicationInitializer {
+	@Override
+	public void onStartup(ServletContext servletContext) throws ServletException {
+		System.out.println("-----WebApplicationInitializer-----");
+	}
+}
+可以看到tomcat在啟動的時候進入了這個方法，說明這個方法只要我們實現就能在tomcat啟動的時候做一些事情，而這裡的參數servletContext我們可以看看它的API。
+addFilter(String s, S... Dynamic
+addFilter(String s, F... Dynamic
+addFilter(String s, C... Dynamic
+addListener(T t)	void
+addListener(String s)	void
+addListener(Class<? ext... void
+addServlet(String s, ... Dynamic
+addServlet(String s, ... Dynamic
+addServlet(String s, ... Dynamic
+可以看到它能夠添加我們的Servlet，那這就很簡單了，我們可以通過實現這個tomcat提供的外置接口來做拓展，將我們的SpringMVC封裝進去，這就解決了我們的問題 "沒有web.xml，我們依舊能啟動SpringMVC"。
+
+Tomcat 如何內置？
+在解釋如何內置Tomcat的問題中，我們先解釋這個問題，在SpringBoot之前我們應該會接觸過用Maven插件安裝Tomcat，然後啟動整個項目，如下：
+<plugin>
+	<groupId>org.apache.tomcat.maven</groupId>
+	<artifactId>tomcat7-maven-plugin</artifactId>
+	<version>2.2</version>
+</plugin>
+我們點開這個插件可以看到
+<dependencies>
+	<dependency>
+		<groupId>org.apache.tomcat.embed</groupId>
+		<artifactId>tomcat-embed-core</artifactId>
+		<version>${tomcat7Version}</version>
+	</dependency>
+	<dependency>
+		<groupId>org.apache.tomcat</groupId>
+		<artifactId>tomcat-util</artifactId>
+		<version>${tomcat7Version}</version>
+	</dependency>
+它內部依賴了很多tomcat的包，這裡我們看到一個embed的包，下面就來解釋tomcat如何內置的問題。
+首先將我們的Spring源碼工程加入一些配置：
+dependencies {
+	compile(project(":spring-beans"))
+	compile(project(":spring-core"))
+	compile(project(":spring-webmvc"))
+	compile(project(":spring-context"))	// for JCA, @EnableTransactionManagement
+	compile(project(':spring-context-support'))
+	// Tomcat 依賴
+	compile 'org.apache.tomcat.embed:tomcat-embed-core:8.5.5'
+	compile 'org.apache.tomcat.embed:tomcat-embed-el:8.5.5'
+	compile 'org.apache.tomcat.embed:tomcat-embed-jasper:8.5.5'
+
+	testCompile group: 'junit', name: 'junit', version: '4.12'
+然後我們在寫一個test類
+public static void main(String[] args) {
+	Tomcat tom = new Tomcat();
+	tom.setPort(8080);
+		// tomcat 啟動
+		tom.start();
+		// 阻塞，等待前端連接 tom.getServer().await();
+		tom.getServer().await();
+	} catch (Exception e) {
+		e.printStackTrace();
+	}
+}
+tomcat也可以new出來，沒錯tomcat為什麼稱為容器這也不是沒有道理，就好比我們稱Spring容器無非就是Spring內部裝了很多Bean對象，而tomcat只是裝了很多servlet而已，它依舊能夠被我們直接調用，當然目前我們啟動的tomcat只是一個空殼容器，下面我們就來模擬SpringBoot如何內置tomcat且整合Spring的。
+
+模擬SpringBoot內置tomcat且整合Spring
+首先寫一個test
+public class Test {
+	public static void main(String[] args) {
+		Tomcat tom = new Tomcat();
+		tom.setPort(8080);
+		try {
+			File file = new File(System.getProperty("java.io.tmpdir"));
+			// 獲取項目編譯後的class路徑
+			String path = Test.class.getResource("/").getPath();
+
+			// 獲取 webapp 文件
+			String filePath = new File("src/main/webapp").getAbsolutePath();
+
+			// 然後將webapp下的項目添加至tomcat的context容器(context對應一個運行的項目)
+			Context context = tom.addWebapp("/", filePath);	// 參數1: 一般是項目名 對應請求url中的項目名
+			// webResourceRoot 用於加載項目的class文件
+			WebResourceRoot webResource = new StandardRoot(context);
+			webResource.addPreResources(new DirResourceSet(webResource, "/WEB-INF/classes", path, "/"));
+			// tomcat啟動
+			tom.start();
+			// 阻塞，等待前端連接 tom.getServer().await();
+			tom.getServer().await();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+}
+
+然後再寫一個配置類
+@Configuration
+@ComponentScan("SpringMVC.**")
+/* @EnableWebMvc */
+public class AppConfig {
+
+}
+
+注意ComponentScan的路徑，可能和我的不一樣，最後再寫一個WebApplicationInitializer
+public class MyWebApplicationInitializer implements WebApplicationInitializer {
+	@Override
+	public void onStartup(ServletContext servletCxt) {
+
+		// Load Spring web application configuration
+		AnnotationConfigWebApplicationContext ac = new AnnotationConfigWebApplicationContext();
+		ac.register(AppConfig.class);
+		ac.refresh();
+
+		// Create and register the DispatcherServlet
+		DispatcherServlet servlet = new DispatcherServlet(ac);
+		ServletRegistration.Dynamic registration = servletCxt.addServlet("SpringMVC", servlet);
+		registration.setLoadOnStartup(1);
+		registration.addMapping("/*");
+		System.out.println("WebApplicationInitializer");
+	}
+}
+
+好了準備工作完畢我們寫一個測試類
+@Controller			// 可能較早的文章沒有使用RestController
+public class UserController {
+	@RequestMapping("/home")
+	public String home() {
+		System.out.println("---------------");
+		return "home";
+	}
+}
+
+運行我們的tomcat，運行完畢後我們看到了我們的回調函數已被執行
+
+並且已經初始化了我們的SpringMVC
+
+我們再測試一下我們的UserController
+localhost:8080/home
+---------------
+可以看到我們內置成功，而SpringBoot是這樣做的嗎？這裡可以說明SpringBoot不是這樣做的，我們先看到Test類的 Context context = tom.addWebapp("/", filePath); 這段代碼，可以看到我們執行了addWebapp，就是說我們將這個項目當成為了web項目，那麼什麼是web項目？個人認為web項目和普通項目區別就是有一個包路徑叫webapp，因此如果我們執行addWebapp，那麼tomcat就會認為我們的項目是web項目，於是他就會去做很多很多的事情包括我們的WebApplicationInitializer，我們測試一下如果我們去掉addWebapp
+public class Test {
+	public static void main(String[] args) {
+		Tomcat tom = new Tomcat();
+		tom.setPort(8080);
+		try {
+			File file = new File(System.getProperty("java.io.tmpdir"));
+			// 獲取項目編譯後的class路徑
+			String path = Test.class.getResource("/").getPath();
+
+			// 獲取 webapp 文件
+			String filePath = new File("src/main/webapp").getAbsolutePath();
+
+			// 然後將webapp下的項目添加至tomcat的context容器(context對應一個運行的項目)
+			// Context context = tom.addWebapp("/", filePath);	// 參數1: 一般是項目名 對應請求url中的項目名
+			Context context = tom.addContext("/", filePath);
+
+			// webResourceRoot 用於加載項目的class文件
+			WebResourceRoot webResource = new StandardRoot(context);
+			webResource.addPreResources(new DirResourceSet(webResource, "/WEB-INF/classes", path, "/"));
+			// tomcat啟動
+			tom.start();
+			// 阻塞，等待前端連接 tom.getServer().await();
+			tom.getServer().await();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+}
+
+讓我們將項目改成Context context = tom.addContext("/", filePath);
+
+我們的日誌就不會打印WebApplicationInitializer，並且也不會顯示找不到web.xml這條日誌，也就是說SpringBoot的目的就是想要完全脫離傳統的web工程的模式，這也是為什麼SpringBoot適合用來做前後端分離的原因。好了回到我們的主題，那麼既然不能回調我們的WebApplicationInitializer方法，那麼SpringBoot又如何去啟動我們的Spring呢？這也很簡單，我們直接將Spring放入我們的Main函數裡如下：
+public class Test {
+	public static void main(String[] args) {
+		Tomcat tom = new Tomcat();
+		tom.setPort(8080);
+		try {
+			File file = new File(System.getProperty("java.io.tmpdir"));
+			// 獲取項目編譯後的class路徑
+			String path = Test.class.getResource("/").getPath();
+
+			// 獲取webapp文件
+			String filePath = new File("src/main/webapp").getAbsolutePath();
+
+			// 然後將webapp下的項目添加至tomcat的context容器(context對應一個運行的項目)
+			// Context context = tom.addWebapp("/", filePath);	// 參數1: 一般是項目名，對應請求url中的項目名
+			Context context = tom.addContext("/", filePath);
+
+			// webResourceRoot 用於加載項目的class文件
+			WebResourceRoot webResource = new StandardRoot(context);
+			webResource.addPreResources(new DirResourceSet(webResource, "/WEB-INF/classes", path, "/"));
+
+			AnnotationConfigWebApplicationContext ac = new AnnotationConfigWebApplicationContext();
+			ac.register(AppConfig.class);
+			ac.refresh();
+
+			// Create and register the DispatcherServlet
+			DispatcherServlet servlet = new DispatcherServlet(ac);
+			tom.addServlet(context, "SpringMVC", servlet);
+			context.addServletMapping("/*", "SpringMVC");
+			// tomcat啟動
+			tom.start();
+			// 阻塞，等待前端連接 tom.getServer().await();
+			tom.getServer().await();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+}
+
+然後測試同樣會有這樣的效果
+---------------
+___________________________________________________________________________________________________________________________________________________________________________________________________________________
+（JavaMailSender）interface
+1. pom.xml
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-mail</artifactId>
+</dependency>
+
+2. application.properties (這裡模擬 gmail 信箱給 yahoo 信箱發送郵件)
+spring.mail.host=smtp.gmail.com
+
+spring.mail.username=信箱用戶名 so****@gmail.com
+
+spring.mail.password=信箱密碼
+
+spring.mail.default-encoding=UTF-8
+
+3. 寫發送信箱的測試類
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import org.springframework.beans.factory.annotation.Autowired;
+
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
+
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequestMapping("/mail")
+public class MailController {
+	private final Logger logger = LoggerFactory.getLogger(this.getClass());
+
+	@Autowired
+	private JavaMailSender mailSender;
+
+	@GetMapping("/send")
+	public void sendMail() {
+		SimpleMailMessage message = new SimpleMailMessage();
+		message.setFrom("so****@gmail.com");
+		message.setTo("239****@yahoo.com.tw");
+		message.setSubject("it is a test for spring boot");
+		message.setText("你好，我是小影，我正在測試發送郵件。");
+
+		try {
+			mailSender.send(message);
+			logger.info("小影的測試郵件已發送。");
+		} catch (Exception e) {
+			logger.error("小影發送郵件時發生異常了！", e);
+		}
+	}
+}
+
+4. 運行啟動類
+import org.mybatis.spring.annotation.MapperScan;
+
+import org.springframework.boot.SpringApplication;
+
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
+
+@SpringBootApplication(exclude = {DataSourceAutoConfiguration.class})
+@EnableAutoConfiguration
+@MapperScan("com.example.demo.dao")
+public class DemoApplication {
+	public static void main(String[] args) {
+		SpringApplication.run(DemoApplication.class, args);
+	}
+}
+
+5. 瀏覽器運行 http://localhost:8080/mail/send
+
+6. 登陸 gmail 信箱，在發送箱裡查看
+
+7. 登陸 yahoo 信箱，在收件箱裡查看
+
+可以看出Spring Boot的starter模块提供了自动化配置，在引入了spring-boot-starter-mail依赖之后，会根据配置文件中的内容去创建JavaMailSender实例，因此我们可以直接在需要使用的地方直接@Autowired来引入 JavaMailSender 邮件发送对象。 
+
+当然在实际使用过程中，不会这么简单，我们可能会要求带上附件、或使用邮件模块等。这时我们就需要使用MimeMessage来设置更复杂的信件内容，下面就来看看怎么实现它。
+
+（發送帶附件的郵件）
+1. 測試類
+import java.io.File;
+
+import javax.mail.MessagingException;
+import javax.mail.internet.MimeMessage;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import org.springframework.beans.factory.annotation.Autowired;
+
+import org.springframework.core.io.FileSystemResource;
+
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
+
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequestMapping("/mail")
+public class AttachmentsMailController {
+	private final Logger logger = LoggerFactory.getLogger(this.getClass());
+
+	@Autowired
+	private JavaMailSender mailSender;
+
+	@GetMapping("/att")
+	public void sendMail() throws MessagingException {
+		MimeMessage mimeMessage = mailSender.createMimeMessage();;
+		MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true);
+
+		helper.setFrom("so****@gmail.com");
+		helper.setTo(239****@yahoo.com.tw");
+		helper.setSubject("主題: 發送有附件的信件");
+		helper.setText("你好，我是小影，我正在測試發送一封有附件的信件。");
+
+		FileSystemResource file1 = new FileSystemResource(new File("d:\\cat.jpg"));
+		FileSystemResource file2 = new FileSystemResource(New File("d:\\java-1.jpg"));
+
+		helper.addAttachment("附件-1.jpg", file1);
+		helper.addAttachment("附件-2.jpg", file2);
+
+		try {
+			mailSender.send(mimeMessage);
+			logger.info("小影的測試帶附件信件已發送。");
+		} catch (Exception e) {
+			logger.error("小影發送帶附件信件時發生異常了！", e);
+		}
+	}
+}
+
+
+
+
+
+
+解決 JavaMailSender 發送帶附件的郵件時，當附件名超長會被截斷的問題：		解決方法：System.getProperties().setProperty("mail.mime.splitlongparameters", "false");
+	/**
+	 *  發送包含附件的郵件
+	 */
+	@Override
+	public void sendAttachmentMail(String[] toMails, String subject, String htmlAttachText) {
+		System.getProperties().setProperty("mail.mime.splitlongparameters", "false");
+		MimeMessage mimeMessage = javaMailSender.createMimeMessage();
+		try {
+			// multipart 模式
+			MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimeMessage, true, "utf-8");
+			setMailInfo(toMails, subject, htmlAttachText, mimeMessageHelper);
+			// 設置附件
+			FileSystemResource xlsx = new FileSystemResource(new File("D:/MailImage/軟件項目需求.xlsx"));
+			mimeMessageHelper.addAttachment("軟件項目需求.xlsx", xlsx);
+			// 發送郵件
+			javaMailSender.send(mimeMessage);
+			log.info("^o^= 郵件已發送");
+		} catch (Exception e) {
+			log.info("^o^= 郵件發送失敗{}: ", e);
+		}
+	}
+
+2. 需要在 D 盤下準備兩張圖片cat.jpg java-1.jpg
+
+3. 瀏覽器運行 http://localhost:8080/mail/att
+
+4. 登陸 gmail 信箱，在發送箱裡查看
+
+5. 登陸 yahoo 信箱，在收件箱裡查看
+
+（嵌入靜態資源的信件）
+還有一種是通過嵌入圖片等靜態資源，可以直接看到圖片，而不用從附件中查看具體的圖片。
+1. 測試類：
+import java.io.File;
+
+import javax.mail.MessagingException;
+import javax.mail.internet.MimeMessage;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import org.springframework.beans.factory.annotation.Autowired;
+
+import org.springframework.core.io.FileSystemResource;
+
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
+
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequestMapping("/mail")
+public class StaticResourceMailController {
+	private final Logger logger = LoggerFactory.getLogger(this.getClass());
+
+	@Autowired
+	private JavaMailSender mailSender;
+
+	@GetMapping("/static")
+	public void sendMail() throws MessagingException {
+		MimeMessage mimeMessage = mailSender.createMimeMessage();
+		MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true);
+
+		helper.setFrom("so****@gmail.com");
+		helper.setTo(239****@yahoo.com.tw");
+		helper.setSubject("主題: 嵌入靜態資源");
+		helper.setText("<html><body><img src=\"cid:hello\"></body></html>", true);
+
+		// 注意 addInline() 中資源名稱 hello 必須與 text 正文中 cid:hello 對應起來
+		FileSystemResource file1 = new FileSystemResource(new File("d:\\cat.jpg"));
+		helper.addInline("hello", file1);
+
+		try {
+			mailSender.send(mimeMessage);
+			logger.info("小影的測試嵌入靜態資源的信件已發送。");
+		} catch (Exception e) {
+			logger.error("小影發送嵌入靜態資源的信件時發生異常了！", e);
+		}
+	}
+}
+
+2. 需要在 D 盤下準備兩張圖片cat.jpg
+
+3. 瀏覽器運行 http://localhost:8080/mail/static
+
+4. 登陸 gmail 信箱，在發送箱裡查看
+
+5. 登陸 yahoo 信箱，在收件箱裡查看
+___________________________________________________________________________________________________________________________________________________________________________________________________________________
+Spring 提供對 ThreadPoolExecutor 封裝的線程池 ThreadPoolTaskExecutor，直接使用註解啟用
+
+先創建一個線程池的配置，讓 Spring Boot 加載，用來定義如何創建一個 ThreadPoolTaskExecutor，要使用@Configuration、@EnableAsync。
+@Configuration
+@EnableAsync
+public class ExecutorConfig {
+	private static final Logger logger = LoggerFactory.getLogger(ExecutorConfig.class);
+
+	@Value("${async.executor.thread.core_pool_size}")
+	private int corePoolSize;
+	@Value("${async.executor.thread.max_pool_size}")
+	private int maxPoolSize;
+	@Value("${async.executor.thread.queue_capacity}")
+	private int queueCapacity;
+	@Value("${async.executor.thread.name.prefix}")
+	private String namePrefix;
+
+	@Bean(name = "asyncServiceExecutor")
+	public Executor asyncServiceExecutor() {
+		logger.info("start asyncServiceExecutor");
+		ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+		// 配置核心線程數
+		executor.setCorePoolSize(corePoolSize);
+		// 配置最大線程數
+		executor.setMaxPoolSize(maxPoolSize);
+		// 配置隊列大小
+		executor.setQueueCapacity(queueCapacity);
+		// 配置線程池中的線程的名稱前缀
+		executor.setThreadNamePrefix(namePrefix);
+
+		// rejection-policy: 當 pool 已經達到 max size 的時候，如何處理新任務
+		// CALLER_RUNS: 不在新線程中執行任務，而是由調用者所在的線程來執行
+		executor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
+		// 執行初始化
+		executor.initialize();
+		return executor;
+	}
+}
+@Value 是我配置在 application.properties，可以參考配置，自由定義
+async.executor.thread.core_pool_size = 5
+async.executor.thread.max_pool_size = 5
+async.executor.thread.queue_capacity = 99999
+async.executor.thread.name.prefix = async-service-
+
+創一個 Service
+創一個 ServiceImpl
+
+将Service层的服务异步化(確定?)，在executeAsync()方法上增加注解@Async("asyncServiceExecutor")，asyncServiceExecutor方法是前面ExecutorConfig.java中的方法名，表明executeAsync方法进入的线程池是asyncServiceExecutor方法创建的
+接下来就是在Controller里或者是哪里通过注解@Autowired注入这个Service
+@Autowired
+private AsyncService asyncService;
+
+@GetMapping("/async")
+public void async() {
+	asyncService.executeAsync();
+}
+
+通过以上日志可以发现，[async-service-]是有多个线程的，显然已经在我们配置的线程池中执行了，并且每次请求中，controller的起始和结束日志都是连续打印的，表明每次请求都快速响应了，而耗时的操作都留给线程池中的线程去异步执行；
+
+虽然我们已经用上了线程池，但是还不清楚线程池当时的情况，有多少线程在执行，多少在队列中等待呢？这里我创建了一个ThreadPoolTaskExecutor的子类，在每次提交线程的时候都会将当前线程池的运行状况打印出来
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+import org.springframework.util.concurrent.ListenableFuture;
+
+import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
+import java.util.concurrent.ThreadPoolExecutor;
+
+public class VisiableThreadPoolTaskExecutor extends ThreadPoolTaskExecutor {
+	private static final Logger logger = LoggerFactory.getLogger(VisiableThreadPoolTaskExecutor.class);
+
+	private void showThreadPoolInfo(String prefix) {
+		ThreadPoolExecutor threadPoolExecutor = getThreadPoolExecutor();
+
+		if (null == threadPoolExecutor) {
+			return;
+		}
+
+		logger.info("{}, {}, taskCount [{}], completedTaskCount[{}], activeCount [{}], queueSize [{}]",
+			this.getThreadNamePrefix(),
+			prefix,
+			threadPoolExecutor.getTaskCount(),
+			threadPoolExecutor.getCompletedTaskCount(),
+			threadPoolExecutor.getActiveCount(),
+			threadPoolExecutor.getQueue().size());
+	}
+
+	@Override
+	public void execute(Runnable task) {
+		showThreadPoolInfo("1. do execute");
+		super.execute(task);
+	}
+
+	@Override
+	public void execute(Runnable task, long startTimeout) {
+		showThreadPoolInfo("2. do execute");
+		super.execute(task, startTimeout);
+	}
+
+	@Override
+	public Future<?> submit(Runnable task) {
+		showThreadPoolInfo("1. do submit");
+		return super.submit(task);
+	}
+
+	@Override
+	public <T> Future<T> submit(Callable<T> task) {
+		showThreadPoolInfo("2. do submit");
+		return super.submit(task);
+	}
+
+	@Override
+	public ListenableFuture<?> submitListenable(Runnable task) {
+		showThradPoolInfo("1. do submitListenable");
+		return super.submitListenable(task);
+	}
+
+	@Override
+	public <T> ListenableFuture<T> submitListenable(Callable<T> task) {
+		showThreadPoolInfo("2. do submitListenable");
+		return super.submitListenable(task);
+	}
+}
+如上所示，showThreadPoolInfo方法中将任务总数、已完成数、活跃线程数，队列大小都打印出来了，然后Override了父类的execute、submit等方法，在里面调用showThreadPoolInfo方法，这样每次有任务被提交到线程池的时候，都会将当前线程池的基本情况打印到日志中；
+修改ExecutorConfig.java的asyncServiceExecutor方法，将ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor()改为ThreadPoolTaskExecutor executor = new VisiableThreadPoolTaskExecutor()
+	@Bean(name = "asyncServiceExecutor")
+	public Executor asyncServiceExecutor() {
+		logger.info("start asyncServiceExecutor");
+
+		ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+		// 配置核心線程數
+		executor.setCorePoolSize(corePoolSize);
+		// 配置最大線程數
+		executor.setMaxPoolSize(maxPoolSize);
+		// 配置隊列大小
+		executor.setQueueCapacity(queueCapacity);
+		// 配置線程池中的線程的名稱前缀
+		executor.setThreadNamePrefix(namePrefix);
+
+		// rejection-policy: 當 pool 已經達到 max size 的時候，如何處理新任務
+		// CALLER_RUNS: 不在新線程中執行任務，而是由調用者所在的線程來執行
+		executor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
+		// 執行初始化
+		executor.initialize();
+		return executor;
+	}
+注意这一行日志：
+2018-07-16 22:23:32.496  INFO 14088 --- [nio-8087-exec-7] u.d.e.e.i.VisiableThreadPoolTaskExecutor : async-service-, 2. do submit,taskCount [3], completedTaskCount [3], activeCount [0], queueSize [0]
+这说明提交任务到线程池的时候，调用的是submit(Callable task)这个方法，当前已经提交了3个任务，完成了3个，当前有0个线程在处理任务，还剩0个任务在队列中等待，线程池的基本情况一路了然；
+___________________________________________________________________________________________________________________________________________________________________________________________________________________
+我们常用ThreadPoolExecutor提供的线程池服务，springboot框架提供了@Async注解，帮助我们更方便的将业务逻辑提交到线程池中异步执行，今天我们就来实战体验这个线程池服务；
+___________________________________________________________________________________________________________________________________________________________________________________________________________________
+（WebMvcConfigurerAdapter 常用方法(deprecated)）
+public abstract class WebMvcConfigurerAdapter implements WebMvcConfigurer {
+/** 配置路徑匹配參數 **/
+public void configurePathMatch(PathMatchConfigurer configurer) {}
+
+
+/** 配置路徑匹配參數 **/
+public void configureAsyncSupport(AsyncSupportConfigurer configurer) {}
+
+
+/** 註冊參數轉換和格式化器 **/
+public void addFormatters(FormatterRegistry registry) {}
+
+
+/** cors 跨域訪問 **/
+public void addCorsMappings(CorsRegistry registry) {}
+
+
+/** 添加攔截器 **/
+public void addInterceptors(InterceptorRegistry registry) {}
+
+
+/** 配置視圖解析器 **/
+public void configureViewResolvers(ViewResolverRegistry registry) {}
+
+
+/** 註冊自定義控制器方法參數類型 **/
+public void addArgumentResolvers(List<HandlerMethodArgumentResolver> argumentResolvers) {}
+
+
+/** 註冊自定義控制器方法返回類型 **/
+public void addReturnValueHandlers(List<HandlerMethodReturnValueHandler> returnValueHandlers) {}
+
+
+/** 重載會覆蓋掉 spring mvc 默認註冊的多個HttpMessageConverter **/
+public void configureMessageConverters(List<HttpMessageConverter<?>> converters) {}
+
+
+/** 僅添加一個自定義的 HttpMessageConverters，不覆蓋默認註冊的 HttpMessageConverter **/
+public void extendMessageConverters(List<HttpMessageConverter<?>> converters) {}
+
+
+/** 註冊異常處理 **/
+public void configureHandlerExceptionResolvers(List<HandlerExceptionResolver> exceptionResolvers) {}
+
+
+/** 多個異常處理，可以重寫次方法指定處理順序等 **/
+public void extendHandlerExceptionResolvers(List<HandlerExceptionResolver> exceptionResolvers) {}
+
+
+/** 配置 Web Service 或 REST API 設計中內容裁決的一些選項，即根據客戶端的支持內容格式情況來封裝響應消息體，如xml, json **/
+public void configureContentNegotiation(ContentNegotiationConfigurer configurer) {}
+
+
+/** 視圖跳轉控制器(配置頁面直接訪問，不走接口) **/
+public void addViewControllers(ViewControllerRegistry registry) {}
+
+
+/** 自定義靜態資源映射 **/
+public void addResourceHandlers(ResourceHandlerRegistry registry) {}
+
+
+/** 默認靜態資源處理器，使得 springmvc 在接口層支持異步 **/
+public void configureDefaultServletHandling(DefaultServletHandlerConfigurer configurer) {}
+
+
+1. addInterceptors: 攔截器
+addInterceptor: 需要一個實現 HandlerInterceptor 接口的攔截器實例
+addPathPatterns: 用於設置攔截器的過濾路徑規則
+excludePathPatterns: 用於設置不需要攔截的過濾規則
+@Override
+public void addInterceptors(InterceptorRegistry registry) {
+	registry.addInterceptor(new MyInterceptor()).addPathPatterns("/**").excludePathPatterns("/toLogin", "/login");
+	super.addInterceptors(registry);
+}
+
+2. addCorsMappings: 跨域
+@Override
+public void addCorsMappings(CorsRegistry registry) {
+	registry.addMapping("/**").allowedOrigins("*").allowedMethods("POST", "GET", "PUT", "OPTIONS", "DELETE").maxAge(3600).allowCredentials(true);
+}
+
+3. addViewControllers: 跳轉指定頁面
+/**
+ *  以前要訪問一個頁面需要先創建 Controller 控制類，再寫方法跳轉到頁面
+ *  在這裡配置後就不需要那麼麻煩了，直接訪問 http://localhost:8080/toLogin 就跳轉到 login.html 頁面了
+ */
+@Override
+public void addViewControllers(ViewControllerRegistry registry) {
+	registry.addViewController("/toLogin").setViewName("login");
+	registry.addViewController("/").setViewName("/index");
+	registry.addViewController("/login").setViewName("forward:/index.html");
+	super.addViewControllers(registry);
+}
+
+4. resourceViewResolver: 視圖解析器
+/**
+ *  配置請求視圖映射
+ */
+@Bean
+public InternalResouceViewResolver resourceViewResolver() {
+	InternalResourceViewResolver internalResourceViewResolver = new InternalResourceViewResolver();
+	// 請求視圖文件的前缀地址
+	internalResourceViewResolver.setPrefix("/WEB-INF/jsp/");
+	// 請求視圖文件後缀
+	internalResourceViewResolver.setSuffix(".jsp");
+	return internalResouceViewResolver;
+}
+
+/**
+ *  視圖配置
+ */
+@Override
+public void ConfigureViewResolvers(ViewResolverRegistry registry) {
+	super.configureViewResolvers(registry);
+	registry.viewResolver(resourceViewResolver());
+	// registry.jsp("/WEB-INF/jsp/",".jsp");
+}
+
+5. configureMessageConverters: 信息轉換器
+/**
+ *  消息內容轉換配置
+ *  配置 fastJson 返回 json 轉換
+ */
+@Override
+public void configureMessageConverters(List<HttpMessageConverter<?>> converters) {
+	// 調用父類的配置
+	super.configureMessageConverters(converters);
+	// 創建 fastJson 消息轉換器
+	FastJsonHttpMessageConverter fastConverter = new FastJsonHttpMessageConverter();
+	// 創建配置類
+	FastJsonConfig fastJsonConfig = new FastJsonConfig();
+	// 修改配置返回內容的過濾
+	fastJsonConfig.setSerializerFeatures(
+		SerializerFeature.DisableCircularReferenceDetect,
+		SerializerFeature.WriteMapNullValue,
+		SerializerFeature.WriteNullStringAsEmpty
+	);
+	fastConverter.setFastJsonConfig(fastJsonConfig):
+	// 將 fastJson 添加到視圖消息轉換器列表內
+	converters.add(fastConverter);
+}
+
+6. addResourceHandlers: 靜態資源
+@Override
+public void addResourceHandlers(ResourceHandlerRegistry registry) {
+	// 自定義項目內目錄
+	// registry.addResourceHandler("/my/**").addResourceLocations("classpath:/my/");
+	// 指向外部目錄
+	registry.addResourceHandler("/my/**").addResourceLocations("file:E:/my/");
+	super.addResourceHandlers(registry);
+}
+
+使用 WebMvcConfigurerAdapter		// 對 WebMvcConfigurer 的空實現
+
+1. 過時方式: 繼承 WebMvcConfigurerAdapter	// spring boot 2.0, spring 5.0 @Deprecated
+
+2. 代替方案
+直接實現 WebMvcConfigurer
+@Configuration
+public class WebMvcConfig implements WebMvcConfigurer {
+	// TODO
+}
+直接繼承 WebMvcConfigurationSupport
+@Configuration
+public class WebMvcConfig extends WebMvcConfigurationSupport {
+	// TODO
+}
+
+WebMvcConfigurationSupport、WebMvcConfigurerAdapter、接口WebMvcConfigurer處於同一個目錄下
+WebMvcConfigurationSupport包含WebMvcConfigurer裡面的方法，且WebMvcConfigurationSupport的實現的方法更全面
+但是繼承WebMvcConfigurationSupport會發現Spring Boot的WebMvc自動配置失效(WebMvcAutoConfiguration)，導致視圖解析器無法解析並返回到對應的視圖。
+
+WebMvcConfigurer 與 WebMvcConfigurationSupport：
+看 WebMvcAutoConfiguration 的定義：
+@ConditionalOnMissingBean(WebMvcConfigurationSupport.class)	// 只有當 WebMvcConfigurationSupport.class 不存在的時候才會生效WebMvcAutoConfiguration，WebMvcAutoConfiguration 不僅定義了
+							// classpath:/META-INFO/resources/、classpath:/resources/、classpath:/static/、classpath:/public/等路徑的映射，還定義了配置文件 spring.mvc 開頭的配置信息等。
+當 WebMvcAutoConfiguration 不生效時會導致以下幾個問題：
+1. WebMvcProperties、ResourceProperties 失效			// 會導致視圖解析器無法解析並返回到對應的視圖
+因為這兩個配置類中的屬性都在 WebMvcAutoConfiguration 中使用
+解決方案：
+1.1. 在 Spring Boot 1.X 的版本中，我們可以繼承自 WebMvcConfigurerAdapter，覆蓋想要實現的方法即可。
+1.2. 但是在 Spring Boot 2.X 的定義中，WebMvcConfigurerAdapter 已經被定義為 @Deprecated，看個源碼：
+/**
+ *  An implementation of {@link WebMvcConfigurer} with empty methods allowing subclasses to override only the methods they're interested in.
+ *  @deprecated as of 5.0 {@link WebMvcConfigurer} has default methods (made possible by a Java 8 baseline)
+ *  and can be implemented directly without the need for this adapter
+ */
+@Deprecated
+public abstract class WebMvcConfigurerAdapter implements WebMvcConfigurer {
+
+2. 類路徑上的 HttpMessageConverter 失效
+如: StringHttpMessageConverterConfiguration、MappingJackson2HttpMessageConverter，因為 HttpMessageConverters 中持有著所有 HttpMessageConverter 的實例，在 WebMvcAutoConfigurationAdapter 中
+會注入 HttpMessageConverters，因此當 WebMvcAutoConfigurationAdapter 不加載時，則會失效，間接造成 spring.http.encoding.charset 與 spring.jackson.data-format 假象的失效。
+如: StringHttpMessageConverter 會使用 spring.http.encoding.charset 配置，默認編碼為: ISO-8859-1
+@Bean
+	@ConditionalOnMissingBean
+	public StringHttpMessageConverter stringHttpMessageConverter() {
+		StringHttpMessageConverter converter = new StringHttpMessageConverter(
+			this.encodingProperties.getCharset());
+		converter.setWriteAcceptCharset(false);
+		return converter;
+	}
+解決方案：
+因為已知的配置類都已通過 @Bean 註冊在容器中，那麼我們可以在使用 WebMvcConfigurationSupport 時，通過 @Autowired 注入到配置類中，然後替換掉 WebMvcConfigurationSupport 默認的配置即可：
+@Configuration
+public class WebConfiguration extends WebMvcConfigurationSupport {
+	@Autowired
+	private StringHttpMessageConverter stringHttpMessageConverter;
+	@Autowired
+	private MappingJackson2HttpMessageConverter httpMessageConverter;
+	/**
+	 *  添加轉換器
+	 */
+	@Override
+	public void extendMessageConverters(List<HttpMessageConverter<?>> converters) {
+		for (int i = 0; i<converters.size(); i++) {
+			if (converters.get(i) instanceof StringHttpMessageConverter) {
+				converters.set(i, stringHttpMessageConverter);
+			}
+			if (converters.get(i) instanceof MappingJackson2HttpMessageConverter) {
+				converters.set(i, httpMessageConverter);
+			}
+		}
+	}
+}
+也可以根據需求來重新實現。
+
+補充：
+WebMvcConfigurer 類代碼分析:
+從 EnableWebMvcConfiguration 配置類開始，當它注入時父類會注入 Spring 容器中所有的 WebMvcConfigurer 類
+@Configuration
+public class DelegatingWebMvcConfiguration extends WebMvcConfigurationSupport {
+	private final WebMvcConfigurerComposite configurers = new WebMvcConfigurerComposite();
+
+	@Autowired(required = false)
+	public void setConfigurers(List<WebMvcConfigurer> configurers) {
+		if (!CollectionUtils.isEmpty(configurers)) {
+			this.configurers.addWebMvcConfigurers(configurers);
+		}
+	}
+接著注入 RequestMappingHandlerAdpater Bean 它會調用父類的 requestMappingHandlerAdapter 方法
+@Bean
+@Override
+public RequestMappingHandlerAdapter requestMappingHandlerAdapter() {
+	RequestMappingHandlerAdapter adapter = super.requestMappingHandlerAdapter();
+	adapter.setIgnoreDefaultModelOnRedirect(this.mvcProperties == null ? true : this.mvcProperties.isIgnoreDefaultModelOnRedirect());
+	return adapter;
+}
+@Bean
+public RequestMappingHandlerAdapter requestMappingHandlerAdapter() {
+	adapter.setContentNegotiationManager(mvcContentNegotiationManager());
+	adapter.setMessageConverters(getMessageConverters());
+	adapter.setWebBindingInitializere(getConfigurableWebBindingInitializer());
+	adapter.setCustomArgumentResolvers(getArgumentResolvers());
+	adapter.setCustomReturnValueHandlers(getReturnValueHandlers());
+
+	if (jackson2Present) {
+		adapter.setRequestBodyAdvice(
+			Collections.<~>singletonList(new JsonViewRequestBodyAdvice()));
+		adapter.setResponseBodyAdvice(
+			Collections.<~>singletonList(new JsonViewResponseBodyAdvice()));
+	}
+
+	AsyncSupportConfigurer configurer = new AsyncSupportConfigurer();
+	configureAsyncSupport(configurer);
+	if (configurer.getTaskExecutor() != null) {
+		adapter.setTaskExecutor(configurer.getTaskExecutor());
+	}
+	if (configurer.getTimeout() != null) {
+		adapter.setAsyncRequestTimeout(configurer.getTimeout());
+	}
+	adapter.setCallableInterceptors(configurer.getCallableInterceptors());
+	adapter.setDeferredResultInterceptors(configurer.getDeferredResultInterceptors());
+
+	return adapter;
+}
+這個時候獲取配置，例如自定義了返回結果 Handler，WebMvcConfigurerComposite 會遍歷調用 WebMvcConfigurer 實現類的 addReturnValueHandlers 方法，會把自定義配置加載到默認的配置中
+@Override
+public void addReturnValueHandlers(List<HandlerMethodReturnValueHandler> returnValueHandlers) {
+	for (WebMvcConfigurer delegate : this.delegates) {
+		delegate.addReturnValueHandlers(returnValueHandlers);
+	}
+}
+@Override
+public void addReturnValueHandlers(List<HandlerMethodReturnValueHandler> returnValueHandlers) {
+	returnValueHandlers.add(new DataPermissionMethodArgumentResolver());
+}
+___________________________________________________________________________________________________________________________________________________________________________________________________________________
+org.springframework.web.servlet
+Handler
+HandlerAdapter
+HandleExceptionResolver
+HandleFilterFunction
+HandleFunction
+HandleInterceptor
+HandleMapping
+HandleMethodMappingNamingStrategy
+
+___________________________________________________________________________________________________________________________________________________________________________________________________________________
+（@AliasFor）
+___________________________________________________________________________________________________________________________________________________________________________________________________________________
+打包時使用了 FatJar 技術將所有的依賴 jar 包一起放進最終的 jar 包中的 BOOT-INF/lib目錄中，當前項目的 class 統一放到 BOOT-INF/classes 目錄中。
+不同於 maven shade 插件，將所有的依賴 jar 包中的 class 文件解包出來後再密密麻麻地塞進統一的 jar 包中。
+下面我們將 springboot 打包的 jar 包解壓出來看目錄結構：
+
+├── BOOT-INF
+│   ├── classes
+│   │   └── hello
+│   └── lib
+│       ├── classmate-1.3.4.jar
+│       ├── hibernate-validator-6.0.12.Final.jar
+│       ├── jackson-annotations-2.9.0.jar
+│       ├── jackson-core-2.9.6.jar
+│       ├── jackson-databind-2.9.6.jar
+│       ├── jackson-datatype-jdk8-2.9.6.jar
+│       ├── jackson-datatype-jsr310-2.9.6.jar
+│       ├── jackson-module-parameter-names-2.9.6.jar
+│       ├── javax.annotation-api-1.3.2.jar
+│       ├── jboss-logging-3.3.2.Final.jar
+│       ├── jul-to-slf4j-1.7.25.jar
+│       ├── log4j-api-2.10.0.jar
+│       ├── log4j-to-slf4j-2.10.0.jar
+│       ├── logback-classic-1.2.3.jar
+│       ├── logback-core-1.2.3.jar
+│       ├── slf4j-api-1.7.25.jar
+│       ├── snakeyaml-1.19.jar
+│       ├── spring-aop-5.0.9.RELEASE.jar
+│       ├── spring-beans-5.0.9.RELEASE.jar
+│       ├── spring-boot-2.0.5.RELEASE.jar
+│       ├── spring-boot-autoconfigure-2.0.5.RELEASE.jar
+│       ├── spring-boot-starter-2.0.5.RELEASE.jar
+│       ├── spring-boot-starter-json-2.0.5.RELEASE.jar
+│       ├── spring-boot-starter-logging-2.0.5.RELEASE.jar
+│       ├── spring-boot-starter-tomcat-2.0.5.RELEASE.jar
+│       ├── spring-boot-starter-web-2.0.5.RELEASE.jar
+│       ├── spring-context-5.0.9.RELEASE.jar
+│       ├── spring-core-5.0.9.RELEASE.jar
+│       ├── spring-expression-5.0.9.RELEASE.jar
+│       ├── spring-jcl-5.0.9.RELEASE.jar
+│       ├── spring-web-5.0.9.RELEASE.jar
+│       ├── spring-webmvc-5.0.9.RELEASE.jar
+│       ├── tomcat-embed-core-8.5.34.jar
+│       ├── tomcat-embed-el-8.5.34.jar
+│       ├── tomcat-embed-websocket-8.5.34.jar
+│       └── validation-api-2.0.1.Final.jar
+├── META-INF
+│   ├── MANIFEST.MF
+│   └── maven
+│       └── org.springframework
+└── org
+    └── springframework
+        └── boot
+使用 FatJar 技術運行需要對 jar 包進行改造，還需要自定義自己的 ClassLoader 來加載 jar 包裡面 lib 目錄中嵌套的 jar 包中的類。
+可以對比兩者的文件：
+MANIFEST：
+// Generated by Maven Shade Plugin
+Manifest-Version: 1.0
+Implementation-Title: gs-spring-boot
+Implementation-Version: 0.1.0
+Built-By: qianwp
+Implementation-Vendor-Id: org.springframework
+Created-By: Apache Maven 3.5.4
+Build-Jdk: 1.8.0_191
+Implementation-URL: https://projects.spring.io/spring-boot/#/spring-bo
+ ot-starter-parent/gs-spring-boot
+Main-Class: hello.Application
+
+// Generated by SpringBootLoader Plugin
+Manifest-Version: 1.0
+Implementation-Title: gs-spring-boot
+Implementation-Version: 0.1.0
+Built-By: qianwp
+Implementation-Vendor-Id: org.springframework
+Spring-Boot-Version: 2.0.5.RELEASE
+Main-Class: org.springframework.boot.loader.JarLauncher
+Start-Class: hello.Application
+Spring-Boot-Classes: BOOT-INF/classes/
+Spring-Boot-Lib: BOOT-INF/lib/
+Created-By: Apache Maven 3.5.4
+Build-Jdk: 1.8.0_191
+Implementation-URL: https://projects.spring.io/spring-boot/#/spring-bo
+ ot-starter-parent/gs-spring-boot
+
+SpringBoot 將 Main-Class 換成了 JarLauncher。還增加了 Start-Class 參數，此參數對應的類才是真正的業務 main 方法入口。
+
+public class JarLauncher{
+    ...
+  static void main(String[] args) {
+    new JarLauncher().launch(args);
+  }
+
+  protected void launch(String[] args) {
+    try {
+      JarFile.registerUrlProtocolHandler();
+      ClassLoader cl = createClassLoader(getClassPathArchives());
+      launch(args, getMainClass(), cl);
+    }
+    catch (Exception ex) {
+        ex.printStackTrace();
+        System.exit(1);
+    }
+  }
+
+  protected void launch(String[] args, String mcls, ClassLoader cl) {
+        Runnable runner = createMainMethodRunner(mcls, args, cl);
+        Thread runnerThread = new Thread(runner);
+        runnerThread.setContextClassLoader(classLoader);
+        runnerThread.setName(Thread.currentThread().getName());
+        runnerThread.start();
+  }
+
+}
+
+class MainMethodRunner {
+  @Override
+  public void run() {
+    try {
+      Thread th = Thread.currentThread();
+      ClassLoader cl = th.getContextClassLoader();
+      Class<?> mc = cl.loadClass(this.mainClassName);
+      Method mm = mc.getDeclaredMethod("main", String[].class);
+      if (mm == null) {
+        throw new IllegalStateException(this.mainClassName
+                        + " does not have a main method");
+      }
+      mm.invoke(null, new Object[] { this.args });
+    } catch (Exception ex) {
+      ex.printStackTrace();
+      System.exit(1);
+    }
+  }
+}
+建立了一個特殊的 ClassLoader，由它來另啟一個單獨的線程來加載 MainClass 並運行。
+
+JVM 是如何知道去哪個 jar 包裡加載呢？
+class LaunchedURLClassLoader extends URLClassLoader {
+  ...
+  private Class<?> doLoadClass(String name) {
+    if (this.rootClassLoader != null) {
+      return this.rootClassLoader.loadClass(name);
+    }
+
+    findPackage(name);
+    Class<?> cls = findClass(name);
+    return cls;
+  }
+
+}
+這的 rootClassLoader 就是雙親委派模型(由下而上詢問，已存在則不生成類。最後由上而下詢問是否可以加載)裡的 ExtensionClassLoader，JVM 內置的類會優先使用它來加載。如不是內置的就去查找對應的 Package。
+private void findPackage(final String name) {
+    int lastDot = name.lastIndexOf('.');
+    if (lastDot != -1) {
+        String packageName = name.substring(0, lastDot);
+        if (getPackage(packageName) == null) {
+            try {
+                definePackage(name, packageName);
+            } catch (Exception ex) {
+                // Swallow and continue
+            }
+        }
+    }
+}
+
+private final HashMap<String, Package> packages = new HashMap<>();
+
+protected Package getPackage(String name) {
+    Package pkg;
+    synchronized (packages) {
+        pkg = packages.get(name);
+    }
+    if (pkg == null) {
+        if (parent != null) {
+            pkg = parent.getPackage(name);
+        } else {
+            pkg = Package.getSystemPackage(name);
+        }
+        if (pkg != null) {
+            synchronized (packages) {
+                Package pkg2 = packages.get(name);
+                if (pkg2 == null) {
+                    packages.put(name, pkg);
+                } else {
+                    pkg = pkg2;
+                }
+            }
+        }
+    }
+    return pkg;
+}
+
+private void definePackage(String name, String packageName) {
+  String path = name.replace('.', '/').concat(".class");
+  for (URL url : getURLs()) {
+    try {
+      if (url.getContent() instanceof JarFile) {
+        JarFile jf= (JarFile) url.getContent();
+        if (jf.getJarEntryData(path) != null && jf.getManifest() != null) {
+          definePackage(packageName, jf.getManifest(), url);
+          return null;
+        }
+      }
+    } catch (IOException ex) {
+        // Ignore
+    }
+  }
+  return null;
+}
+ClassLoader 會在本地緩存 包名和jar包路徑 的映射關係(序列化之拷貝？)，如果緩存找不到，就必須去 jar 包中搜尋。不過同一個包名只會搜尋一次，下一次就直接從緩存得到對應的內嵌 jar 包路徑。
+
+深層 jar 包的內嵌 class 的 URL 路徑使用 ! 分割
+jar:file:/workspace/springboot-demo/target/application.jar!/BOOT-INF/lib/snakeyaml-1.19.jar!/org/yaml/snakeyaml/Yaml.class
+
+不過這定製的 ClassLoader 只會用於打包運行時，IDE 開發環境中 main 方法還是直接使用 系統類加載器 加載運行的。
+
+
+Java 註解的形式和功能是分離的，不同於 Python 的裝飾器是功能性的。
+
+@SpringBootApplication
+public class Application {
+    public static void main(String[] args) {
+        SpringApplication.run(Application.class, args);
+    }
+}
+
+@ComponentScan
+public @interface SpringBootApplication {
+...
+}
+
+public @interface ComponentScan {
+    String[] basePackages() default {};
+}
+
+SpringBoot 遇到 @ComponentScan 掃描對應包路徑下面的所有 Class，根據這些 Class 上標註的其他註解繼續進行後續處理。例如掃到 @RestController，而 @RestController 又標註了 @Controller 。
+SpringBoot 對 @Controller 進行了特殊處裡，會將此類當成 URL 處理器註冊到 Servlet 的請求處理器中，在創建 TomcatServer 時，會將請求處理器傳遞進去。

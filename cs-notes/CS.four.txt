@@ -1,0 +1,1960 @@
+Data Structure & Algorithm、Design Pattern、Network、Operation System
+___________________________________________________________________________________________________________________________________________________________________________________________________________________
+（Data Structure & Algorithm）
+List(Stack FILO)	ArrayList		使用了 Array 實作 List 介面。O: 使用索引隨機存取、排序	X: 調整索引順序	陣列長度固定問題
+		LinkedList		使用了 Link 實作 List 介面。O: 每次 add() 物件，才建立新的 Node 保存物件，不會事先耗費記憶體。有利於調整索引順序	X: 指定索引隨機存取物件時(一個一個查找)
+		(隨時會有客戶端登入登出的客戶端 List)
+
+Set	HashSet		內容不重複的 Set
+
+
+Queue(Queue FIFO)		定義了自己的 offer()、poll()、peek() 等方法，最主要差別之一在於，add()、remove()、element() 等操作失敗時會拋出例外，而 offer()、poll()、peek() 等操作失敗會傳回特定值。
+如果物件有實作 Queue，並打算以佇列結構表示，且佇列長度受限，通常建議使用 offer()、poll()、peek() 等方法。
+offer() 後端加入物件，成功 true、失敗 false。
+poll() 取出佇列前端物件，若佇列為空傳回 null。
+peek() 取得(但不取出)佇列前端物件，若佇列為空傳回 null。
+
+LinkedList 不僅實作 List 介面也實作 Queue 的行為，因此可將 LinkedList 當作佇列來使用。
+
+
+
+
+「Stack 結構表示法」、「Queue 結構表示法」都有「陣列」和「鏈結串列」
+
+
+
+
+
+
+
+數據結構的三要素：
+
+集合、線性、樹狀、網狀、散列
+定義				邏輯結構			集合結構
+							線性結構		一對一		stack、queue
+							樹型結構		一對多		trees
+							圖狀結構		多對多		graphs
+
+				數據的運算		結合邏輯結構、實際需求來定義基本運算
+
+							順序存儲
+如何用計算機實現這種存儲結構	物理結構(存儲結構)	鏈式存儲		｝
+							索引存儲		｝非順序存儲
+							散列存儲		｝
+Stack(順序)、Queue(順序)、Trees(nodes組成)、Graphs、Hash
+tuple、array、list、set、dic、struct...
+順序: Array(需要足夠大的連續儲存區域)、更適合查詢量大的程式設計
+鏈式: Linked List(data、pointer)、更適合需要頻繁插入和刪除的程式
+
+串(String): 由character組合，存儲結構也有順序、鏈式
+順序(C語言 0假 非0真 )：
+定長存儲結構
+typedef struct
+{
+	char str[maxSize + 1];	// 多一個 \0 作為結束標記。
+	int length;
+} Str;
+
+變長存儲結構
+typedef struct
+{
+	char *ch;
+	int length;
+} Str;
+
+Str S;
+S.length = L;
+S.ch = (char*)malloc((L+1)*sizeof(char));
+...
+free(S.ch);
+
+HashMap的儲存結構採用順序存儲結構及鏈式存儲結構。
+順序存儲儲存每個連結串列的頭節點。每個 Key 根據計算 bucketindex 來確定陣列下標。bucketindex = hash & (length-1)。當 bucketindex 相同，插入連結串列頭部。
+HashMap中的資料結構是陣列+單鏈表的組合，我們希望元素存放的更均勻，最理想的效果，Entry陣列中每個位置都只有一個元素，查詢的時候效率最高，不需要遍歷單鏈表，也不需要通過equals去比較K，而且空間利用率最大。
+所以可以採用%的方式，既雜湊值%容量=bucketIndex。而原始碼的實現採用 h & (length-1)，具有更高的效率。這裡注意，為什麼 HashMap 的預設容量要求2N次方。當容量一定是2^n時，h & (length - 1) == h % length
+
+
+遞迴 (Recursion)
+int a[] = {15, 37, 26, 9};
+
+int sum(int[] a, int n) {
+	int result = 0;
+
+	if(n < 1)
+		throw new IllegalArgumentException("n should be >= 1");
+	else {
+		for (int i = 0; i<n; i++)
+			result = result + a[i];
+	}
+	return result;
+}
+若換成 遞迴 的思維方式:
+將具有 相同性質 的問題，拆成 多個 子問題。
+int sum(int[] a, int n) {
+	if (n<1)
+		throw new IllegalArgumentException("n should be >= 1");
+	else if (n == 1)
+		return a[0];
+	else
+		return sum(a, n-1) + a[n-1];
+}
+種類 —— 依 呼叫方式
+如開頭定義所述， 遞迴 有兩種呼叫方式:
+
+1. 直接遞迴 (direct recursion)
+2. 間接遞迴 (indirect recursion)
+
+直接遞迴 (direct recursion)
+指的是 函式 呼叫自己本身。
+
+間接遞迴 (indirect recursion)
+指的是 函式引用 其他函式，其再 呼叫原函式。
+由於形成了 calling cycle，使用上需格外小心。
+
+種類 —— 依 呼叫次數
+分為
+
+1. 線性遞迴 (linear recursion)
+2. 二元遞迴 (binary recursion)
+3. 多元遞迴 (multiple recursion)
+
+線性遞迴 (linear recursion)
+當函示，只呼叫一次遞迴，稱之，
+最簡單的遞迴形式。
+
+二元遞迴 (binary recursion)
+當函式，呼叫兩次遞迴，稱之。
+
+多元遞迴 (multiple recursion)
+就是呼叫 兩次以上囉！
+
+種類 —— 尾端遞迴 (tail recursion)
+這是實務上一種重要的遞迴種類，指的是具備:
+
+直接遞迴 (direct recursion)
+線性遞迴 (linear recursion)
+且該 函式執行的最後一件事 為遞迴呼叫，且 只能是遞迴呼叫
+
+譬如 上方的 陣列加總範例 ，
+即使最後的敘述包含了一個遞迴呼叫，它還必須與 a[n-1] 加總，
+也就是說，他最後執行的是 加法，而非遞迴。
+他是 直接線性式遞迴，但是 並非 尾端遞迴！
+
+
+那麼，尾端遞迴 跟 其他遞迴 到底有什麼差異呢？
+ 
+函式呼叫
+首先得知道函式呼叫的簡易流程:
+執行 Function A( ) 時，若需呼叫 Function B( )，
+這時得
+
+1. 程式會建立一個 被稱為 活動紀錄 (activation record) 或 堆疊框 (stack frame) 的結構，
+保存 Function A ( ) 目前的執行狀態，並將其資訊 push 到 系統堆疊 (System Stack) 頂端，
+包含 參數、區域變數、返回位置 (return address)。
+2. 控制權轉移，且做參數傳遞
+3. 執行 Function B( ) 。
+4. Function B( ) 執行完成，做判斷:
+if (Stack != empty) {
+	pop stack;	// 取出參數、區域變數、返回位置
+		依 返回位置 返回 並執行
+}
+因此，遞迴的每次呼叫: 需要額外的記憶體 (系統堆疊)，來記錄每個遞迴的呼叫狀態！
+
+若去網路搜尋 尾端遞迴 (tail recursion)，你就知道它為何重要了。
+
+大部分都會告訴你:
+
+尾端遞迴，不增加 新的系統堆疊，
+而是用每次執行的結果，直接更新函示內容，這樣的做法稱為:
+尾端呼叫消除 (Tail Call Elimination, TCE) 或 尾端呼叫最佳化 (Tail Call Optimization, TCO)。
+
+這不完全是真的！
+許多語言編譯器 並 不(想)支援 尾端呼叫最佳化 ! (ex: Java、Python)
+
+遞迴/迭代轉換：
+儘管許多語言，並不支援 尾端呼叫優化，
+尾端遞迴 還是很重要的！
+ 
+這裡用個著名的例子「小於等於 n 的自然數總和」:
+使用 迭代
+使用 遞迴 (線性 非尾端)
+int sum(int n) {
+	in (n < 0)
+		throw new IllegalArgumentException("n should be >= 0");
+	else if (n==0)
+		return 0;
+	else
+		return sum(n-1)+n;
+}
+傳入 sum(100) 想計算 1 + 2 + 3 + … + 99 + 100 的值，sum(99) + 100；sum(99) 再被拆成 sum(98) + 99 …
+使用 遞迴 (尾端)
+public int sum(int n, int total) {
+	if (n==0)
+		return total;
+	else
+		return sum(n-1, total+n);
+}
+sum(10, 0) 問題會依序被分解為:
+sum(9, 10);
+sum(8, 19);
+sum(7, 27);
+...
+最後 return 55;
+
+n – 1，不就是每次 迴圈 的 變化量嗎?
+total + n 不就是 區域變數 的 累加 ?
+
+尾端遞迴其實只是把:
+迭代的 迴圈變化 與 區域變數，放在方法的參數中傳遞 罷了。
+要改寫成 非遞迴 就是 piece of a cake 了 🍰。
+
+一個函式，理論上必定存在兩種形式解法: 遞迴 與 非遞迴。
+而 尾端遞迴 則能 無痛轉換 為非遞迴！
+
+			Recursion		Non-recursion
+程式碼			較精簡		冗長
+理解性			易理解		不易
+表達能力			佳		較差
+執行時間			通常效率較差	通常效率較高
+額外Stack空間		需支援		無
+變數			較少或無		較多
+函式記憶體空間		較省		較多
+(非 系統堆疊記憶體)
+實務使用			較少		較多
+			(較常見於特定問題)
+
+若能保證函式有 較佳的收斂程度 且 效能良好，還是能使用
+另外，以上的情況僅適用於相同邏輯之演算法，
+若 遞迴用得好效能可不輸給迭代 ！接下來就來看個遞迴優化的範例吧。
+
+費式數列 (Fibonacci Number)
+Def:
+F_0=0
+F_1=1
+F_n=F_n-1+F_n-2(n>=2)
+
+使用 遞迴 (二元 非尾端)
+時間複雜度 — O(2^n)：
+int  fib(int n) {
+	if (n==0)
+		return 0;
+	else if (n==1)
+		return 1;
+	else
+		return fib(n-1) + fib(n-2);
+}
+
+由於 費氏數列 本身即由遞迴定義，寫成遞迴相當容易！
+然而，此種二元遞迴產生了許多冗余計算，耗時又耗 Stack 空間：
+
+使用 迭代
+使用 非遞迴，時間複雜度 — O(n)：
+int fib(int n) {
+	if(n==0)
+		return 0;
+	else if (n ==1 )
+		return 1;
+	else {
+		int a=0, b=1, result=0;
+		for(int i =2; i<=n;i++) {
+			result = a + b;
+			a = b;
+			b = result;
+		}
+		return result;
+	}
+}
+相比基本遞迴函式效率提升許多！
+然而，這 不代表遞迴比迭代差，大多時候可能是遞迴 用得不夠好！
+
+使用 遞迴 (尾端)
+非遞迴 改寫為 尾端遞迴，時間複雜度 — O(n)！
+public int fib(int n ) {
+	return fib(n, 0, 1);
+}
+private int fib(int n, int a, int b) {
+	if (n==0) return a;
+	return fib(n-1, b, a + b);
+}
+把迭代的 迴圈變化 與 區域變數，放在參數中傳遞罷了。
+
+
+使用 迭代 (Fast Doubling)
+透過 Q-Matrix，還能進一步將費氏數列轉移成矩陣乘法問題：
+
+
+乘入後便可以導出兩個方便的公式：
+F_(2n) = F_(n) [2F_(n + 1) − F_(n)]
+F_(2n + 1) = F_(n + 1)^2 + F_(n)^2
+
+藉由快速冪的技巧即可得：
+時間複雜度 — O(log n)！
+int fib(int n ) {
+	int a = 0;
+	int b = 1;
+	for (int bit = Integer.highestOneBit(n); bit != 0; bit >>>= 1) {
+		int c = a * ((b << 1) - (a));
+		int d = (a * a) + (b * b);
+
+		if ((n & bit) != 0) {
+			int e = c + d;
+			a = d;
+			b = e;
+		} else {
+			a = c;
+			b = d;
+		}
+	}
+	return a;
+}
+
+使用 遞迴 (尾端 + Fast Doubling)
+時間複雜度 O(log n)！
+public int fib(int n) {
+	return fib(n, 0, 1, Integer.highestOneBit(n));
+}
+
+private int fib(int n, int a, int b, int bit) {
+	if (bit == 0) return a;
+	int c =a * ((b << 1) - (a));
+	int d= (a * b) + (b * b);
+
+	if ((n & bit) != 0) {
+		int e = c + d;
+		a = d;
+		b = e;
+	} else {
+		a = c;
+		b = d;
+	}
+	bit >>>= 1;
+	return fib(n, a, b, bit);
+}
+
+
+
+河內塔 (Hanoi Tower)
+Def:
+有 塔A、塔B、塔C，塔A 放著 n 個盤子，
+欲將 n 個 盤子 (disks)，由 塔 A 搬移到 塔C。
+
+且必須遵守:
+一次只能搬移一個 disk
+搬移過程中，小盤不可在大盤之下
+
+解法邏輯 (尋找中繼塔):
+先將 塔A 上面的 n-1 個 盤子，移動到塔B (中繼為 c)
+將最大的盤子，搬至目的地 塔C
+將 塔B 剩下的盤子，搬移至目的地 塔C (中繼為 a)
+
+範例：
+void hanoi(int n , String a, String b, String c) {
+	if (n==1) {
+		System.out.println("將盤子從" + a + "搬到" + c);
+	} else {
+		hanoi(n-1, a, c, b);
+		hanoi(1, a, b, c);
+		hanoi(n-1, b, a, c);
+	}
+}
+接著，執行 hanoi(3, a, b, c) 將 3 個盤子，從 A 搬到 B！
+當要搬動 n 個盤子時，總共要搬動 2n – 1 次，時間複雜度為 O(2n)
+
+簡單說就是，遇到問題就不斷地 拆解 成相同 子問題，
+直到拆到不能拆為止，並定義 最簡情況 的做法。
+建立終止遞迴呼叫的 臨界/終止條件
+
+例如，上述的河內塔問題，終止條件便是只有一個盤子時…，
+二元樹的走訪、翻轉，則是 當樹為空。
+
+
+ArrayList實作
+import java.util.Arrays;
+
+public class ArrayList {
+	private Object[] elems;
+	private int next;
+
+	public ArrayList(int capacity) {
+		elems= new Object[capacity];
+	}
+	public ArrayList() {
+		this(16);
+	}
+	public void add(Object o) {
+		if next==elems.length) {
+			elems=Arrays.copyof(elems,elems.length * 2);
+		}
+		elems [next ++] = 0;
+	}
+	public Object get (int index) {
+		return elems [index];
+	}
+	public int size() {
+		return next;
+	}
+}
+
+ArrayList<Integer>14個基本使用
+
+java.util.*
+
+添加
+ArrayList<Integer> list2 = new ArrayList<Integer>();
+list2.add(12);
+list2.add(23);
+list2.add(9);
+
+最大最小值
+int maxa = Collections.max(list2), mina = Collections.min(list2);
+
+輸出
+System.out.println("whole list2 is "+list2;
+
+whole list2 is [12, 23, 9]
+
+複製
+ArrayList<Integer> list21 = new ArrayList<Integer>();
+lsit21.addAll(list2);
+
+從小到大排序
+Collections.sort(list2);
+System.out.println("list2 sort is "+list2);
+
+list2 sort is [9, 12, 23]
+
+從大到小排序
+Collections.sort(list2, Collections.reverseOrder());
+System.out.println("list2 descend sort is "+list2);
+
+list2 descend sort is [23, 12, 9]
+
+倒序
+Collections.reverse(list21);
+System.out.println("reverse list21 is "+list21);
+
+reverse list21 is [9, 23, 12]
+
+求某個元素首次出現的位置
+int idx = list2.indexOf(23);
+System.out.println("list2 is "+list2+" and 23 locates :"+idx);
+
+list2 is [23, 12, 9] and 23 locates :0
+
+求和
+int sum = 0;
+for (int i = 0; i<list2.size(); i++) {
+	sum += list2.get(i);
+}
+System.out.println("list2 sum is "+sum);
+
+//利用stream求和
+List<Integer> ls = new ArrayList<Integer>();
+ls.add(43);
+ls.add(27);
+int sum2 = ls.stream().mapToInt(a -> a).sum();
+System.out.println("sum is "+sum2);
+
+list2 sum is 44
+sum is 70
+
+在指定位置插入元素
+list2.add(1,88);
+
+移除某個位置的元素
+list2.remove(1);
+list2.remove(list2.size()-1);	//刪除末尾
+
+移除某個值	// [23, 12]
+list2.add(0,23);
+for (int i = 0; i<list2.size(); i++) {
+	if(list2.get(i) == 23 {
+		list2.remove(i);
+		i--;
+	}
+}
+System.out.println("remove 23 and list2 is "+list2);
+
+remove 23 and list2 is [12]
+
+切片
+ArrayList<Integer> list3 = new ArrayList<Integer>();
+list3.add(45);
+list3.add(52);
+list3.add(66);
+System.out.println("list3 is "+list3);
+System.out.println("list3[0:2} is "+list3.subList(0,2));
+
+list3 is [45, 52, 66]
+list3[0:2] is [45, 52]
+
+轉化為整形數組
+import java.util.*;
+class Solution {
+	public int[] twoSum(int[] nums, int target) {
+		ArrayList<Integer> re = new ArrayList<Integer>();
+		for (int i = 0; i<nums.length; i++) {
+			for(int j =i+1; j<nums.length;j++) {
+				if(nums[i]+nums[j]==target) {
+					re.add(i);
+					re.add(j);
+				}
+			}
+		}
+		int[] res = re.stream().mapToInt(Integer::valueOf).toArray();	// ArrayList -> Array
+		return res;
+	}
+
+	// 調用
+	public static void main(String[] args) {
+		int[] nums = {2, 7, 11, 9};		// Array
+		int target = 9;
+		Solution s = new Solution();
+		int[] lst = s.twoSum(nums, target);
+		System.out.println(Arrays.toString(lst));
+	}
+}
+
+[0, 1]
+___________________________________________________________________________________________________________________________________________________________________________________________________________________
+ArrayList、Arrays比較
+import java.util.ArrayList;
+import java.util.Arrays;
+
+class ArrayTest {
+	public static void main(String[] args)
+					// Array
+		int[] arr = new int[2];
+					//新增元素
+		arr[0] = 1;
+		arr[1] = 2;
+					//存取元素
+		System.out.println(arr[0]);
+	
+					// ArrayList
+		Arraylist<Integer> arrL = new ArrayList<Integer>(2);
+					//新增元素
+		arrL.add(1);
+		arrL.add(2);
+					//存取元素
+		System.out.println(arrL.get(0));
+	}
+}
+ArrayList透過add get
+Array 可以包含primitive data types 和object entities。		// 接收原始數據和物件
+ArrayList 只可以包含object entries 但不支持primitive data types。	// 接收物件
+
+import java.util.ArrayList;
+import java.util.Arrays;
+
+class ArrayTest {
+	public static void main(String[] args) {
+					//允許primitive data types
+		int[] array = new int[3];
+					//允許object entities
+		Test[] array1 = new Test[3]
+					//不允許primitive data types
+		ArrayList<char> arrL = new ArrayList<char>();
+					//允許object entities
+		ArrayList<Integer> arrL1 = new ArrayList<>();
+		ArrayList<String> arrL2 = new ArrayList<>();
+		ArrayList<Object> arrL3 = new ArrayList<>();
+	}
+}
+
+ArrayList toArray() 轉換為對象數組
+import java.util.ArrayList;
+import java.util.Arrays;
+
+public class ArrayListExample {
+	public static void main(String[] args) {
+		ArrayList<String> list = new ArrayList<>(2);
+
+		list.add("A");
+		list.add("B");
+		list.add("C");
+		list.add("D");
+
+		// Convert to object array
+		Object[] array = list.toArray();
+
+		System.out.println(Arrays.toString(array));
+
+		// Iterate nad convert to desired type
+		for (Object o : array) {
+			String s = (String) o;
+
+			System.out.println(s);
+		}
+	}
+}
+
+[A, B, C, D]
+
+A
+B
+C
+D
+
+ArrayList toArray(T[] a) 轉換為字符串數組
+import java.util.ArrayList;
+import java.util.Arrays;
+
+public class ArrayListExample {
+	public static void main(String[] args) {
+		ArrayList<String> list = new ArrayList<>(2);
+
+		list.add("A");
+		list.add("B");
+		list.add("C");
+		list.add("D");
+
+		// Convert to string array
+		String[] array = list.toArray(new String[list.size()]);
+
+		System.out.println(Arrays.toString(array));
+	}
+}
+[A, B, C, D]
+___________________________________________________________________________________________________________________________________________________________________________________________________________________
+（String）
+Immutable strings：不可變特性，否則很危險，String有非常多的用途與安全性考量。
+所以要用 + 串接，但使用 + 就會(new StringBuilder()).append().toString()，重複使用多次容易造成效能上負擔，可以單例StringBuilder重複使用.append().append().toString。
+StringBuilder:不處理同步(Sync)
+StringBuffer:處理同步(Sync)
+
+Object的String toString()、static String toString(int i)
+
+用多載(Overload)就是典型switch case default。多型(Polymorphism)的話要再搞一個介面出來，多載就是一個類別搞定。
+public string toString(string fmt)
+   {
+      if (string.IsNullOrEmpty(fmt))
+         fmt = "G";
+
+      switch (fmt.ToUpperInvariant())
+      {
+         case "G":
+            return string.Format("{0} {1}", _year, _model);
+         case "D":
+            return string.Format("{0} {1}, {2} dr.",
+                                 _year, _model, _doors);
+         case "C":
+            return string.Format("{0} {1}, {2}",
+                                 _year, _model, _cylinders);
+         case "A":
+            return string.Format("{0} {1}, {2} dr. {3}",
+                                 _year, _model, _doors, _cylinders);
+         default:
+            string msg = string.Format("'{0}' is an invalid format string",
+                                       fmt);
+            throw new ArgumentException(msg);
+      }
+   }
+}
+___________________________________________________________________________________________________________________________________________________________________________________________________________________compact1, compact2, compact3
+java.util
+Interface Comparator<T>
+
+Type Parameters:
+T - the type of objects that may be compared by this comparator
+
+All Known Implementing Classes:
+Collator, RuleBasedCollator
+
+Functional Interface:
+This is a functional interface and can therefore be used as the assignment target for a lambda expression or method reference.
+
+@FunctionalInterface
+public interface Comparator<T>
+
+See Also:
+Comparable, Serializable
+
+Method Detail:
+int compare(T o1, To2)
+boolean equals(Object obj)
+default Comparator<T> reversed()
+default Comparator<T> thenComparing(Comparator<? super T> other)
+default<U> Comparator<T> thenComparing(Function<? super T, ? extends U> keyExtractor, Comparator<? super U> keyComparator)
+default<U extends Comparable<? super U>> Comparator<T> thenComparing(Function<? super T, ? extends U> keyExtrator)
+default Comparator<T> thenComparingInt(ToIntFunction<? super T> keyExtractor)
+default Comparator<T> thenComparingLong(ToLongFunction<? super T> keyExtractor)
+default Comparator<T> thenComparingDouble(ToDoubleFunction<? super T> keyExtractor)
+static <T extends Comparable<? super T>> Comparator<T> reverseOrder()
+static <T extends Comparable<? super T>> Comparator<T> naturalOrder()
+static <T> Comparator<T> nullsFirst(Comparator<? super T> comparator)
+static <T> Comparator<T> nullsLast(Comparator<? super T> comparator)
+static <T,U> Comparator<T> comparing(Function<? super T, ? extends U> keyExtractor, Comparator<? super U> keyComparator)
+static <T,U extends Comparable<? super U>> Comparator<T> comparing(Function<? super T,? extends U> keyExtractor)
+static <T> Comparator<T> comparingInt(ToIntFunction<? super T> keyExtractor)
+static <T> Comparator<T> comparingLong(ToLongFunction<? super T> keyExtractor)
+static <T> Comparator<T> comparingDouble(ToDoubleFunction<? super T> keyExtractor)
+___________________________________________________________________________________________________________________________________________________________________________________________________________________
+Java setFetchSize，撈大量資料差異測試
+Java撈取可用記憶體方式
+
+public long getUsedMemory() {
+	int kb = 1024;
+	OperatingSystemMXBean osmxb = (OperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean();
+	long usedMemory = (osmxb.getTotalPhysicalMemorySize() - osmxb.getFreePhysicalMemorySize()) / kb;
+	return usedMemory;
+}
+
+Java撈取資料方式
+
+try{
+	pstmt = conn.prepareStatement(sql);
+	pstmt.setFetchSize(Integer.MIN_VALUE);		// 有setFetchSize有差。
+	rs = pstmt.executeQuery();
+
+	while(re.next()) {
+		n++;
+	}
+}
+catch(Exception ex) {
+	log.error(ex);
+	ex.printStackTrace();
+} finally {
+	rs.close();
+	pstmt.close();
+	conn.close();
+}
+___________________________________________________________________________________________________________________________________________________________________________________________________________________
+Lambda - 將串列 A 轉成串列 B
+List<ProductManager> B = A.stream()
+		.map(developer -> new ProductManager(developer.getName(),developer.getAge()))
+		.collect(Collectors.toList());
+
+
+List<ProductManager> B = A.stream().map(developer -> {
+		ProductManager productManager = new ProductManager();
+		try {
+			PropertyUtils.copyProperties(productManager, developer);
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+		return productManager;
+	}).collect(Collectors.toList());
+
+	B.forEach(System.out::println);
+
+
+list.forEach(System.out.println);
+相當於
+for(int i = 0; i<list.size(); i++) {
+	System.out.println(list.get(i));
+}
+集合在java8中擁有一個stream方法，可以得到一個流對象，這個對象擁有很多方法，這些方法可以很方便的對集合進行例如排序、分組、計數、遍歷、轉換等操作，而forEach就是遍歷。
+而lambda和函數式接口，僅有一個未實現方法的接口，可以寫作(參數列表) -> {方法體}
+@FunctionalInterface
+public interface FuncA {
+	void doSomeThing(String str);
+}
+上面這接口就能寫作，FuncA funcA = (str) -> {System.out.println("hello");}，類似的還有Swing、javaFx的監聽器: btn.addActionListener(e->{// do something});這樣就省去了之前需要專為他編寫一個實現類或者匿名內部類的代碼。
+而在這之上，如果一個方法的調用中，這個方法給接口提供的參數和他接收的返回，和你現有某個實現完全一致，就可以進一步簡化，稱為方法引用。forEach方法提供一個某種類型的Object(具體是甚麼類型是要看Stream類的泛型參數的，不過一般就是這個集合提供的那種類型)，而System.out.println可以接受一個Object，因此forEach提供的參數和System.out.println的參數類型是一致的，可以進行簡化。
+原本應該為 .forEach(element -> {System.out.println(element)})但是System.out.println的參數和傳遞的參數element的類型完全匹配，所以可以寫為 .forEach(System.out::println)
+___________________________________________________________________________________________________________________________________________________________________________________________________________________
+（Array）
+DVD[] dvdCollection = new DVC[15];
+
+// A simple definition for a DVD.
+public class DVD {
+	public String name;
+	public int releaseYear;
+	public String director;
+
+	public DVD(String name, int releaseYear, String director) {
+		this.name = name;
+		this.releaseYear = releaseYear;
+		this.director = director;
+	}
+
+	public String toString() {
+		System.out.println(this.name + ", dircted by " + this.director + ", released in " + this.releaseYear));
+	}
+}
+
+DVD avengersDVD = new DVD("The Avengers", 2012, "Joss Whedon");
+dvdCollection[7] = avengersDVD;
+
+DVD incrediblesDVD = new DVD("The Incredibles", 2004, "Brad Bird");
+DVD findingDoryDVD = new DVD("Finding Dory", 2016, "Andrew Stanton");
+DVD lionKingDVD = new DVD("The Lion King", 2019, "Jon Favreau");
+
+dvdCollection[3] = incrediblesDVD;
+dvdCollection[9] = findingDoryDVD;
+dvdCollection[2] = lionKingDVD;
+
+// Notice that we put The Incredibles into the Array at index 3. What happens if we now run this next piece of code?
+// It has been overwritten! If we still have the incrediblesDVD variable in scope, then the DVD still exists in the computer's memory. If not though, it's totally gone!
+
+DVD starWarsDVD = new DVD("Star Wars", 1977, "George Lucas");
+dvdCollection[3] = starWarsDVD;
+
+// Reading Items from an Array
+System.out.println(dvdCollection[7]);
+
+
+// Notice that because we haven't yet put anything at index 10, the value it contains is null. In other languages, such as C, the Array slot could contain completely random data. Java always initializes empty Array slots to null if the Array contains objects, or to // default values if it contains primitive types. For example, the array int [] would contain the default value of 0 for each element, float[] would contain default values of 0.0, and bool[] would contain default values of false.
+
+// This time, we're going to create an Array of ints and put the first 10 square numbers into it.
+
+int[] squareNumbers = new int[10];
+
+for (int i = 0; i < 10; i++) {
+	int square = (i+1) * (i+1);
+	squareNumbers[i] = square;
+}
+
+// a "for each" loop.
+// We can use it whenever we don't need the index values
+
+for (int square : squareNumbers) {
+	System.out.println(square);
+}
+
+DVD[] array = new DVD[6];
+int capacity = array.length;
+
+紀錄length
+int array = new int[6];
+int length = 0;
+
+for (int i = 0; i<3; i++) {
+	array[i] = i * i;
+	length++;		// 累加器 紀錄array的長度
+}
+
+class Solution {
+	public int findMaxConsecutiveOnes(int[] nums) {		// like ArrayList nums
+		for (int i = 0; i<nums.length; i++) {
+			// Do something with element nums[i].
+		}
+	}
+}
+
+
+
+
+
+
+___________________________________________________________________________________________________________________________________________________________________________________________________________________
+（Design Pattern）
+物件導向設計基本原則 - SOLID
+Single Responsibility Principle(SRP)單一職責
+Open/Close Principle(OCP)開放/封閉原則	e.x. 改動不影響
+Liskov Substitution Principle(LSP)Liskov替換	e.x. @Override
+Interface Segregation Principle(ISP)介面隔離	e.x. interface、class
+Dependency Inversion Principle(DIP)依賴反轉	e.x. 高階模組不應該依賴於低階模組→高、低階模組都應該依賴抽象、抽象不應該依賴於具體實作方式→具體實作方式應該依賴抽象
+解除 高階模組 (Caller 呼叫者) 與 低階模組 (Callee 被呼叫者)的 耦合關係，使高階模組不再直接依賴低階模組。
+我們真正所需要的、依賴的，其實不是實際的類別與物件，而是他所擁有的功能。
+
+依據『介面導向程式設計』，善用介面的好處，使得系統具有高維護性與彈性，
+不論是擴充或重構，外部呼叫類別僅會受到最小幅度的影響 (甚至不受影響)。
+另外，選擇使用介面或抽象類別時：除非需要為子類別提供公共功能，否則 優先使用介面。
+介面的思想：封裝隔離	// 外部類別只需要呼叫介面提供的方法，不用也不需要知道內部如何實作。
+public class Main {
+	public static void main(String[] args) {
+		People me = new People();
+		me.eat();
+	}
+}
+class People {
+	private Stuffer stuffer;		// 依賴就像參數需要的type，需要類別type我們就拿抽象為主囉
+
+	public People() {
+		stuffer = new Hamburger();
+	}
+	public void eat() {	
+		stuffer.stuff();
+	}
+}
+
+interface Stuffer {
+	void stuff();
+}
+
+class Hamburger implements Stuffer {
+	@Override
+	public void stuff() {
+		System.out.println("讚");
+	}
+}
+還存在一個大問題 — People 仍必須自己去 new 一個具體實作！
+Stuffer stuffer = new Hamburger();
+這違反了 介面的思想：封裝隔離。People 不應知道具體的實作類別是誰，具體的實作 應是可『 替換 』的。
+由 runtime (運行時) 傳入，而非 compile (編譯時) 就決定，
+所以又被稱為 —— Plugin (插件)。
+
+
+
+Singleton(Greed Singleton，因為一開始就已經建立物件)
+保證一個類別只會產生一個物件，而且要提供存取該物件的統一方法
+public class SingletonGreed {
+	// 一開始就建立物件，這樣只要一直回傳這個物件就是簡單的singleton
+	private static SingletonGreed instance = new SingletonGreed();
+
+	// private constructor，這樣其他物件就不能new取得實體
+	private SingletonGreed() {}
+
+	// 因為constructor已經private，所以需要另外提供方法讓其他程式調用這個類別
+	public static SingletonGreed getInstance() {
+		return instance;
+	}
+}
+
+
+假如建立這個物件需要耗費很多資源，可是程式運行中不一定會需要它，我們希望只有在第一次getInstance被呼叫的時候才花費資源來建立物件
+public class Singleton {
+	private static Singleton instance;
+
+	private Singleton() {
+		// 這裡面跑了很多code，建立物件需要花費很多資源
+	}
+
+	public static Singleton getInstance() {
+		// 第一次被呼叫的時候再建立物件
+		if (instance == null) {
+			instance = new Singleton();
+		}
+		return instance;
+	}
+}
+
+以上程式看起來沒問題，不過如果是多執行緒情況下呼叫getInstance()，可能第一個執行緒跑到instance = new Singleton()時，將時間讓給第二個 執行緒，因此第二個執行緒也執行了instance = new Singleton()，造成同時new了兩個新的物件。	Thread1 -> if (instance == null)、Thread2 -> if ( instance == null)
+
+/**
+ *  單例模式測試
+ */
+public class SingletonTest extends Thread {			// 執行緒類別
+	String myId;
+	public SingletonTest(String id) {
+		this.myId = id;
+	}
+
+	// 執行緒執行的時候就去呼叫Singleton.getInstance()
+	public void run() {
+		Singleton singleton = Singleton.getInstance();
+		if (singleton != null) {
+			// 用hashCode判斷前後兩次取到的Singleton物件是否為同一個
+			System.out.println(myId+"產生 Singleton:" + singleton.hashCode());
+		}
+	}
+
+	public static void main(String[] args) {
+		/*
+		// 單執行緒的時候，s1與s2確實為同一個物件
+		Singleton s1 = Singleton.getInstance();
+		Singleton s2 = Singleton.getInstance();
+		System.out.println("s1:"+s1.hashCode() + " s2:" + s2.hashCode());
+		System.out.println();
+		*/
+
+		// 兩個執行緒同時執行
+		Thread t1 = new SingletonTest("執行緒T1");	// 產生Thread物件
+		Thread t2 = new SingletonTest("執行緒T2");	// 產生Thread物件
+		t1.start();	// 開始執行t1.run()	start是thread的方法，會去執行run()，所以繼承thread的類別要實作run，run是Runnable介面的方法。
+		t2.start();
+	}
+}
+
+為了解決這樣的問題，可以用synchronized修飾來解決這個問題，讓getInstance方法被調用的時候被lock住，就不會同時產生兩個物件。
+
+public class Singleton {
+	private static Singleton instance;
+
+	private Singleton() {
+		// 這裡面跑了很多code，建立物件需要花費很多資源
+	}
+
+	// 多執行緒時使用synchronized保證Singleton一定是單一的
+	public static synchronized Singleton getInstance() {
+		if (instance == null) {
+			instance = new Singleton();
+		}
+		return instance;
+	}
+}
+
+上面這樣的寫法，synchronized整個方法會造成執行效能變差，實際上需要lock住的只有創造物件的過程，也就是new Singleton這段程式碼而已，因此可以將synchronized搬到getInstance()內來加快程式的效能。
+
+public class Singleton {
+	private static Singleton instance;
+
+	private Singleton() {
+		// 這裡面跑了很多code，建立物件需要花費很多資源
+	}
+
+	// 多執行緒時，當物件需要被建立時才使用synchronized保證Singleton一定是單一的，增加程式效能
+	public static Singleton getInstance() {
+		if (instance == null) {
+			synchronized(Singleton.class) {
+				if (instance == null) {
+					instance = new Singleton();
+				}
+			}
+		}
+		return instance;
+	}
+}
+
+Conclusion
+一樣的設計模式在不同的情況也是會有不同的變化。設計模式不會是一段固定的程式碼，而是一種如何解決特定問題的概念。
+
+
+SimpleFactory
+定義一個簡單工廠，傳入不同的參數取得不同的類別物件
+又稱為靜態工廠模式，一般來說同一工廠內所產生的類別會有一個共同的父類別(介面)
+
+管理物件創建的模式，隨著輸入的參數不同，簡單工廠會傳回不同的物件，使用者取得物件的時候只要傳入正確的參數，不需要去理解這個物件。
+
+用新手村舉例，現在要多訓練一種冒險者牧師Priest，只要在trainAdventurer方法內增加一個switch case分支就好。不過這樣直接修改TrainingCamp類別的程式碼，違反了開放/封閉原則，因此簡單工廠不能算是一個健全的設計模式，不過如果簡單工廠在小型的軟體架構中很好用，因此一般設計模式的教學都會從簡單工廠模式開始，實務上也常常會用到這個簡單的模式。
+
+TrainingCamp				Adventurer
++TrainingCamp()		----------------------->+getType():String
++trainAdventurer(String):Adventurer
+
+				Archer			Warrior
+				+Archer()			+Warrior()
+				+getType():String		+getType():String
+產品介面與實作類別
+
+// 冒險者(Product)
+public interface Adventurer {
+	// 告訴別人你是哪種冒險者
+	String getType();
+}
+
+// 弓箭手(ConcreteProduct)
+public class Archer implements Adventurer {
+	@Override
+	public String getType() {
+		System.out.println("我是弓箭手");
+		return this.getClass().getSimpleName();
+	}
+}
+
+// 鬥士(ConcreteProduct)
+public class Warrior implements Adventurer {
+	@Override
+	public String getType() {
+		System.out.println("我是鬥士");
+		return this.getClass().getSimpleName();
+	}
+}
+
+簡單工廠類別
+
+/**
+ *  冒險者訓練營(SimpleFactory)
+ */
+public class TrainingCamp {
+	public static Adventurer trainAdventurer(String type) {
+		switch(type) {
+			case "archer" : {
+				System.out.println("訓練一個弓箭手");
+				return new Archer();
+			}
+			case "Warrior : {
+				System.out.println("訓練一個鬥士");
+				return new Warrior();
+			}
+			// 假如冒險者種類新增，增加case
+			default : return null;
+		}
+	}
+}
+
+測試碼
+
+// 冒險者訓練營測試
+public class TrainingCampTest {
+	@Test
+	public void test() {
+		System.out.println("============簡單工廠模式============");
+
+		// 新手村訓練冒險者
+		Adventurer memberA = TrainingCamp.trainAdventurer("archer");
+		Adventurer memberB = TrainingCamp.trainAdventurer("warrior");
+		// 這邊用Junit來幫我們判訓練出來的冒險者是不是我們要的
+		Assert.assertEquals(memberA.getType(), "Archer");
+		Assert.assertEquals(memberB.getType(), "Warrior");
+	}
+}
+
+測試結果
+
+============簡單工廠模式============
+訓練一個弓箭手
+訓練一個鬥士
+我是弓箭手
+我是鬥士
+
+
+Factory Pattern
+提供一個工廠介面，將產生實體的程式碼交由子類別各自實現
+
+在工廠模式中，我們將工廠(Factory)提升為一種抽象的概念，也就是說現在工廠是一個介面(Interface)，實際上要如何製作產品則交給實體工廠(Concrete Factory)來實作。
+
+新手村現在建立了兩座訓練營，弓箭手訓練營、鬥士訓練營。如此一來，如果想要修改弓箭手的訓練流程，就修改弓箭手訓練營裡面的程式碼即可，不用擔心是否會影響鬥士訓練營的運作，而且如要增加冒險者的類別如劍士，只要新增一座劍士訓練營，完全不會改動到抽象訓練營與本來的實體訓練營。
+
+TrainingCamp							Adventurer
++trainAdventurer():Adventurer						+getType():String
+
+ArcherTrainingCamp		WarriorTrainingCamp		Warrior			Archer
++ArcherTrainingCamp()	+WarriorTrainingCamp()		+Warrior()			+Archer()
++trainAdventurer():Adventurer	+trainAdventurer():Adventurer		+getType():String		+getType():String
+
+產品介面與產品實作類別
+
+// 冒險者(Product)
+public interface Adventurer {
+	// 告訴別人你是哪種冒險者
+	String getType();
+}
+
+// 弓箭手(ConcreteProduct)
+public class Archer implements Adventurer {
+	@Override
+	public String getType() {
+		System.out.println("我是弓箭手");
+		return this.getClass().getSimpleName();
+	}
+}
+
+// 鬥士(ConcreteProduct)
+public class Warrior implements Adventurer {
+	@Override
+	public String getType() {
+		System.out.println("我是鬥士");
+		return this.getClass().getSimpleName();
+	}
+}
+
+工廠介面與工廠實作類別
+
+/**
+ *  冒險者訓練營介面(Factory)-這邊只是一個概念或規範，訓練什麼、怎麼訓練留給子類別實作
+ */
+public interface TrainingCamp {
+	public Adventurer trainAdventurer();
+}
+
+/**
+ *  弓箭手訓練營(ConcreteFactory)
+ */
+public class ArcherTrainingCamp implements TrainingCamp {
+	@Override
+	public Adventurer trainAdventurer() {
+		System.out.println("訓練一個弓箭手");
+		return new Archer();
+	}
+}
+
+/**
+ *  鬥士訓練營(ConcreteFactory)
+ */
+public class WarriorTrainingCamp implements TrainingCamp {
+	@Override
+	public Adventurer trainAdventurer() {
+		System.out.println("訓練一個鬥士");
+		return new Warrior();
+	}
+}
+
+測試碼
+
+// 冒險者訓練營測試
+public class TrainingCampTest {
+	@Test
+	public void test() {
+		System.out.println("============工廠模式測試============");
+
+		// 訓練營訓練冒險者
+		// 先用弓箭手訓練營訓練弓箭手
+		TrainingCamp trainingCamp = new ArcherTrainingCamp();
+		Adventurer memberA = traingingCamp.trainAdventurer();
+
+		// 用鬥士訓練營訓練鬥士
+		trainingCamp = new WarriorTrainingCamp();
+		Adventurer memberB = trainingCamp.trainAdventurer();
+
+		// 看看是不是真的訓練出我們想要的冒險者
+		Assert.assertEquals(memberA.getType(), "Archer");
+		Assert.assertEquals(memberB.getType(), "Warrior");
+
+		// memberB應該是Warrior不是Knight，因此下面這行會報錯
+		Assert.assertEquals(memberB.getType(), "Knight");
+	}
+}
+
+============工廠模式測試============"
+訓練一個弓箭手
+訓練一個鬥士
+我是弓箭手
+我是鬥士
+
+簡單工廠模式與工廠模式比較：
+簡單工廠模式：工廠直接負責管理所有的產品，利用if else | switch case判斷式來產生產品。
+工廠模式：工廠提升為一個概念，實際上產生產品的是實作工廠概念的實體工廠。
+
+抽象工廠模式 Abstract Factory Pattern 1
+
+目的：只用一個工廠介面來產生一系列相關的物件，但實際建立那些物件由實作工廠的子類別來實現
+
+出發冒險之前，一定要有裝備
+
+假如一個冒險者需要武器、頭盔、上衣、褲子、鞋子５種裝備，村莊內又有４種不同專業的冒險者，這樣我們就要建立２０種工廠類別來生產裝備，如果使用剛才的工廠模式來管理生產裝備，實體工廠類別就會非常多。因此這邊改變一下工廠的定義，首先工廠仍然是抽象介面，但是介面規定工廠現在生產的不是一種產品，而是生產一個冒險者類別一系列所有的裝備，一間工廠要生產武器、頭盔、上衣、褲子、鞋子(Product)，當然有了抽象工廠介面也需要實體工廠(ConcreteFactory)，例如鬥士裝備生產工廠就會生產一系列的鬥士裝備(ConcreteProduct)，這就是抽象工廠模式。
+
+EquipFactory						Weapon
++productWeapon():Weapon					-atk:String
++productArmor():Clothes					-range:String
+
+WarriorEquipFactory		ArcherEquipFactory		Bow		LongSword
++WarriorEquipFactory()	+ArcherEquipFactory()		
++productWeapon():Weapon	+productWeapon():Weapon		Clothes
++productArmor():Clothes	+productArmor():Clothes		-name:String
+							-def:String
+
+						Leather		Armor
+
+// 上衣介面(Product)
+
+public abstract class Clothes {
+	protected in def;	//防禦力
+	/**
+	 *  展示這件衣服
+	 */
+	public void display() {
+		System.out.println(this.getClass().getSimpleName() + " def = " + def);
+	}
+	// 以下省略getter setter
+}
+
+/**
+ *  盔甲(ConcreteProduct)-鬥士上衣
+ */
+public class Armor extends Clothes {
+
+}
+
+/**
+ *  皮甲(ConcreteProduct)-弓箭手上衣
+ */
+public class Leather extends Clothes {
+}
+
+/**
+ *  武器介面(Product)
+ */
+public abstract class Weapon {
+	protected int atk;
+	protected int range;
+
+	/**
+	 *  展示武器
+	 */
+	public void display() {
+		System.out.println(this.getClass().getSimpleName() + " atk = " + atk + " , range = " + range);
+	}
+
+	// 以下省略getter setter
+}
+
+/**
+ *  長劍(ConcreteProduct)-鬥士武器
+ */
+public class LongSword extends Weapon {
+
+}
+
+/**
+ *  弓(ConcreteProduct)-弓箭手武器
+ */
+public class Bow extends Weapon {
+
+}
+
+工廠介面與實體工廠類別
+/**
+ *  裝備工廠介面(Factory)-定義每一間工廠應該生產那些東西
+ */
+public interface EquipFactory {
+	Weapon productWeapon();
+	Clothes productArmor();
+}
+
+/**
+ *  專門生產鬥士裝備的工廠(ConcreteFactory)
+ */
+public class WarriorEquipFactory implements EquipFactory {
+	@Override
+	public Weapon productWeapon() {
+		LongSword product = new LongSword();
+		product.setAtk(10);
+		product.setRange(1);
+		return product;
+	}
+
+	@Override
+	public Clothes productArmor() {
+		Armor product = new Armor();
+		product.setDef(10);
+		return product;
+	}
+}
+
+/**
+ *  專門生產弓箭手裝備的工廠(ConcreteFactory)
+ */
+public class ArcherEquipFactory implements EquipFactory {
+	@Override
+	public Weapon productWeapon() {
+		Bow product = new Bow();
+		product.setAtk(10);
+		product.setRange(10);
+		return product;
+	}
+
+	@Override
+	public Clothes productArmor() {
+		Leather product = new Leather();
+		product.setDef(5);
+		return product;
+	}
+}
+
+工廠模式與抽象工廠模式比較：
+工廠模式：注重的是如何生產一個物件，例如弓箭手訓練營只要負責如何生產出弓箭手。
+抽象工廠模式：注重在產品的抽象關係，像武器與衣服本來是扯不上關係的兩種物品，不過這兩種物品都屬於同一種冒險者的裝備，因此他們就有了這層抽象關係。
+
+
+抽象工廠模式 Abstract Factory Pattern 2
+
+現在已經有了各式各樣的工廠可以生產裝備，接下來看看實際上怎樣給冒險者裝備。
+首先要為冒險者增加兩個屬性，Weapon、Clothes
+接下來訓練營內必須要有對應的工廠來生產對應的裝備。
+最後呼叫的客戶端程式與工廠模式Factory一樣，不過現在冒險者們在訓練後就會獲得基礎裝備了。
+
+測試碼：
+跟抽象工廠模式沒關係的冒險者，這些只是為了測試用
+// 工廠與各種裝備同上頁
+
+/**
+ *  冒險者
+ */
+public abstract class Adventurer {
+	protected Weapon weapon;
+	protected Clothes clothes;
+
+	public abstract void display();
+		// getter & setter 省略
+}
+
+/**
+ *  實體工廠-弓箭手訓練營
+ */
+public class ArcherTrainingCamp implements TrainingCamp {
+	private static EquipFactory factory = new ArcherEquipFactory();
+
+	@Override
+	public Adventurer trainAdventurer() {
+		System.out.println("訓練一個弓箭手");
+		Archer archer = new Archer();
+		// ...進行基本訓練
+		// ...弓箭手訓練課程
+		// 訓練完成配發裝備
+		archer.setWeapon(factory.productWeapon());
+		archer.setClothes(factory.productArmor());
+		return archer;
+	}
+}
+
+/**
+ *  工廠介面-冒險者訓練營(這只是種概念或規範，要訓練什麼，怎麼訓練留給子類別實作)
+ */
+public interface TrainingCamp {
+	/**
+	 *  訓練冒險者的過程，訓練後請給我一個冒險者
+	 */
+	public Adventurer trainAdventurer();
+}
+
+/**
+ *  實體工廠-弓箭手訓練營
+ */
+public class ArcherTrainingCamp implements TrainingCamp {
+	private static EquipFacotry factory = new ArcherEquipFactory();
+
+	@Override
+	public Adventurer trainAdventurer() {
+		System.out.println("訓練一個弓箭手");
+		Archer archer = new Archer();
+		// ...進行基本訓練
+		// ...弓箭手訓練課程
+		// 訓練完成配發裝備
+		archer.setWeapon(factory.productWeapon());
+		archer.setClothes(factory.productArmor());
+		return archer;
+	}
+}
+
+/**
+ *  實體工廠-鬥士訓練營
+ */
+public class WarriorTrainingCamp implements TrainingCamp {
+	private static EquipFactory factory = new WarriorEquipFactory();
+
+	@Override
+	public Adventurer trainAdventurer() {
+		System.out.println("訓練一個鬥士");
+		Warrior warrior = new Warrior();
+		// ...進行基本訓練
+		// ...鬥士訓練過程
+		// 訓練完成配發裝備
+		warrior.setWeapon(factory.productWeapon());
+		warrior.setClothes(factory.productArmor());
+		return Warrior;
+	}
+}
+
+/**
+ *  弓箭手
+ */
+public class Archer extends Adventurer {
+	@Override
+	public void display() {
+		System.out.println("我是弓箭手，裝備:");
+		weapon.display();
+		System.out.println();
+		clothes.display();
+		System.out.println();
+	}
+}
+
+/**
+ *  鬥士
+ */
+public class Warrior extends Adventurer {
+	@Override
+	public void display() {
+		System.out.println("我是鬥士，裝備:");
+		weapon.display();
+		System.out.println();
+		clothes.display();
+		System.out.println();
+	}
+}
+
+測試碼：
+// 抽象工廠模式-測試
+public class EquipFactoryTest {
+	private EquipFactory equipFactory;
+	@Test
+	/**
+	 *  測試工廠是否能正確生產裝備
+	 */
+	public void equipFactoryTest() {
+		System.out.println("==========抽像工廠模式測試==========");
+
+		// 幫弓箭手生產裝備
+		equipFactory = new ArcherEquipFactory();
+		Clothes archerLeather = equipFactory.productArmor();
+		Weapon archerBow = equipFactory.productWeapon();
+
+		// 皮甲的防禦應該是5，弓的攻擊為10，範圍為10
+		Assert.assertEquals(5, archerLeather.getDef());
+		Assert.assertEquals(10, archerBow.getAtk());
+		Assert.assertEquals(10, archerBow.getRange());
+
+		// 幫鬥士生產裝備
+		equipFactory = new WarriorEquipFactory();
+		Clothes armor = equipFactory.productArmor();
+		Weapon longSword = equipFactory.productWeapon();
+
+		// 盔甲的防禦應該是10, 長劍的攻擊為10, 範圍為1
+		Assert.assertEquals(10, armor.getDef());
+		Assert.assertEquals(10, longSword.getAtk());
+		Assert.assertEquals(1, longSword.getRange());
+
+		// 弓箭手訓練營
+		TrainingCamp camp = new ArcherTrainingCamp();
+		// 訓練弓箭手
+		Adventurer archer = camp.trainAdventurer();
+
+		// 鬥士訓練營
+		camp = new WarriorTrainingCamp();
+		// 訓練鬥士
+		Adventurer warrior = camp.trainAdventurer();
+
+		archer.display();
+		warrior.display();
+	}
+}
+
+測試結果：
+==========抽像工廠模式測試==========
+我是弓箭手，裝備:
+	Bow atk:10 range:10
+	Leather def:5
+我是鬥士，裝備:
+	LongSword atk:10 range:1
+	Armor def:10
+
+
+策略模式 Strategy Pattern
+目的：將各種可以互換的演算法(策略)包裝成一個類別
+
+冒險者要來打怪物了！
+
+冒險者需要選擇不同的戰鬥策略來跟各種怪物戰鬥，普通攻擊、技能、火...。
+
+在策略模式中會有規範用的策略介面(Strategy)，各種實際上的戰鬥策略則是實體策略(ConcreteStrategy)，使用策略的冒險者則是環境類別(Context)。
+
+Adventurer			flightStrategy		FlightStrategy
++Adventurer()		—————————→		+execute():void
++attack():void				0..1
++choiceStrategy(FlightStrategy):void		NormalAttack	UseSkill		UseItem
+					+NormalAttack()	+UseSkill		+UseItem
+					+execute():void	+execute():void	+execute():void
+
+策略介面與策略實作
+
+// 戰鬥策略(Strategy)
+
+public interface FlightStrategy {
+	void execute();
+}
+
+// 一般攻擊(ConcreteStrategy)
+public class NormalAttack implements FlightStrategy {
+	@Override
+	public void execute {
+		System.out.println("使用一般攻擊");
+	}
+}
+
+// 使用技能(ConcreteStrategy)
+public class UseSkill implements FlightStrategy {
+	@Override
+	public void execute() {
+		System.out.println("使用超級痛的技能攻擊");
+	}
+}
+
+// 使用道具(ConcreteStrategy)
+public class UseItem implements FlightStrategy {
+	@Override
+	public void execute() {
+		System.out.println("使用道具，丟火把");
+	}
+}
+
+環境類別Context
+
+// 冒險者(Context)
+public class Adventurer {
+	FlightStrategy flightStrategy;	// 不同戰鬥方式效果不同(strategy)
+
+	public void attack() {
+		// 預設普通攻擊
+		if (flightStrategy == null) {
+			flightStrategy = new NormalAttack();
+		}
+		flightStrategy.execute();
+	}
+
+	// 選擇不同的武器
+	public void choiceStrategy(FlightStrategy strategy) {		// 有點限制說我要用預設的普攻之外，我就要先choiceStrategy; attack();，可以把FlightStrategy strategy丟進attack()內。defined function: 2、use function 1~2→defined 																				function: 1、use function: 1。
+		this.flightStrategy = strategy;
+	}
+}
+
+測試碼
+// 策略模式-測試
+public class FlightTest {
+	@Test
+	public void test() {
+		Adventurer ad = new Adventurer();
+
+		// 史萊姆用一般攻擊就可以
+		System.out.println("出現史萊姆");
+		ad.choiceStrategy(new NormalAttack());
+		ad.attack();
+		System.out.println();
+
+		// 厲害的敵人用技能
+		System.out.println("非常巨大的史萊姆");
+		ad.choiceStrategy(new UseSkill());
+		ad.attack();
+		System.out.println();
+
+		// 出現不怕刀槍只怕火的敵人
+		System.out.println("出現不怕刀槍的殭屍");
+		ad.choiceStrategy(new UseItem());
+		ad.attack();
+	}
+}
+
+測試結果
+出現史萊姆
+使用一般攻擊
+
+非常巨大的史萊姆
+使用超級痛的技能攻擊
+
+出現不怕刀槍的殭屍
+使用道具，丟火把
+
+
+策略模式實例-排序
+在java API中可以找到策略模式的實際應用，Collection類別提供了sort這個方法來對一群資料進行排序。Collections.sort(List list, Comparator<? super T> c)
+要排序的List、Comparator，Comparator裡面的演算法決定如何排序，不同的Comparator在這邊就是不同的策略(Strategy)。這邊有三個村莊，分別將以ID排序的Comparator(SortVillageById)、以名稱排序的Comparator(SortVillageByName)、以人口排序的Comparator(SortVillageByPopulation)傳入sort，對清單中的村莊進行排序。
+
+// 村莊類別，等等拿來排序用
+
+public class Village {
+	public int id;
+	public String name;
+	public int population;
+	public double area;
+
+	pubilc Village(int id, String name, int population, double area) {
+		this.id = id;
+		this.name = name;
+		this.population = population;
+		this.area = area;
+	}
+
+	@Override
+	public String toString() {						// Object的方法？所以可以@Override。
+		return id + "." + name + "(人口: " + population + " 面積: " + area + ")";
+	}
+}
+
+// 使用ID排序(ConcreteStrategy)
+
+public class SortVillageById implements Comparator<Village> {
+	@Override
+	public  int compare(Village o1, Village o2) {
+		if( o1.id > o2.id) {
+			return 1;
+		}
+
+		if (o1.id < o2.id) {
+			return -1;
+		}
+		return 0;
+	}
+}
+
+// 用村莊面積做排序(ConcreteStrategy)
+
+public class SortVillageByArea implements Comparator<Village> {
+	@Override
+	public int compare(Village o1, Village o2) {
+		if (o1.area > o2.area) {
+			return 1;
+		}
+
+		if (o1.area < o2.area) {
+			return -1;
+		}
+		return 0;
+	}
+}
+
+// 村莊名稱做排序(ConcreteStrategy)
+
+public class SortVillageByName implements Comparator<Village> {
+	@Override
+	public int compare(Village o1, Village o2) {
+		if (o1.name.charAt(0) > o2.name.charAt(0) {
+			return 1;
+		}
+
+		if (o1.name.charAt(0) < o2.name.charAt(0) {
+			return -1;
+		}
+		return 0;
+	}
+}
+
+// 策略模式排序-測試
+
+public class StrategyExample {
+	public static void main(String[] args) {
+		// 準備三個村莊的資料
+		Village appleFarm = new Village(3, "apple farm", 32, 5.1);
+		Village barnField = new Village(1, "barn field", 22, 1.7);
+		Village capeValley = new Village(2, "cape valley", 10, 10.2);
+
+		ArrayList<Village> villages = new ArrayList<>();
+		villages.add(appleFarm);
+		villages.add(barnField);
+		villages.add(capeValley);
+
+		System.out.println("沒排序過的資料");
+		showList(villages);
+
+		System.out.println("根據ID排序");
+		Collections.sort(villages, new SortVillageById());
+		showList(villages);
+
+		System.out.println("根據名字排序");
+		Collections.sort(villages, new sortVillageByName());
+		showList(villages);
+
+		System.out.println("根據人口排序");
+		Collections.sort(villages, new sortVillageByPopulation());
+		showList(villages);
+
+		System.out.println("根據面積排序");
+		Collections.sort(villages, new sortVillageByArea());
+		showList(villages);
+	}
+
+	// 只是為了把資料印出來看
+	public static void showList(ArrayList<Village> list) {
+		for (Village v : list) {
+			System.out.println(v.toString());
+		}
+	}
+}
+
+簡單工廠模式是用來建立物件的模式，關注物件如何被產生。
+策略模式是一種行為模式，關注的是行為的封裝。
+
+___________________________________________________________________________________________________________________________________________________________________________________________________________________
+（Network）
+網路編程是指編寫運行在多個設備(計算機)的程序，這些設備都通過網路連接起來。
+java.net包中J2SE的API包含有類和接口，它們提供低層次的通信細節。你可以直接使用這些類和接口，來專注於解決問題，而不用關注通信細節。
+java.net包中提供了兩種常見的網路協議的支持：
+TCP: Transmission Control Protocol, 傳輸控制協議，是一種面向連接的、可靠的、基於字節流的傳輸層通信協議，TCP層位於IP層之上、應用層之下的中間層。通常用於互聯網協議，被稱TCP/IP。
+UDP: User Datagram Protocol, 用戶數據報協議，位於OSI模型的傳輸層。一個無連接的協議。提供了應用程序之間要發送數據的數據報。應用程序必須容許一些丟失、錯誤、重複的數據包。視訊、語音等。
+
+Socket編程
+
+套接字使用TCP通信機制，客戶端程序創建一個套接字，並嘗試連接伺服器的套接字。當連接建立時，伺服器會創建一個Socket對象。客戶端和伺服器現在可以通過對Socket對象的寫入和讀取來進行通信。
+java.net.Socket類代表一個套接字，並且java.net.ServerSocket類為伺服器程序提供了一種來監聽客戶端，並與他們建立連接的機制。
+以下步驟在兩台計算機之間使用套接字建立TCP連接時會出現：
+
+伺服器實例化一個ServerSocket對象，表示通過伺服器上的端口通信。
+伺服器調用ServerSocket類的accept()，該方法一直等待，直到客戶端連接到伺服器上給定的端口。
+伺服器正在等待時，一個客戶端實例化一個Socket對象，指定伺服器名稱和端口號來請求連接。
+Socket類的構造函數試圖將客戶端連接到指定的伺服器和端口號。如果通信被建立，則在客戶端創建一個Socket對象能夠與伺服器進行通信。
+在伺服器端，accept()返回伺服器上一個新的Socket引用，該Socket連接到客戶端的Socket。
+
+連接建立後，通過使用I/O流在進行通信，每一個Socket都有一個輸出流和一個輸入流，客戶端的輸出流連接到伺服器端的輸入流，而客戶端的輸入流連接到伺服器端的輸出流。
+TCP是一個雙向的通信協議，因此數據可以通過兩個數據流在同一時間發送，以下是一些類提供的一套完整的有用的方法來實現Socket。
+
+ServerSocket
+public ServerSocket(int port) throws IOException
+public ServerSocket(int port, int backlog) throws IOException
+public ServerSocket(int port, int backlog, InetAddress address) throws IOException
+public ServerSocket() throws IOException
+
+public int getLocalPort()
+public Socket accept() throws IOException
+public void setSoTimeout(int timeout)
+public void bind(SocketAddress host, int backlog)
+
+Socket
+public Socket(String host, int port) throws UnknownHostException, IOException
+public Socket(InetAddress host, int port) throws IOException
+public Socket(String host, int port, InetAddress localAddress, int localPort) throws IOException
+public Socket(InetAddress host, int port, InetAddress localAddress, int localPort) throws IOException
+public Socket()
+
+public void connect(SocketAddress host, int timeout) throws IOException
+public InetAddress getInetAddress()
+public int getPort()
+public int getLocalPort()
+public SocketAddress getRemoteSocketAddress()
+public InputStream getInputStream() throws IOException
+public OutputStream getOutputStream throws IOException
+public void close() throws IOException
+
+InetAddress
+___________________________________________________________________________________________________________________________________________________________________________________________________________________
+（Operation System）
+為了保證操作系統的穩定性和安全性，一個進程的地址空間劃分為「用戶空間(User space)」和「內核空間(Kernel space)」。
+像我們平常運行的應用程序都是運行在用戶空間，只有內核空間才能進行系統態級別的資源有關的操作，比如文件管理、進程通信、內存管理等等。也就是說，我們想要進行 IO 操作，一定是要依賴內核空間的能力。
+
+並且，用戶空間的程序不能直接訪問內核空間。
+
+當想要執行 IO 操作時，由於沒有執行這些操作的權限，只能發起「系統調用」請求操作系統幫忙完成 (間接訪問內核空間)，具體 IO 的執行是由操作系統的內核來完成的。
+
+我們在平常開發過程中接觸最多的就是 磁盤 IO(讀寫文件) 和 網絡 IO (網絡請求和相應)。
+
+當應用程序發起 I/O 調用後，會經歷兩個步驟：
+1. 內核等待 I/O 設備準備好數據
+2. 內核將數據從內核空間拷貝到用戶空間
+
+在 Linux(UNIX) 操作系統中，共有 5 種 IO 模型，分別是：阻塞IO模型、非阻塞IO模型、IO復用模型、信號驅動IO模型、異步IO模型。
+
+我們常說的IO，指的是文件的輸入和輸出，但是在操作系統層面如何定義IO的呢？到底什麼樣的過程可以叫做是一次IO呢？
+拿磁碟文件讀取為例，我們要讀取的文件是存儲在磁盤上的，我們的目的是把它讀到內存中。可以把這個步驟化簡為把數據從硬件(硬盤)中讀取到用戶空間中。
+其實真正的文件讀取還涉及到緩存等細節。關於用戶空間、內核空間以及硬件等的關係，一次完整的 IO 操作，是「文件」從「硬盤」中轉移(拷貝)到「用戶空間」的過程。
+
+（阻塞IO模型）
+最簡單的IO模型。進程或線程等待某個條件，如果條件不滿足，則一直等下去。條件滿足，則進行下一步操作。
+
+		應用進程				　　 內核
+				  系統調用		　     
+	　 　｛	recvfrom		————→	無數據報準備好	｝
+	　 　｛							｝
+	　 　｛					           ↓		｝
+	　 　｛							｝等待數據
+	　 　｛							｝
+進程阻塞於　  ｛					  數據報準備好	｝
+recvfrom的調用					    複製數據報
+	　　 ｛							｝
+	　　 ｛					           ↓		｝
+	　　 ｛							｝將數據從內核
+	 　　｛							｝複製到用戶空間
+	　　 ｛			返回成功指示			｝
+	　　 ｛	處理數據報	←————	　  複製完成	｝
+
+應用進程通過系統調用 recvfrom 接收數據，但由於內核還未準備好數據報，應用進程就會阻塞住，直到內核準備好數據報，recvfrom 完成數據報複製工作，應用進程才能結束阻塞狀態。
+
+（非阻塞IO模型）
+應用進程與內核交互，目的未達到之前，不再一味的等著，而是直接返回。然後通過輪詢的方式，不停的去問內核數據準備有沒有準備好。如果某一次輪詢發現準備好了，就那把數據拷貝到用戶空間中。
+
+		應用進程				　 　　內核
+				   系統調用
+	　　｛	recvfrom		—————→	　無數據報準備好　  ｝
+	　　｛		　　　  EWOULDBLOCK		　　　　　 ｝
+	　　｛			←—————			　｝	
+	　　｛			   系統調用			　｝
+	　　｛	recvfrom		—————→	　無數據報準備好     ｝
+	　　｛		　　　  EWOULDBLOCK			　｝等待數據
+	　　｛			←—————			　｝
+進程反復調用			   系統調用
+recvfrom等待返	recvfrom		—————→	　無數據報準備好
+回成功指示		　　　  EWOULDBLOCK
+(輪詢)				←—————
+				   系統調用
+	　　｛	recvfrom		—————→	　  數據報準備好       ｝
+	　　｛					 　   複製數據報         ｝
+	　　｛							　｝將數據從內核
+	　　｛					　　 　   ↓	　｝複製到用戶空間
+	　　｛							　｝
+	　　｛			返回成功指示			　｝
+	　　｛	處理數據報	←—————	   　   複製完成	　｝
+
+
+
+應用進程通過 recvfrom 調用不停的去和內核交互，直到內核準備好數據報。如果沒有準備好，內核會返回 error ，應用進程在得到 error 後，過一段時間再發送 recvfrom 請求。在兩次發送請求的時間段，進程可以先做別的事情。
+
+（信號驅動IO模型）
+應用進程在讀取文件時通知內核，如果某個 socket 的某個事件發生時，請向我發一個信號。在收到信號後，信號對應的處理函數會進行後續處理。
+
+			   應用進程					　   內核
+						sigaction系統調用
+						—————→				｝
+		｛	建立SIGIO的		←—————				｝
+進程繼續執行	｛	信號處理程序		　　返回					｝
+		｛									｝
+		｛									｝
+		｛									｝等待數據
+		｛				   遞交SIGIO				｝
+		｛	信號處理程序		←—————		數據報準備好
+			　recvfrom		　系統調用		  複製數據報	｝
+						—————→				｝
+		｛									｝
+		｛									｝將數據從內核
+數據複製到應用緩	｛						　	　  　↓		｝複製到用戶空間
+衝區期間進程阻塞	｛									｝
+		｛				返回成功指示				｝
+		｛	處理數據報		←—————		　複製完成
+		｛				　
+
+應用進程預先向內核註冊一個「信號處理函數」，然後用戶進程返回，並且不阻塞，當內核數據準備就緒時會發送一個信號給進程，用戶進程便在信號處理函數中開始把數據拷貝的用戶空間中。
+相比前幾種，所使用的工具有了一些變化，需要有一些定制(實現複雜)。但是就可以在等待時徹底做別的事。等著警報器響就行。
+
+（IO復用模型）
+多個進程的IO可以註冊到同一個管道上，這管道會統一和內核進行交互。當管道中的某一個請求需要的數據準備好之後，進程再把對應的數據拷貝到用戶空間中。
+
+			應用進程						　　 內核
+						　系統調用
+			  select			—————→		無數據報準備好
+		｛									｝
+		｛									｝
+進程受阻於select	｛									｝等待數據
+調用，等待可能	｛							　　　↓		｝
+多個套接字中的	｛									｝
+任一個變為可讀	｛									｝
+		｛				返回可讀條件				｝
+						←—————		  數據報準備好
+						　系統調用		　複製數據報
+		｛	recvfrom			—————→				｝			
+		｛									｝將數據從內核
+數據複製到應用緩	｛									｝複製到用戶空間
+衝區期間進程阻塞	｛							　　   ↓		｝
+		｛									｝
+		｛				返回成功指示				｝
+		｛				←—————		　 複製完成	｝
+		｛	處理數據報							｝
+
+IO多路轉接是多了一個 select 函數，多個進程的IO可以註冊到同一個 select 上，當用戶進程調用該 select，select 會監聽所有註冊好的IO，如果所有被監聽的IO需要的數據都
+沒有準備好時，select 調用進程會阻塞。當任意一個IO所需的數據準備好之後，select 調用就會返回，然後進程再通過 recvfrom 來進行數據拷貝。
+
+這裡的IO復用模型，並沒有向內核註冊信號處理函數，所以，它並不是非阻塞的。進程在發出 select 後，要等到 select 監聽的所有IO操作中至少有一個需要的數據準備好，
+才會有返回，並且也需要再次發送請求去進行文件的拷貝。
+
+阻塞IO、非阻塞IO、信號驅動IO、IO復用都是「同步」的IO模型。因為真正的數據拷貝過程，都是同步進行的。
+
+信號驅動難道不是異步的麼？信號驅動，內核是在數據準備好之後通知進程，然後進程再通過 recvfrom 操作進行數據拷貝。我們可以認為數據準備階段是異步的，
+但是，數據拷貝操作是同步的。所以，整個IO過程也不能認為是異步的。
+
+把釣魚過程，拆分為兩步驟：1. 魚咬餌 (數據準備)。2. 把魚釣起來放進魚簍裡 (數據拷貝)。無論以上提到的哪種釣魚方式，在第二步，都是需要人主動去做的，並不是魚竿自己完成的。所以，這個釣魚過程其實還是同步進行的。
+
+燒水的警報器一響，整個燒水過程就完成了。水已經是開水了。
+釣魚的警報器一響，只能說明魚兒已經咬鉤，但是還沒有真正的釣上來。
+
+所以，使用帶有警報器的水壺燒水，燒水過程是異步的。
+而使用帶有警報器的魚竿釣魚，釣魚的過程還是同步的。
+
+（異步IO模型）
+可以自動感應魚上鉤，自動收竿，更厲害的可以自動把魚放進魚簍裡。然後，通知我們魚已經釣到了，它就繼續去釣下一條魚去了。
+
+映射到 Linux 操作系統中，這就是異步IO模型。應用進程把IO請求傳給內核後，完全由內核去操作文件拷貝。內核完成相關操作後，會發信號告訴應用進程本次IO已經完成。
+
+		應用進程						　　 內核
+					　系統調用
+		aio_read			—————→		無數據報準備好	｝
+	　　｛				←—————				｝
+	　　｛				　　返回					｝	
+	　　｛							　　  ↓		｝等待數據
+	　　｛									｝
+	　　｛									｝	
+進程繼續執行 ｛									｝
+	　　｛							數據報準備好	
+	　　｛							複製數據報	｝
+	　　｛									｝
+	　　｛									｝
+	　　｛							　　  ↓		｝將數據從內核
+	　　｛									｝複製到用戶空間
+	　　｛　	信號處理			遞交在aio_read中				｝
+		程序處理			  ←—————		　複製完成	｝
+		數據報			　指定的信號
+
+用戶進程發起 aio_read 操作之後，給內核傳遞描述符、緩衝區指針、緩衝區大小等，告訴內核當整個操作完成時，如何通知進程，然後就立刻去做其他事情了。
+當內核收到 aio_read 後，會立刻返回，然後內核開始等待數據準備，數據準備好以後，直接把數據拷貝到用戶空間，然後再通知進程本次IO已經完成。
+
+5 種 IO 模型對比：
+
+阻塞I/O		非阻塞I/O	信號驅動I/O	I/O復用		異步I/O
+  發起		　檢查		　　		  檢查		   發起		｝
+　｜		　檢查				　｜				｝
+　｜		　檢查				　｜阻塞				｝等待
+　｜		　檢查				　↓				｝數據
+　｜阻塞		　檢查		　　通知		  就緒				｝
+　｜		 　 ｜		　　發起		  發起				｝
+　｜		  　｜阻塞	　　  ｜		　｜				｝將數據從
+　｜		 　 ｜		　　  ｜阻塞	　｜阻塞				｝內核複製
+　↓		　  ↓		　　  ↓		　↓				｝到用戶空間
+  完成		　完成		　　完成		  完成		   通知		｝
+
+

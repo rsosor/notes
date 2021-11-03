@@ -1,0 +1,145 @@
+StripPrefix Filter
+修改請求路徑的過濾器
+application.yml
+spring:
+	cloud:
+		gateway:
+			routes:
+			- id: nameRoot
+				uri: http://nameservice
+				predicates:
+				- path=/name/**
+				filters:
+				- StripPrefix=2
+當請求路徑匹配到/name/**會將包含name跟後邊的字符串接去掉轉發，StripPrefix=2代表擷取路徑的個數，當請求/name/bar/foo後端匹配到的請求路徑就會變成http://nameservice/foo。
+application.yml
+spring:
+	cloud:
+		routes:
+		- id: nameRoot
+			uri: lb://spring-cloud-producer
+			predicates:
+			- Path=/name/**
+			filters:
+			- StripPrefix=2
+訪問地址:http://localhost:8888/name/foo/hello頁面會交替顯示：
+hello world!
+hello world smile!
+和直接訪問地址:http://localhost:8888/hello展示的效果一致，說明請求路徑中name/foo/已經被截取
+
+PrefixPath Filter
+作用和StripPrefix相反，是在URL路徑前面添加一部份的前缀
+spring:
+	cloud:
+		gateway:
+			routes:
+			- id: prefixpath_route
+				uri: http://example.org
+				filters:
+				- PrefixPath=/mypath
+限速路由器
+高併發場景中比較常用手段之一，有效的保障服務的整體穩定性，Spring Cloud Gateway提供了基於Redis的限流方案。所以首先要添加對應的依賴包spring-boot-starter-data-redis-reactive
+<dependency>
+	<groupId>org.springframework.cloud</groupId>
+	<artifactId>spring-boot-starter-data-redis-reactive</artifactId>
+</dependency>
+配置文件中需要添加Redis地址和限流的相關配置
+spring:
+	application:
+		name: cloud-gateway-eureka
+	redis:
+		host: localhost
+		password:
+		port: 6379
+	cloud:
+		gateway:
+			discovery:
+				locator:
+					enabled: true
+			routes:
+			- id: requestratelimiter_route
+				uri: http://example.org
+				filters:
+				- name: RequestRateLimiter
+					args:
+						redis-rate-limiter.replenishRate: 10
+						redis-rate-limiter.burstCapacity: 20
+						key-resolver: "#{@userKeyResolver}"
+				predicates:
+					- Method=GET
+filter名稱必須是RequestRateLimiter
+redis-rate-limiter.replenishRate: 允許用戶每秒處理多少個請求
+redis-rate-limiter.burstCapacity: 令牌桶的容量，允許在一秒鐘內完成的最大請求數
+key-resolver:使用SpEL按名稱引用bean
+
+項目中設置限流的策略，創建Config類
+public class Config {
+	@Bean
+	KeyResolver userKeyResolver() {
+		return exchange -> Mono.just(exchange.getRequest().getQueryParams().getFirst("user"));
+	}
+}
+根據請求參數中的user字段來限流，也可以設置根據請求IP地址來限流，設置如下：
+@Bean
+public KeyResolver ipKeyResolver() {
+	return exchange -> Mono.just(exchange.getRequest().getRemoteAddress().getHostName());
+}
+這樣網關就可以根據不同策略來對請求進行限流。
+
+熔斷路由器
+Spring Cloud Gateway也可以利用Hystrix的熔斷特性，在流量過大時進行服務降級，同樣我們還是首先給項目添加上依賴。
+<dependency>
+  <groupId>org.springframework.cloud</groupId>
+  <artifactId>spring-cloud-starter-netflix-hystrix</artifactId>
+</dependency>
+配置示例
+sprign:
+	cloud:
+		gateway:
+			routes:
+			- id: hystrix_route
+				uri: http://example.org
+				filters:
+				- Hystrix=myCommandName
+配置後gateway將使用myCommandName作為名稱生成HystrixCommand對象來進行熔斷管理。如果想添加熔斷後的回調內容，需要在添加一些配置。
+spring:
+	cloud:
+		gateway:
+			routes:
+			- id: hystrix_route
+				uri: lb://spring-cloud-producer
+				predicates:
+				- Path=/consumingserviceendpoint
+				filters:
+				- name: Hystrix
+					args:
+						name: fallbackcmd
+						fallbackUri: forward:/incaseoffailureusethis
+fallbackUri: forward:/incaseoffailureusethis配置了fallback時要回調的路徑，當調用Hystrix的fallback被調用時，請求將轉發到/incaseoffailureusethis這個URL
+
+重試路由器
+RetryGatewayFilter是Spring Cloud Gateway對請求重試提供的一個GatewayFilter Factory
+配置示例：
+spring:
+	cloud:
+    		gateway:
+			routes:
+     			- id: retry_test
+				uri: lb://spring-cloud-producer
+				predicates:
+      				- Path=/retry
+      				filters:
+       				- name: Retry
+					args:
+						retries: 3
+						statuses: BAD_GATEWAY
+Retry GatewayFilter通過這四個參數來控制重試機制：retries, statuses, methods, series
+retries: 重試次數，默認值3次
+statuses: HTTP的狀態返回碼，取值請參考: org.springframework.http.HttpStatus
+methods: 指定哪些方法的請求需要進行重試邏輯，默認值是GET方法，取值參考: org.springframework.http.HttpMethod
+series: 一些列的狀態碼配置，取值參考: org.springframework.http.HttpStatus.Series。符合的某段狀態碼才會進行重試邏輯，默認值是SERVER_ERROR，值是5，也就是5XX，共有5個值。
+
+
+
+
+

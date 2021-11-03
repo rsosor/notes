@@ -1,0 +1,109 @@
+全域變數不打static會讓別檔可以存取
+
+
+都用區域變數去做 頂多重複使用記憶體
+
+---------------------------------------------------------------
+
+使用全域代表各檔常常需要使用到
+
+int a ;
+a=99 ;
+
+他檔
+
+extern int a;
+
+所以你不需要定義a的值因為他是存取int a ;全域
+
+*****************************************************************
+聲明與定義的區別
+對同一個變量或函數的聲明可以有多次，而定義只能有一次
+
+extern的作用
+extern有兩個作用，第一個,當它與"C"一起連用時，如: extern "C" void fun(int a, int b);則告訴編譯器在編譯fun這個函數名時按著C的規則去翻譯相應的函數名而不是C++的， C++的規則在翻譯這個函數名時會把fun這個名字變得面目全非，可能是fun@aBc_int_int#%$也可能是別的，這要看編譯器的"脾氣"了(不同的編譯器採用的方法不一樣)，為什麼這麼做呢，因為C++支持函數的重載啊，在這裡不去過多的論述這個問題，如果你有興趣可以去網上搜索，相信你可以得到滿意的解釋!
+當extern不與"C"在一起修飾變量或函數時，如在頭文件中: extern int g_Int;它的作用就是聲明函數或全局變量的作用範圍的關鍵字，其聲明的函數和變量可以在本模塊或其他模塊中使用，記住它是一個聲明不是定義!也就是說B模塊(編譯單元)要是引用模塊(編譯單元)A中定義的全局變量或函數時，它只要包含A模塊的頭文件即可,在編譯階段，模塊B雖然找不到該函數或變量，但它不會報錯，它會在連接時從模塊A生成的目標代碼中找到此函數。
+
+用static修飾的全局變量
+首先，我要告訴你static與extern是一對“水火不容”的傢伙，也就是說extern和static不能同時修飾一個變量；其次，static修飾的全局變量聲明與定義同時進行，也就是說當你在頭文件中使用static聲明了全局變量後，它也同時被定義了；最後，static修飾全局變量的作用域只能是本身的編譯單元，也就是說它的“全局”只對本編譯單元有效，其他編譯單元則看不到它
+
+**************************************************************************************************
+c語言有三種鏈接，外部鏈接，內部鏈接和無鏈接。
+外部鏈接：對構成程序的所有文件可用，如函數和全局變量具有外部鏈接。
+內部鏈接：僅在聲明他們的文件中是已知的。如聲明為static的文件域具有內部鏈接。
+無連接：僅在自己的塊中已知，其它地方沒有辦法訪問，如局部變量。
+extern主要作用是：聲明在程序的其它地方使用外部鏈接聲明的對象。
+聲明：表述對象的名稱和類型。
+定義：為對象分配存儲空間。
+__________________________________________________________________________________________________________________
+parray=array;	// parray = &array[0]	為記憶體位址
+value = *(array+3);			為值
+value = array[3];			為值
+
+___________________________________________________________________________________________________________________________________________________________________________________________________________________
+Stack
+pop
+push
+
+Queue
+add
+delete
+___________________________________________________________________________________________________________________________________________________________________________________________________________________
+workflow/src/protocol/http_parser.c
+
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include "list.h"
+#include "http_parser.h"
+
+#define MIN(x, y)	((x) <= (y) ? (x) : (y))
+#define MAX(x, y)	((x) >= (y) ? (x) : (y))
+
+#define HTTP_START_LINE_MAX		8192
+#define HTTP_HEADER_VALUE_MAX	8192
+#define HTTP_CHUNK_LINE_MAX		1024
+#define HTTP_TRAILER_LINE_MAX	8192
+#define HTTP_MSGBUF_INIT_SIZE	2048
+
+enum
+{
+	HPS_START_LINE,
+	HPS_HEADER_NAME,
+	HPS_HEADER_VALUE,
+	HPS_HEADER_COMPLETE
+};
+
+enum
+{
+	CPS_CHUNK_DATA,
+	CPS_TRAILER_PART,
+	CPS_CHUNK_COMPLETE
+};
+
+struct __header_line
+{
+	struct list_head list;
+	int name_len;
+	int value_len;
+	char *buf;
+};
+
+int http_parser_add_header(const void *name, size_t name_len,
+			const void *value, size_t value_len,
+			http_parser_t *parser)
+{
+	size_t size = sizeof(struct __header_line) + name_len + value_len + 4;
+	struct __header_line *line;
+
+	line = (struct __header_line *)malloc(size);
+	if (line)
+	{
+		...
+		return 0;
+	}
+	
+	return -1;
+}
+
+...

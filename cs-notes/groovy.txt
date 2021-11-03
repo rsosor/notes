@@ -1,0 +1,142 @@
+在Ubuntu、cygwin之類的地方：
+curl -s get.gvmtool.net | bash
+source "$HOME/.gvm/bin/gvm-init.sh"
+gvm install groovy
+創建一個test.groovy文件
+println "hello groovy"
+執行 groovy text.groovy
+
+可以不用;結尾
+支持動態類型，定義變量可以不指定類型。定義變量可以使用關鍵字def。為了代碼清晰建議還是使用def
+def variable1 = 1
+def variable2 = "I am a person"
+def int x = 1	//也可以指定類型
+函數定義時，參數的類型也可以不指定
+String testFunction(arg1, arg2) {
+	...
+}
+返回值也可以是無類型	//無類型的函數定義，必須使用關鍵字def
+def nonReturnTypeFunc() {
+	last_line	//最後一行就是本函數的返回值
+}
+String getString() {	//如果指定了函數返回類型，可以不加def關鍵字
+	return "I am a person"
+}
+
+Groovy對字符串支持相當強大，充分吸收了一些腳本語言的優點：
+單引號''中的內容嚴格對應Java中的String，不對$進行轉義
+def singleQuote='I am $ dollar'			//輸出就是I am $ dollar
+雙引號""的內容則和腳本語言的處理有點像，如果字符中有$的話，則它會$表達式先求值
+def doubleQuoteWithoutDollar = "I am one dollar"	//輸出I am one dollar
+def x = 1
+def doubleQuoteWithDollar = "I am $x dollar"	//輸出I am 1 dollar
+三個引號'''xxx'''中的字符串支持隨意換行
+def multiLines = '''begin
+	line 1
+	line 2
+	end '''
+函數調用的時候還可以不加括號
+println("test") ---> println "test"
+雖然函數調用可以不帶括號，但是Groovy經常把屬性和函數調用混淆
+def getSomething() {
+	"hello"
+}
+getSomething()不加括號的話，Groovy會誤以為getSomething是一個變量
+所以，如果這個函數是Groovy API或者Gradle API中比較常用的，如println就可以不帶，否則還是要帶括號。
+
+Groovy中的數據類型我們就介紹兩種和Java不太一樣的：
+作為動態語言，Groovy中的所有萬物都是對象。所以Java中基本數據類型在Groovy作為它們的包裝數據類型
+Groovy中的容器類
+List:底層對應Java中的List接口，一般用ArrayList作為實現類
+Map:底層對應Java中的LinkedHashMap
+Range:List的一種拓展
+1.List
+def aList = [5, 'string', true]	//List由[]定義，其元素可以是任何對象
+變量存取:可以直接通過索引存取，不用擔心索引越界。如果超過當前鏈表長度，List會自動往該索引添加元素
+assert aList[1] == 'string'
+assert aList[5] == null	//第6個元素為空
+aList[100] = 100
+assert aList [100] == 100
+println aList.size  ===>結果是101
+2.Map
+def aMap = ['key1':'value1', 'key2':true]
+key必須是字符串，value可以是任何對象。key可以用''或""包起來，也可以不用引號包起來。
+def aNewMap = [key1:"value",key2:true]	//其中的key1和key2默認被處理成字符串"key1"和"key2"
+def key1="wowo"
+def aConfuseMap=[key1:"who am i?"]
+//aConfuseMap中的key1是字符串"key1"。如果是"wowo"的話，aConfuseMap必須設置成以下
+def aConfuseMap=[(key1):"who am i?"]
+//Map中元素的存取更加方便，它支持多種方法：
+println aMap.keyName	
+println aMap['keyName']	//這種表達方法更傳統一點
+aMap.anotherkey = "i am map"	//為map添加新元素
+3.Range
+def aRange = 1..5	//<==Range類型的變量 由begin值+兩個點+end值表示
+//左邊這個aRange包含1,2,3,4,5
+//如果不想包含最後一個元素，則
+def aRangeWithoutEnd = 1..<5   <==包含1,2,3,4
+println aRange.from
+println aRange.to
+
+如果一個類有名為xxyyzz屬性，Groovy會自動添加getXxyyzz、setXxyyzz函數，由於它們不可以被外界設置，所以沒有公開setFrom、setTo函數
+閉包 Closure 一種數據類型，代表了一段可執行的代碼
+def aClosure = {
+	String param1, int param2 ->	//lambda，箭頭前面參數，後面是代碼
+	println"this is code"		//最後一句是返回值
+}
+def xxx = {parameters -> code}
+def xxx = {無參數,純code}	//這種不需要-> 預設參數it
+和函數指針很像。閉包定義好後，要調用它的方法就是：
+閉包對象.call(參數)
+閉包對象(參數)
+aClosure.call("this is string", 100)
+aClosure("this is string", 100)
+
+如果閉包沒定義參數的話，隱含有一個參數it，和this的作用類似。
+def greeting = { "Hello, $it!" }
+assert greeting('Patrick') == 'Hello, Patrick!'
+等同於
+def greeting = { it -> "Hello, $it!" }
+assert greeting('Patrick') == 'Hello, Patrick!'
+但是，如果閉包定義用這種寫法，表示閉包沒有參數!
+def noParamClosure = { -> true}
+此時傳參數會報錯
+noParamClosure("test")
+閉包在Groovy中大量使用，比如很多類都定義了一些函數，這些函數最後一個參數都是一個閉包。
+public static<T> List<T> each<List<T> self, Closure closure)
+表示針對List的每一個元素都會調用closure做一些處理。這裡的closure有點回調函數的感覺。但是，在使用這個each函數的時候，我們傳遞一個怎樣的Closure？比如:
+def iamList = [1,2,3,4,5]	//定義一個List
+iamList.each {	//調用它的each，each是一個函數，圓括號去哪了呢？
+	println it
+}
+當函數的最後一個參數是閉包的話，可以省略圓括號！比如
+def testClosure(int a1, String b1, Closure closure) {
+	// do something
+	closure()	//調用閉包
+}
+//調用的時候就可以免括號
+testClosure 4, "test", {
+	println " i am in closure"
+}	//代碼簡潔更像腳本語言，但是要小心閱讀
+如何確定Closure的參數
+public static <T> List<T> each(List<T> self, Closure closure)
+
+def iamList = [1,2,3,4,5]
+iamList.each{
+	println it
+}
+對於each所需要的Closure，參數是？有多少個參數？返回值是？
+iamList.each{String name, int x ->
+	return x
+}	//運行時會報錯
+Closure一定會和使用它的上下文有極強的關聯。能通過查詢API文檔了解上下文語意
+圖8中
+each函數說明中，將給指定的closure傳遞Set中的每一個item。所以closure的參數只有一個。
+findAll，對Map的findAll而言，Closure可以有兩個參數。findAll會將Key和Value分別傳遞去。並且Closure返回true，表示該元素是自己想要的。返回false表示不是自己要的。
+Closure很大程度依賴你對API的熟悉程度，所以最初SDK查詢少不了。
+
+腳本類、文件I/O和XML操作
+1.腳本中import其他類
+在groovy中，系統自帶會加載當前目錄/子目錄下的xxx.groovy文件。所以當執行groovy test.groovy的時候，test.groovy import的Test類能被自動搜索並加載到。
+2.腳本到底是甚麼
+Groovy可以像寫腳本一樣，把要做的事情都寫在xxx.groovy中，而且可以通過groovy xxx.groovy直接執行這個腳本

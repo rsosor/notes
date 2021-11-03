@@ -1,0 +1,129 @@
+https://home.gamer.com.tw/creationDetail.php?sn=3724093
+//1.2行: 以後 Windows API 跟字串有關的函式和struct都會使用Unicode的版本，反之會用 ANSI 的版本，例如下面的 RegisterClass，翻一下 winuser.h 可以找到 RegisterClassA 和 RegisterClassW。
+#define UNICODE				// Windows 2000、XP 以後內部處理文字都是 Unicode，為了相容性保留了 ANSI 模式。
+#include <windows.h>			// Windows API 有很多macro、型態和常數名稱是標準C沒有的，全大寫字母表示
+
+LRESULT CALLBACK WndProc (HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam) {		// L"window"的L表示wide character，C語言標準，在Windows此型態一個字元2bytes，沒加L是char型態1byte
+	switch(message) {
+	case WM_DESTROY:
+		PostQuitMessage(0);
+		return 0;
+	}
+	return DefWindowProc(hwnd, message, wparam, lparam);
+}
+
+int main() {
+	WNDCLASS wndclass;			// struct
+	ZeroMemory(&wndclass, sizeof(WNDCLASS));	// 把每個byte設為0，再填入需要的內容，至少需要5個
+	wndclass.style=CS_HREDRAW | CS_VREDRAW;		// bit flags，一些開關型屬性，將要開啟的bit用位元or運算。這裡 CS_HREDRAW、CS_VREDRAW 是指視窗被蓋住或移動時要自動重畫。(CS=class style)
+	wndclass.lpfnWndProc= WndProc;			// 處理視窗事件的程式，填上面宣告的 WndProc()
+	wndclass.hCursor=LoadCursor(NULL,IDC_ARROW);	// 滑鼠游標，LoadCursor(NULL,????)是載入系統內建游標，如果不填這一項游標移到視窗內會消失(XP會，Win10似乎不會這樣)
+ 	wndclass.hbrBackground=(HBRUSH)(COLOR_BTNFACE+1);	// 背景顏色，這裡填了系統定義的顏色，如果不填則視窗內部會變成空的，可看到後面的東西(XP確認，其他的 Windows不一定)。+1和轉型是 WNDCLASS 的規定
+	wndclass.lpszClassName=L"window";			// class名稱，等一下CreateWindow要用。Windows API裡要一次傳入或傳回很多值，常常是宣告一個struct再把它的指標傳入(類似物件)
+	RegisterClass(&wndclass);
+
+	RECT rect = {0, 0, 200, 200};
+	AdjustWindowRect(&rect, WS_CAPTION | WS_SYSMENU | WS_VISIBLE, 0);
+
+	HWND window = CreateWindow(L"window", L"title",	// 叫系統產生一個視窗(有11個參數，此函式使用率很高) 註：實際存在函式是CreateWindowEx，CreateWindow是個macro代換成CreateWindowEx。
+		WS_OVERLAPPED|WS_SYSMENU|WS_VISIBLE,CW_USEDEFAULT,CW_USEDEFAULT,200,200,NULL,NULL,NULL,NULL);
+
+	MSG msg;						//* 視窗程式是一個迴圈不斷執行「等待→發生事件→處理事件→等待→……」。
+							  * GetMessage()讓程式進入等待狀態直到發生事件，它會把事件資訊存在 MSG 結構裡。
+							  * 之後用DispatchMessage()呼叫適當callback處理事件。
+							//* GetMessage() 收到 WM_QUIT 訊息時傳回 0，有 error 傳回 -1，這裡寫成當它傳回 0或-1 時跳出迴圈。
+	int ret;
+	for(;;) {
+		ret = GetMessage(&msg, NULL, 0 , 0);
+		if (ret<=0)
+			break;
+		DispatchMessage(&msg);
+	}
+
+	return 0;
+}
+CreateWindowEx參數
+1. class name
+2. window text
+3. bit flags
+4~7. X座標、Y座標、寬、高
+8. 父視窗，這裡是頂層視窗沒有父視窗，所以填NULL
+9. 目錄handle，這個視窗沒有目錄所以填NULL
+10. hInstance，這是為了相容95、98、ME的參數，之後版本的Windows可填NULL
+11. 額外資料，這裡沒有故填NULL
+
+WndProc，LRESULT CALLBACK是傳回值型態和calling convention。四個參數如下
+hwnd: 發生事件的視窗
+message: 一個ID代表事件種類
+wparam和lparam: 兩個整數額外資訊，意義隨事件種類而異
+一般是先判斷message的值再做處理。本例只處理一個 WM_DESTROY 訊息，點視窗右上角 X或Alt+F4 關閉視窗會產生這個訊息，裡面的 PostQuitMessage() 是發出一個 WM_QUIT 訊息讓程式可以跳出 GetMessage 迴圈
+
+視窗還有畫圖、滑鼠點選等等的訊息，我們沒處理的事件就呼叫 DefWindowProc() 讓系統做預設處理。
+執行到 DefWindowProc() 才能在畫面上看到視窗，CreateWindow() 只是配置記憶體裡的資料並把畫出視窗的事件放進 message queue，直到 DefWindowProc() 處理事件才真正畫出東西。
+
+命令列的話用這個指令build
+GCC:
+gcc window.c -o window.exe -0s -s -luser32
+VC:
+cl window.c /Fewindow.exe /02 /MD /LINK user32.lib
+
+user32.lib是連結到Windows的視窗系統函式庫user32.dll，本篇提到函式都定義在這裡面。
+使用IDE如果跳 無法解析的外部符號 __imp_GetMessageW......的錯誤，在連結函式庫的設定加上user32。
+
+不過有沒有發現兩件事
+1.在CreateWindow裡指定寬高各200，但這是包含邊框的大小，視窗工作區域變得小於200×200
+2.執行時會同時出現一個命令列視窗
+
+1用AdjustWindowRect函式
+BOOL AdjustWindowRect(LPRECT lpRect, DWORD dwStyle, BOOL bMenu);
+// RECT結構內容如下
+struct RECT {
+	LONG left;
+	LONG top;
+	LONG right;
+	LONG bottom;
+};
+
+LPRECT型態前面的LP代表RECT的指標(即RECT*)。
+先宣告一個RECT struct，填上需要的工作區大小，傳入這個函式就會傳回包含邊框的大小，之後再丟給CreateWindow。
+RECT rect = {0, 0, 200, 200};
+AdjustWindowRect(&rect, WS_CAPTION | WS_SYSMENU | WS_VISIBLE, 0);
+
+HWND window=CreateWindow(L"window", L"title", WS_OVERLAPPED | WS_SYSMENU | WS_VISIBLE, CW_USEDEFAULT, rect.right-rect.left, rect.bottom-rect.top, NULL, NULL, NULL, NULL);
+
+AdjustWindowRect第二個參數是window style(=CreateWindow的第三個參數)，此函式的說明中有寫不能包含WS_OVERLAPPED，所以改用WS_CAPTION。
+第三個參數是視窗有沒有目錄，沒有目錄所以填0。
+
+2是因為Windows程式有分命令列和視窗模式兩種，沒指定時compiler會把它build成命令列模式，就如此例有個命令列視窗。
+GCC要加個參數-mwindows
+gcc window.c -o window.exe -0s -s -luser32 -mwindows
+
+Code::Blocks 的話，把 project 設定成 GUI application 就會自動加上這個參數，可以注意一下 IDE 呼叫 compiler 的指令。
+
+VC要把 main 函式改成如下
+int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
+
+加上 AdjustWindowRect 以後就是視窗程式的基本型，要寫什麼視窗程式都是先寫出這一段再加東西。
+RECT rect = {0, 0, 200, 200};
+AdjustWindowRect(&rect, WS_CAPTION | WS_SYSMENU | WS_VISIBLE, 0);
+
+視窗(window)：
+
+在Windows API裡視窗不只是有標題列、邊框的那種東西，所有圖形介面元件包括按鈕、下拉式選單、輸入框都是視窗，它們都在畫面上佔有一個矩形區域，產生的方法也都是 CreateWindow()。
+CreateWindow的第一參數：class name 就是告訴系統要產生哪一種元件，除了自己用 RegisterClass 註冊的以外有很多系統內建的元件，例如按鈕、check box、radio button 是 L"BUTTON"，下拉式選單是 L"COMBOBOX"。
+
+控制碼(handle)：
+
+代表一個Windows系統底層的物件，程式想下指示給物件就要在函式中把該物件的handle傳入。它跟指標同樣大小，在32位元環境下是32位元整數，64位元環境是64位元。
+Windows API裡很多H開頭的型態名稱都是handle，如檔案和thread(HANDLE)、視窗(HWND)，還有 GDI 裡的 HFONT、HDC。
+概念有點類似物件
+// 實際存在的函式
+ShowWindow(hwnd, SW_MINIMIZE);
+// 有點像這樣
+hwnd->Show(SW_MINIMIZE);
+但Windows API 要給很多程式語言用，純C語法比較能跟其他語言整合，後者就綁死在C++。
+
+以上就是 Windows 最基本、最底層的圖形介面API，其他的圖形介面 framework 像是 MFC、Windows Form、跨平台的 wxWidgets，都是架在它上面。
+遊戲一般是建一個視窗後畫面就全部自己畫，不用作業系統內建的視窗元件，用最直接的方法做事可減少多餘的東西提升效能。
+
+但是用底層API建複雜的UI很煩雜，而且沒有一些方便的功能，例如視窗大小改變時自動改變元件的位置大小。如果想做office、繪圖軟體之類的軟體，使用以上那些整合framework比較不會混亂。
