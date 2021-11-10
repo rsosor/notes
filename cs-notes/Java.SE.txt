@@ -905,7 +905,7 @@ new 創建對象實例(對象實例在堆內存)，對象引用指向對象實�
 
 ___________________________________________________________________________________________________________________________________________________________________________________________________________________
 （Abstract）
-不用定義{}的方法要在最前面標示abstract，必須為abstract class，(不得宣告為 final class)，和interface一樣無法實例化(匿名類別不是抽象發法實例)，但可以擺在左邊：Fish shark = new Shark(); Fish為interface || abstract class。
+不用定義{}的方法要在最前面標示abstract，必須為 abstract class，(不得宣告為 final class)，和 interface 一樣無法實例化(匿名類別不是抽象發法實例)，但可以擺在左邊：Fish shark = new Shark(); Fish為interface || abstract class。
 專門被拿來當作父類別的類別，具有範本作用
 只能被繼承 (使用 extends 關鍵字)，子類別需實作抽象方法 (否則繼續抽象下去)
 其抽象方法 (abstract method)封裝等級不能是 private (即必須是 public/protected/(default))
@@ -927,9 +927,9 @@ public interface IBaz {
 	}
 }
 不一定需要定義方法，即空介面 (ex: java.io.Serializable)
-只能被實作 (使用 implements 關鍵字)，子類別需實作抽象方法 (否則需宣告為抽象類別，abstract class implements interface)；假設實作了還是設定abstract class implements interface？理論上可以但意義？因為往後還會增加抽象方法？
+只能被實作 (使用 implements 關鍵字)，子類別需實作抽象方法 (否則需宣告為抽象類別，abstract class implements interface)；假設實作了還是設定 abstract class implements interface？理論上可以但意義？因為往後還會增加抽象方法？
 子類別實作抽象方法修飾字必須是 public (抽象方法預設使用 public abstract 修飾)
-interface中也可以定義常數(列舉常數)：
+interface 中也可以定義常數(列舉常數)：
 public interface Action {
 	public static final int STOP = 0;		// public static final也可以不打！
 	public static final int RIGHT = 1;
@@ -1052,13 +1052,13 @@ public class Service implements Some, Other {
 介面可以繼承別的介面，也可以同時繼承兩個以上的介面，也是使用extends關鍵字，這代表了繼承父介面的行為，在JDK8之後，也代表了繼承父介面中有限制的實作。
 
 
-（Override）：extends、implements都有@Override。
+（Override）：extends、implements 都有 @Override。
 「運行期」
 1. 返回值類型(小於等於父類)、方法簽章 (signature)必須相同，拋出的異常類 範圍 小於等於父類，訪問修飾符 範圍 大於等於父類。
 2. 如果父類方法訪問修飾符為 private/final/static 則子類就不能重寫該方法，但是被 static 修飾的方法能夠再次聲明。
 3. 構造方法無法被重寫
 
-在Java類中，所有的private方法都隱式地指定為final的（在private方法上加上final修飾符，其實是沒啥意義的）。新類可以直接複用基類的非private的屬性和方法，也就是說private方法是無法被繼承者修改的。
+在 Java 類中，所有的 private 方法都隱式地指定為 final 的（在 private 方法上加上final修飾符，其實是沒啥意義的）。新類可以直接複用基類的非 private 的屬性和方法，也就是說 private 方法是無法被繼承者修改的。
 
 
 
@@ -1626,6 +1626,44 @@ System.out.println(Arrays.toString(names));
 
 ___________________________________________________________________________________________________________________________________________________________________________________________________________________
 （Thread && Runnable && 並行API）
+死鎖：通常指兩個或以上進程由於競爭資源或者彼此通訊而造成的一種阻塞現象，若無外力干涉，將無法繼續執行下去，但他是靜態問題，進程被卡，CPU 的佔有率也是 0，會被調用出，相對活鎖好發現與分析。
+活鎖：指事務 A 可以使用資源，但他在檢測到其他事務也將執行時會讓其他事務先使用此資源，事務 B 可以使用此資源，但是他也檢測到其他事務將執行所以也讓行，於是兩者都無法使用此資源。
+飢餓：無法獲取到所需要的資源。
+
+
+阻塞、非阻塞(無障礙、無鎖、無等待)：通常形容多線程之間的相互影響。
+比如一個線程佔用了臨界區資源，其他線程想得到這個資源就必須等待，等待會導致線程掛起，就是阻塞。非阻塞就是允許多個線程同時進入這個臨界區，不能保證共享數據的安全。
+
+阻塞：悲觀策略
+
+非阻塞：
+無障礙
+自由出入臨界區
+無競爭時，有限步內完成操作
+有競爭時，回滾數據(寬進嚴出)
+樂觀策略
+所有線程相當於在拿一個系統當前的快照，直到快照是有效為止。
+
+
+
+無鎖(是無障礙的)
+保證有一個線程可以勝出，所有線程都能順利執行，但是進入屬於優先級低的可能導致飢餓的。
+
+
+
+無等待(基於無鎖)
+所有線程都必須在有限步內完成，自然是無飢餓的。
+無等待是併行的最高級別，能使系統達到最優狀態。
+
+典型案例：
+如果只有讀沒有寫線程，則必然是無等待的。
+如果既有讀也有寫線程，而每個寫線程之前，都把數據拷貝一份副本，然後修改這個副本，而不是修改原始數據，因為修改副本則沒有衝突，這修改過程也是無等待的。
+最後需要做同步的只是將寫完的數據覆蓋原始數據。
+
+但無等待要求比較高實作比較困難，無鎖使用比較廣泛。
+
+
+
 Runnable←…Thread
 implements Runnable	 較有彈性，因為類別還能繼承其他類別
 extends Thread	直接繼承比較快，或是為了利用 Thread 定義的方法，才會繼承 Thread 來實作
@@ -1799,7 +1837,7 @@ public class Variable1Test {
 	}
 }
 
-（synchonized）要求達到被標示區塊的「互斥性(Mutual exclusion) 與 可見性(Visibility)」
+（synchronized）要求達到被標示區塊的「互斥性(Mutual exclusion) 與 可見性(Visibility)」
 volatile 的變數，不允許執行緒快取，保證變數的可見性，只能在共享記憶體存取。
 正確使用 volatile
 public class Some implements Runnable {
@@ -1907,12 +1945,15 @@ puvlic class Producer implements Runnable {
 	}
 }
 
+
+
+
 （java.util.concurrent.locks 套件）提供Lock、ReadWriteLock、Condition介面以及相關實作類別，提供類似 synchronized、wait()、notify、notifyAll()的作用，及更多高階功能。
 Lock 介面主要實作類別之一 ReentrantLock，可達到 synchronized 作用，也提供額外功能。
 Lock 介面定義了 lock(), unlock(), tryLock()
 tryLock() 能取得鎖定true, 否則false不會阻斷。
 
-看看如何使用ReentrantLock。
+看看如何使用 ReentrantLock。
 import java.util.Arrays;
 import java.util.concurrent.locks.*;
 
@@ -2033,11 +2074,11 @@ ReadWriteLock 介面定義了讀取鎖定與寫入鎖定的行為，可以使用
 StampedLock lock = new stampedLock;
 	var stamp lock.writeLock();
 		lock.unlockWrite(stamp);
-ReadWriteLock在沒有讀取寫入鎖定才可以取得寫入鎖定，可用於實現悲觀讀取(Pessimistic Reading)，thread 讀取時經常有 other thread 有寫入需求，為維持資料一致。
+ReadWriteLock 在沒有讀取寫入鎖定才可以取得寫入鎖定，可用於實現「悲觀讀取(Pessimistic Reading)」，thread 讀取時經常有 other thread 有寫入需求，為維持資料一致。
 
-如果讀取 thread 很多，寫入 thread 甚少，使用 ReadWriteLock 可能使得寫入 thread 遭受飢餓(Starvation)問題，寫入thread遲遲無法競爭到內部鎖，而一直處於等待。
+如果讀取 thread 很多，寫入 thread 甚少，使用 ReadWriteLock 可能使得寫入 thread 遭受飢餓(Starvation)問題，寫入 thread 遲遲無法競爭到內部鎖，而一直處於等待。
 
-＊JKD8 新增了 StampedLock 類別，可支援樂觀讀取(Optimistic Reading)實作，若讀取 thread 很多寫入 thread 甚少，你可以樂觀地認為，寫入與讀取同時發生的機會甚少，程式可以查看資料讀取之後，是否遭到寫入thread的變更，再採取後續的措施(重新讀取變更後的資料，或者是拋出例外)。
+＊JKD8 新增了 StampedLock 類別，可支援「樂觀讀取(Optimistic Reading)」實作，若讀取 thread 很多寫入 thread 甚少，你可以樂觀地認為，寫入與讀取同時發生的機會甚少，程式可以查看資料讀取之後，是否遭到寫入 thread 的變更，再採取後續的措施(重新讀取變更後的資料，或者是拋出例外)。
 
 由於 FutureTask 也實作了 Runnable 介面，可以指定給 Thread 建構之用。
 FutureCallableDemo
@@ -3097,6 +3138,11 @@ AIO 也就是 NIO 2。在 Java 7 中引入了 NIO 的改進版 NIO 2，它是異
 AIO 是 異步IO 的縮寫，雖然 NIO 在網絡操作中，提供了非阻塞的方法，但是 NIO 的 IO 行為還是同步的。對於 NIO 來說，我們的業務線程是在 IO 操作準備好時，得到通知，接著就由這個線程自行進行 IO 操作，IO 操作本身是同步的。(除了 AIO 其它的 IO 類型都是同步的，這一點可以從底層IO線程模型解釋)
 
 目前來說 AIO 的應用還不是很廣泛。Netty 之前也嘗試使用過 AIO，不過又放棄了。這是因為，Netty 使用了 AIO 之後，在 Linux 系統上的性能並沒有多少提升。
+
+總結：
+
+阻塞I/O 和 非阻塞I/O 區別在於：在 I/O 操作的完成或數據的返回前是等待還是返回(可以理解成一直等還是分時間段等)
+同步I/O 和 異步I/O 區別在於：在I/O操作的完成或數據的返回前會不會將進程阻塞(或者説是主動查詢還是被動等待通知)
 
 ___________________________________________________________________________________________________________________________________________________________________________________________________________________
 （NIO && NIO2）

@@ -159,10 +159,13 @@ git branch -m <oldName> <newName>
 git branch -m <oldName> <newName>	// 重命名遠程分支對應的本地分支
 git push --delete origin oldName		// 刪除遠程分支
 git push origin <newName>		// 上傳新命名的本地分支
-git branch --set-upstream-to origin/newName	// 把修改後的本地分支與遠程分支關聯
+git branch --set-upstream-to origin/newName、git branch -u origin/newName	// 把修改後的本地分支與遠程分支關聯
 git push -u origin newName		// 合併上述兩行
 
 git branch --unset-upstream		// 解除遠程分支關聯
+git br -u origin/name name	// 不切換分支直接設置其他分支的 upstream
+git push -u origin name : name	// 或 push 的時候直接設置
+git remote add、git branch --set-upstream-to	// 前者把所有的遠程分支都抓下來，後者可以單獨跟蹤分支
 
 git branch
 git branch <new-branch>
