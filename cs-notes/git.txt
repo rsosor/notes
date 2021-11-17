@@ -8,19 +8,46 @@ working directory	   →	staging area	→	local repository	→	remote repository
 					pull
 工作目錄			.git 文件夾(暫存區)		.git 文件夾(repo/資料庫/編輯環境/本地版本庫)
 Working tree means the directory that contains the .git folder, including all sub directories and files.
-1.init       初始化
-2.add
-3.fix        業務對 修改程式
-4.adjust    業務改 程式對而改
-5.review  通常任務分支上、review 整理就包括移除而不是用 del
-6.del       通常任務分支上、review 後、刪除更新時不在新增內容審核內(不得不刪除檔案的情況)
-7.sync(synchronize)   進度同步到遠端數據庫，換人接手或其他人支援，必須先將手中代碼同步到遠端。公司與客戶端手動同步
-8.tmp(temporary:臨時)       暫存本地數據庫
-9.merge	手動合併時(公司端與客戶端有各自版控專案要同步
 
-header
-body
-footer #+ISSUE ID   若 Git 線上平台未與工單系統整合可先以 當天日期+流水號
+
+
+Header: <type>(<scope>): <subject>
+ - type: 代表 commit 的類別：feat, fix, docs, style, refactor, test, chore，必要欄位。
+ - scope 代表 commit 影響的範圍，例如資料庫、控制層、模板層等等，視專案不同而不同，為可選欄位。
+ - subject 代表此 commit 的簡短描述，不要超過 50 個字元，結尾不要加句號，為必要欄位。
+
+Body: 72-character wrapped. This should answer:
+ * Body 部份是對本次 Commit 的詳細描述，可以分成多行，每一行不要超過 72 個字元。
+ * 說明程式碼變動的項目與原因，還有與先前行為的對比。
+
+Footer: 
+ - 填寫任務編號（如果有的話）.
+ - BREAKING CHANGE（可忽略），記錄不兼容的變動，
+   以 BREAKING CHANGE: 開頭，後面是對變動的描述、以及變動原因和遷移方法。
+#+ISSUE ID   若 Git 線上平台未與工單系統整合可先以 當天日期+流水號
+
+type: subject 是簡述不要超過 50 個字元
+
+type 只允許使用以下類別：
+．feat	新增/修改功能 (feature)。
+．fix	修補 bug (bug fix)。
+．docs	文件 (documentation)。
+．style	格式 (不影響程式碼運行的變動 white-space, formatting, missing semi colons, etc)。
+．refactor	重構 (既不是新增功能，也不是修補 bug 的程式碼變動)。
+．perf	改善效能 (A code change that improves performance)。
+．test	增加測試 (when adding missing tests)。
+．chore	建構程序或輔助工具的變動 (maintain)。
+．revert	撤銷回覆先前的 commit 例如：revert: type(scope): subject (回覆版本：xxxx)。
+
+．init	初始化
+．add
+．fix	業務對 修改程式
+．adjust	業務改 程式對而改
+．review	通常任務分支上、review 整理就包括移除而不是用 del
+．del	通常任務分支上、review 後、刪除更新時不在新增內容審核內(不得不刪除檔案的情況)
+．sync	進度同步到遠端數據庫，換人接手或其他人支援，必須先將手中代碼同步到遠端。公司與客戶端手動同步
+．tmp(temporary:臨時)	暫存本地數據庫
+．merge	手動合併時(公司端與客戶端有各自版控專案要同步
 
 .gitignore 優先級別：
 1. 從命令行中讀取可用的忽略規則
@@ -186,6 +213,7 @@ ls -a						// 查看檔案(含隱藏)	MacOS: ll -la
 ./ ../ .git/
 rm -rf .git						// 刪除倉庫文件夾下隱藏的 .git 文件夾(分支刪除)
 git log -p -2					// -p 顯示每筆提交的修改內容；-2 限制只輸出最後兩筆
+git log --pretty=oneline
 git clone <url>					// 下載遠端數據庫
 git clone -b develop --single-branch			// 複製指定的分支
 git rebase --abort					// 代碼回退
@@ -206,7 +234,20 @@ git remote add origin https://github.com/rsosor/demo.git
 git remote add origin git@github.com:rsosor/demo.git
 
 git pull
-git pull --rebase origin main
+git pull --rebase origin main	// rebase 就不會有合併點，如果 conflict 比較多則需要依次處裡。想要把 rebase 當做 git pull 的預設值，可以在專案的 .git/config 加上
+
+
+[branch "master"]
+  remote = origin
+  merge = refs/heads/master
+  rebase = true
+
+也可以直接加到 ~/.gitconfig 讓所有的 tracked branches 都自動套用這個設定：
+
+
+[branch]  
+  autosetuprebase = always
+
 git pull (<local_branch_name> origin/<remote_branch_name>) 去遠端 fetch 新版並 merge 進 local branch
 如果覺得這種 local branch 和 remote branch 的 merge commit log 很煩，建議可以改使用 git pull –rebase 變成 fast-forward 形式 (就會變得像 svn up，而不會有 merge commit log)。簡單說就是先砍掉 local branch 分岔點之後自己的 commit，然後把遠端的 commit 先一個個 apply 進來，最後再把自己的 commit 再 apply 進去 (如果有 conflict 會中途停下來，等你修好才會繼續 apply)，如此一來看線圖就會變成一條線而已，也就沒有所謂 merge 這個動作了。
 
@@ -592,6 +633,7 @@ git diff --cached #查看暂存区和版本库的区别
 执行动作1⃣️2⃣️3⃣️。慎用，会改掉工作区文件。
 git commit -m "我再悄咪咪试一下 --hard"
 git log --oneline --graph
+git log --pretty=oneline
 git reset --hard HEAD^
 git diff #查看工作区和暂存区的区别
 git diff --cached #查看暂存区和版本库的区别

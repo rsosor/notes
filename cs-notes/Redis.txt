@@ -1,0 +1,68 @@
+Redis 安裝：
+1. 直接編譯安裝
+2. 使用 Docker
+3. 直接安裝
+4. windows 安裝
+
+1. 直接編譯安裝
+yum install gcc-c++	// 準備 gcc 環境
+
+wget http://download.redis.io/releases/redis-5.0.7.tar.gz		// 下載並安裝 Redis
+tar -zxvf redis-5.0.7.tar.gz
+cd redis-5.0.7/
+make
+make install
+
+redis-server redis.conf	// 啟動 Redis
+
+
+2. Docker 安裝
+//	準備好 Docker
+docker run --name javaboy-redis -d -p 6379:6379 redis --requirepass 123
+
+//	Docker 上的 Redis 啟動成功之後，可以從宿主機上連接(前提宿主機上存在 redis-cli)
+edis-cli -a 123
+
+//	如果宿主機上沒有安裝 Redis，也可以進入到 Docker 容器種去操作 Redis
+docker exec -it javaboy-redis redis-cli -a 123
+
+
+3. 直接安裝
+CentOS:
+yum install redis
+
+Ubuntu:
+apt-get install redis
+
+Mac:
+rew install redis
+
+
+4. Windows 運行
+
+redis-server.exe redis.windows.conf
+
+
+redis-cli -h 127.0.0.1 -p 6379	// 連接 Redis 客戶端進入介面，命令格式: redis-cli -h <主機地址> -p <端口> -a <password>
+
+
+將 Redis 設置成 windows 下的服務：
+a) redis-server --service-install redis.windows-service.conf --loglevel verbose
+     此命令用的是redis.windows-service.conf配置文件
+
+b) redis-server --service-install redis.windows.conf --loglevel verbose
+     此命令用的是redis.windows.conf配置文件
+
+
+redis-server.exe: redis 伺服器啟動指令碼
+redis-cli.exe: redis 客戶端啟動指令碼
+redis.windows.conf、redis.windows-service.conf: 啟動配置檔案
+# redis.windows.conf 更多是以「臨時服務」方式啟動 redis 使用的配置檔案。而當需要將 redis 註冊成「系統服務」的時候，推薦 redis.windows-service.conf
+
+logfile: 指定 Redis 日誌記錄方式，預設值為 stdout，表示列印在命令列終端的視窗上
+
+syslog-enabled: 'syslog-enabled' 設定為 yes 會把日誌輸出到系統日誌，預設是 no
+
+syslog-ident redis: 指定 syslog 的標示符
+
+由於以 redis.windows-service.conf 作為配置啟動是用於系統常駐服務，所以要將日誌記錄到 `檔案` 中以及 `系統日誌` 中去

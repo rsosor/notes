@@ -259,6 +259,3 @@ END IF
 （MySQL 管理利器 MySQL Utilities）
 （讀寫分離的利器 MySQL Proxy）
 （精通 MySQL 儲存引擎）
-綜合專案1: 開發線上購物
-綜合專案2: 討論區管理系統資料庫設計
-綜合專案3: 新聞發佈系統資料庫設計
