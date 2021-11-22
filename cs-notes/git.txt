@@ -233,8 +233,18 @@ git remote -v					// 觀看遠端數據庫列表(包含 url)
 git remote add origin https://github.com/rsosor/demo.git
 git remote add origin git@github.com:rsosor/demo.git
 
+git fetch <remote name> 這個指令一次只能更新一個 remote
+如果你的專案底下有多個 remote，而且全部都想要更新的話，就可以使用這個指令
+git fetch --all 指令也等同於以下這個指令
+$ git remote update
+
 git pull
-git pull --rebase origin main	// rebase 就不會有合併點，如果 conflict 比較多則需要依次處裡。想要把 rebase 當做 git pull 的預設值，可以在專案的 .git/config 加上
+git pull --rebase origin main	// rebase 就不會有合併補丁(Merge Patch)，如果 conflict 比較多則需要依次處裡不使用 rebase。想要把 rebase 當做 git pull 的預設值，可以在專案的 .git/config 加上
+git pull 的作用等同於以下的指令
+$ git fetch <remote name>
+$ git merge remotes/<remote name>/<remote branch>
+git merge origin/<repo> --allow-unrelated-histories
+git pull origin/<repo> --allow-unrelated-histories
 
 
 [branch "master"]

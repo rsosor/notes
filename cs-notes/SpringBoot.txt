@@ -1,3 +1,238 @@
+一、Spring 的介紹
+Spring 框架為開發 Java 應用程序提供了全面的基礎架構支持。如依賴注入和開箱即用的模塊，如：
+
+Spring JDBC
+Spring MVC
+Spring Security
+Spring AOP
+Spring ORM
+Spring Test
+大大縮短應用程序的開發時間。例如，在 Java Web 開發的早期階段，我們需要編寫大量的重複代碼來將記錄插入到數據源中。但通過 Spring JDBC 模塊的 JDBCTemplate，我們可以將它簡化為只需幾個簡單配置或者幾行代碼。
+
+二、SpringBoot 的介紹
+Spring Boot 基本上是 Spring 框架的擴展，它消除了設置 Spring 應用程序所需的複雜例行配置。
+
+   它的目標和 Spring 的目標是一致的，為更快、更高效的開發生態系統鋪平了道路。以下是 Spring Boot 中的一些功能：
+
+．通過 starter 這一個依賴，以簡化構建和複雜的應用程序配置。
+．可以直接 main 函數啟動，嵌入式 web 伺服器，避免了應用程序部署的複雜性，Metrics 度量、Helth check 健康檢查和外部化配置。
+．盡可能的自動化配置 Spring 功能。
+
+三、Spring 與 SpringBoot 的比較
+3.1 Maven 依賴
+	首先，讓我們看一下使用 Spring 創建 Web 應用程序所需的最小依賴項：
+
+<dependency>
+    <groupId>org.springframework</groupId>
+    <artifactId>spring-web</artifactId>
+    <version>5.1.0.RELEASE</version>
+</dependency>
+<dependency>
+    <groupId>org.springframework</groupId>
+    <artifactId>spring-webmvc</artifactId>
+    <version>5.1.0.RELEASE</version>
+</dependency>
+
+	與 Spring 不同，Spring Boot 只需要一個依賴項來啟動和運行 Web 應用程序：
+
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-web</artifactId>
+    <version>2.0.5.RELEASE</version>
+</dependency>
+
+在構建期間，所有其他依賴項將自動添加到最終歸檔中。
+
+   Spring Boot 為不同的 Spring 模塊提供了許多入門依賴項。一些最常用的是：
+
+spring-boot-starter-data-jpa
+spring-boot-starter-security
+spring-boot-starter-test
+spring-boot-starter-web
+spring-boot-starter-thymeleaf
+3.2 MVC 配置
+	下面來探討一下使用 Spring 和 Spring Boot 創建 JSP Web 應用程序所需的配置。
+
+public class MyWebAppInitializer implements WebApplicationInitializer {
+
+    @Override
+    public void onStartup(ServletContext container) {
+        AnnotationConfigWebApplicationContext context = new AnnotationConfigWebApplicationContext();
+        context.setConfigLocation("com.test.package");
+
+        container.addListener(new ContextLoaderListener(context));
+
+        ServletRegistration.Dynamic dispatcher = container.addServlet("dispatcher", new DispatcherServlet(context));
+
+        dispatcher.setLoadOnStartup(1);
+        dispatcher.addMapping("/");
+    }
+}
+
+	我們還需要將 @EnableWebMvc 註解添加到 @Configuration 註解類，並定義一個視圖解析器來解析從控制器返回的視圖：
+
+@EnableWebMvc
+@Configuration
+public class ClientWebConfig implements WebMvcConfigurer {
+   @Bean
+   public ViewResolver viewResolver() {
+      InternalResourceViewResolver bean = new InternalResourceViewResolver();
+          bean.setViewClass(JstlView.class);
+          bean.setPrefix("/WEB-INF/view/");
+          bean.setSuffix(".jsp");
+      return bean;
+   }
+}
+
+	與所有這些相比，一旦我們添加了 Spring boot web starter，Spring Boot 只需要一些屬性來使上面的事情正常工作：
+
+spring.mvc.view.prefix=/WEB-INF/jsp/
+spring.mvc.view.suffix=.jsp
+
+
+	上面的所有 Spring 配置都是通過一個名為 auto-configuration 的進程添加 Boot web starter 來自動包含的。
+
+	這意味著 Spring Boot 將自動掃描應用程序中存在的依賴項、屬性和 bean，並根據這些內容啟用相應的配置。
+
+3.3 模板引擎配置
+	再來看看如何在 Spring 和 Spring Boot 中配置 Thymeleaf 模板引擎。
+
+	在 Spring 中，我們需要為視圖解析器添加 thymeleaf-spring 5 依賴項和一些配置：
+
+@Configuration
+@EnableWebMvc
+public class MvcWebConfig implements WebMvcConfigurer {
+
+    @Autowired
+    private ApplicationContext applicationContext;
+
+    @Bean
+    public SpringResourceTemplateResolver templateResolver() {
+        SpringResourceTemplateResolver templateResolver = new SpringResourceTemplateResolver();
+            templateResolver.setApplicationContext(applicationContext);
+            templateResolver.setPrefix("/WEB-INF/views/");
+            templateResolver.setSuffix(".html");
+        return templateResolver;
+    }
+
+    @Bean
+    public SpringTemplateEngine templateEngine() {
+        SpringTemplateEngine templateEngine = new SpringTemplateEngine();
+            templateEngine.setTemplateResolver(templateResolver());
+            templateEngine.setEnableSpringELCompiler(true);
+        return templateEngine;
+    }
+
+    @Override
+    public void configureViewResolvers(ViewResolverRegistry registry) {
+        ThymeleafViewResolver resolver = new ThymeleafViewResolver();
+            resolver.setTemplateEngine(templateEngine());
+        registry.viewResolver(resolver);
+    }
+}
+
+	Spring Boot 只需要 spring-boot-starter-thymeleaf 的依賴項 來啟用 Web 應用程序中的 Thymeleaf 支持。
+
+	一旦依賴關係添加成功後，我們就可以將模板添加到 src / main / resources / templates 文件夾中，Spring Boot 將自動顯示它們。
+
+3.4 安全配置
+	為簡單起見，我們將看到如何使用 Spring 和 Spring Boot 框架啟用默認的 HTTP Basic 身份驗證。
+
+	讓我們首先看一下使用 Spring 啟用 Security 所需的依賴關係和配置。
+
+	Spring 需要標準的 spring-security-web 和 spring-security-config 依賴項來在應用程序中設置 Security。
+
+	接下來，我們需要添加一個擴展 WebSecurityConfigurerAdapter 的類，並使用 @EnableWebSecurity 註解：
+
+@Configuration
+@EnableWebSecurity
+public class CustomWebSecurityConfigurerAdapter extends WebSecurityConfigurerAdapter {
+
+    @Autowired
+    public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
+        auth.inMemoryAuthentication()
+            .withUser("user1")
+            .password(passwordEncoder().encode("user1Pass"))
+            .authorities("ROLE_USER");
+    }
+
+
+    @Override
+    protected void configure(HttpSecurity http) throws Exception {
+        http.authorizeRequests().anyRequest().authenticated().and().httpBasic();
+    }
+
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+}
+
+	同樣，Spring Boot 也需要這些依賴項才能使其工作。但是我們只需要定義 spring-boot-starter-security 的依賴關係，它會自動將所有相關的依賴項添加到類路徑中。
+
+3.5 應用引導 Application Bootstrap
+	Spring 和 Spring Boot 中應用程序引導的基本區別在於 servlet。
+
+	Spring 使用 web.xml 或 SpringServletContainerInitializer 作為其引導入口點。
+spring boot 僅僅使用 Servlet 3 來引導程序。
+
+   首先來說說 Spring 引導
+
+   方法一：web.xml 引導方法
+
+Servlet 容器（伺服器）讀取 web.xml
+web.xml 中定義的 DispatcherServlet 由容器實例化
+DispatcherServlet 通過讀取 WEB-INF / {servletName} -servlet.xml 來創建 WebApplicationContext
+最後，DispatcherServlet 註冊在應用程序上下文中定義的 bean
+   方法二：servlet 3 + 引導方法
+
+容器搜索實現 ServletContainerInitializer 的類並執行
+SpringServletContainerInitializer 找到實現類 WebApplicationInitializer 的子類
+WebApplicationInitializer 創建會話使用 XML 或上下文 @Configuration 類
+WebApplicationInitializer 創建 DispatcherServlet，使用先前創建的上下文
+   再來說說 Spring Boot 引導
+
+   Spring Boot 應用程序的入口點是使用 @SpringBootApplication 註釋的類：
+
+@SpringBootApplication
+public class Application {
+    public static void main(String[] args) {
+        SpringApplication.run(Application.class, args);
+    }
+}
+
+   默認情況下，Spring Boot 使用嵌入式容器來運行應用程序。在這種情況下，Spring Boot 使用 public static void main 入口點來啟動嵌入式 Web 伺服器。
+
+   此外，它還負責將 Servlet，Filter 和 ServletContextInitializer bean 從應用程序上下文綁定到嵌入式 servlet 容器。
+
+   Spring Boot 的另一個特性是它會自動掃描同一個包中的所有類或 Main 類的子包中的組件。
+
+   Spring Boot 提供了將其部署為外部容器中的 Web 存檔的選項。在這種情況下，我們必須擴展 SpringBootServletInitializer：
+
+@SpringBootApplication
+public class Application extends SpringBootServletInitializer {
+    // ...
+}
+
+   外部 Servlet 容器查找在 Web 歸檔文件的 META-INF 文件中定義的 Main-class，SpringBootServletInitializer 將負責綁定 Servlet、Filter 和 ServletContextInitializer。
+
+3.6 打包和部署
+   最後，看看如何打包和部署應用程序。這兩個框架都支持 Maven 和 Gradle 等常見的包管理技術。但是在部署方面，這些框架差異很大。
+
+   例如，Spring Boot Maven 插件在 Maven 中提供 Spring Boot 支持。它還允許打包可執行 jar 或 war 檔案並“就地”運行應用程序。
+
+   與 Spring 相比，在部署環境中 Spring Boot 的一些優點包括
+
+提供嵌入式容器支持
+使用命令 java -jar 獨立運行 jar
+在外部容器中部署時，可以選擇排除依賴關係以避免潛在的 jar 衝突
+部署時靈活指定配置文件的選項
+用於集成測試的隨機端口生成
+四、總結：
+   綜上所述：Spring Boot 只是 Spring 本身的擴展，使開發、測試和部署更加方便。
+
+___________________________________________________________________________________________________________________________________________________________________________________________________________________
 Java 的註解類似 C# 的 Attribute特性
 
 ．Spring 核心註解
@@ -426,11 +661,7 @@ public class Name {
 public @interface Test {
 
 }
-
-
 ___________________________________________________________________________________________________________________________________________________________________________________________________________________
-
-
 資料庫增加新用戶
 grant select,insert,update,delete on *.* to user1@localhost Identified by "password1"
 
