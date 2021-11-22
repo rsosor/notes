@@ -248,9 +248,782 @@ NodeList
 其實真正常用的 DOM API 也就這幾種而已，尤其 jQuery 盛行，讓 HTML 與 JavaScript 的溝通更加精簡容易，也因此越來越多人捨棄 DOM API 進而投向 jQuery 的懷抱，筆者在未來的文章也會加以闡述這個 JavaScript Library 。
 ___________________________________________________________________________________________________________________________________________________________________________________________________________________
 （CSS）
+優先順序 id > class > 標籤。
+
+．標籤(元素)選擇器：
+「直接將指定的元素標籤名稱」當做選擇器，例如：樣式會套用到頁面中所有的 <h1>~</h1>，較適合用來定義全體通用的基礎樣式。
+h1 { color: #333333; }
+
+．id 選擇器：
+利用 id 屬性「為元素命名」並做為選擇器，元素(標籤)名稱通常省略不寫。
+※ 注意：id 是用來識別在 HTML 檔案中特定位置的屬性，一個 HTML 檔中只能有一個，若在同一個頁面中撰寫多次相同的 id 名稱，將會造成語法錯誤。
+#title { text-align: center; }
+
+．class 選擇器：
+利用 class 屬性「為元素命名」並做為選擇器，省略元素(標籤)名稱時，將被視為通用的 class，任何元素標籤都可以使用，可以在 HTML 檔中多處重複使用。
+.text-green { color: #32b16c; }
+假如不省略元素(標籤)名稱時則只有特定的元素才適用。例如下列這個就只有 h1 標籤套用此 class 才有效。
+h1.text-green { color: #32b16c; }
+
+另外多補充一個由 class 延伸的選擇器
+．複合選擇器：
+當設定多個 class 時，可以用「.class1.class2」的形式將選擇器結合( class 中間不可有空格)，「既有 class1 也有 class2」的選擇器
+.cat-type.male { color: #2793a7; }
+
+標籤(元素)、id、class 都是用於 單一元素標籤、單一 class、單一 id 的選擇器，稱之為「簡易選擇器」。
+___________________________________________________________________________________________________________________________________________________________________________________________________________________
+1. *
+* {
+ margin: 0;
+ padding: 0;
+}
+對於初學者來說，至更加高級的選擇器前，讓我們先攻克這些顯而易見的。
+
+指向頁面所有的元素。 很多程序猿都會用這個訣竅將 margin 和 padding 歸零。 雖說這對於一個快速的測試是肯定沒問題的，但是建議永遠都不要將其應用於生產環境的代碼中。 它為瀏覽器帶來太多負擔，而且是完全沒必要的。
+
+星號 * 可以同時被用於子對象選擇器中。
+
+#container * {
+ border: 1px solid black;
+}
+這樣可以指向所有的 #container div 的子對象。 同樣的，如果可能的話，盡可能不要使用這個方法。
+
+兼容性
+IE6+
+Firefox
+Chrome
+Safari
+Opera
+
+2. #X	指向多個 #X,#XX
+#container {
+   width: 960px;
+   margin: auto;
+}
+允許我們指向 id。 最常用的選擇器使用，不過當使用 id 選擇器時要注意。
+
+問問你自己：我真的一定需要為這個元素添加 id 來指向他麼？
+
+id 選擇器的規則非常的嚴格，而且因為他是唯一的，所以不允許被再次使用。 如果可能的話，首先嘗試使用 tag 名，這是一個 HTML5 版本的新元素，或者甚至試試偽類。
+
+兼容性
+IE6+
+Firefox
+Chrome
+Safari
+Opera
+
+3. .X
+.error {
+  color: red;
+}
+這是一個 class 選擇器。 id 和 class 的不同點就是 class 可以同時標記多個元素。 當你想要你的樣式應用到一組元素的時候你可以使用 class。 或者，你也可使用 id 刻意讓一個單獨的元素使用特別的樣式。
+
+兼容性
+IE6+
+Firefox
+Chrome
+Safari
+Opera
+
+4. X Y
+li a {
+  text-decoration: none;
+}
+下一個最常見的選擇器是 descendant selector（子對象選擇器）。 當需要更明確的選擇某個目標時，就使用這個選擇器。 舉例，假設你不想選擇所有的錨點對象，只是想選擇所有無序列表以下的錨點對象？ 這樣的情況就特別需要使用子對象選擇器了。
+
+專家提示 - 如果你的選擇器看起來像是X Y Z A B.error，那麼你就做錯了。 記得始終問問自己是不是真的特別需要這麼精確的負擔重的選擇器。
+
+兼容性
+IE6+
+Firefox
+Chrome
+Safari
+Opera
+
+5. X
+a { color: red; }
+ul { margin-left: 0; }
+如果想要選擇當前頁面所有的相同 type（種類）的元素，你會考慮使用 id 或者 class 名麼？ 如果你想保持你代碼的干淨，就用 type（類）選擇器好了。 如果你需要選中所有的無序列表，使用 ul {}。
+
+兼容性
+IE6+
+Firefox
+Chrome
+Safari
+Opera
+
+6. X:visited and X:link
+a:link { color: red; }
+a:visted { color: purple; }
+我們使用:link偽類來選擇所有的錨點標籤並且你還沒有點擊過。
+
+作為備用，我們同時有:visited偽類，正如你期待的，這個允許我們應用特別的樣式到頁面上已經被點擊過或者訪問過的錨點標籤。
+
+兼容性
+IE7+
+Firefox
+Chrome
+Safari
+Opera
+
+7. X + Y
+ul + p {
+   color: red;
+}
+稱為相鄰兄弟選擇器。 它僅僅會選擇剛好在左邊元素之前的元素。 在這種情況下，僅僅第一個 ul 之後的段落()會被賦予紅色。
+
+兼容性
+IE7+
+IE7+
+Chrome
+Safari
+Opera
+
+8. X > Y
+div#container > ul {
+  border: 1px solid black;
+}
+普通的 X Y 和 X > Y 的不同是後者僅僅選擇它的直接的子對象。 舉個例子，考慮一下以下的情況。
+
+   <div id="container">
+      <ul>
+         <li> List Item
+           <ul>
+              <li> Child </li>
+           </ul>
+         </li>
+         <li> List Item </li>
+         <li> List Item </li>
+         <li> List Item </li>
+      </ul>
+   </div>
+一個 #container > ul 的選擇僅僅會選中那些包含 id 名 container 的 div 下的直接子對象 ul。 它並不會指向，舉個例子，第一個 li 裡面的子對象 ul。
+
+由於這個原因可以得出，使用子組合器有很多的性能上的利益。 事實上，當使用 JavaScript 為基礎的 CSS 選擇器引擎的情況下是非常推薦的。
+
+兼容性
+兼容性
+Firefox
+Chrome
+Safari
+Opera
+
+9. X ~ Y
+ul ~ p {
+   color: red;
+}
+一般兄弟組合器和相鄰兄弟組合器 X + Y 非常相似，但更加不嚴。 相鄰兄弟選擇器（ul + p）只會選剛剛好在前一個選擇器之前的第一個元素，而這個選擇器範圍會更廣一點。 在我們上面的案例中，它會選擇所有的 p 元素，只要他們是在 ul 之後。
+
+兼容性
+IE7+
+Firefox
+Chrome
+Safari
+Opera
+
+10. X[title]
+a[title] {
+   color: green;
+}
+適用於屬性選擇器，在我們上面的例子裡，這僅僅選擇所有包含 title 屬性的的錨點對象。 那些並沒有 title 屬性的將不會接收到該特有的樣式。但是，如果你希望要更加的具體？ 好吧……
+
+兼容性
+IE7+
+Firefox
+Chrome
+Safari
+Opera
+
+11. X[href="foo"]
+a[href="https://net.tutsplus.com"] {
+  color: #1f6053; /* nettuts green */
+}
+上面這個小片段將為所有包含鏈接 https://net.tutsplus.com 的錨點對象添加樣式；他們將接收到我們的標誌性的綠色。其他的對象將保持不被改變的狀態。
+
+注意：我們將值放在了引號裡。 記住如果你使用 JavaScript CSS 選擇器引擎也要做同樣的事情。 如果可能的話，總是使用 CSS3 選擇器而不是非官方的方法。
+
+這樣就可以工作了，不過，還是有一點僵硬， 如果這個鏈接確實是指向 Nettuts+，但是，也許，這個路徑是 nettuts.com 而不是完整的 url 呢？ 在這種情況下，我們可以使用一點點普通表達式的語法在裡面。
+
+兼容性
+IE7+
+Firefox
+Chrome
+Safari
+Opera
+
+12. X[href*="nettuts"]
+a[href*="tuts"] {
+  color: #1f6053; /* nettuts green */
+}
+這就是我們需要的。 星號指定的值必須出現在屬性裡面的某個地方。 這樣，這就包括了 nettuts.com、net.tutsplus.com、甚至是 tutsplus.com。
+
+請記住，這是個非常寬泛的聲明。 如果這個錨點對象鏈接到某個並不是 Envato 的網站但其字符串裡面又包含了 tuts 在 url 又會怎麼樣呢？ 當你需要更精確的時候，使用 ^ 和 $ 來分別指向開始或結束的字符串。
+
+兼容性
+IE7+
+Firefox
+Chrome
+Safari
+Opera
+
+13. X[href^="http"]
+a[href^="http"] {
+   background: url(path/to/external/icon.png) no-repeat;
+   padding-left: 10px;
+}
+你有沒有疑問過為什麼有些網站可以在外部鏈接的邊上顯示一個小的圖標？ 相信以前肯定看過這種情況；它們是很貼心的提醒你即將引導你到一個完全不同的外部網站。
+
+這是一個小的腰帶狀包含有克拉符號的標誌。 這是最常見用在普通表達式裡面的一種標誌，一般會出現在字符串的開始。 如果你希望指向所有的包含 href 且開頭是 http 的錨點對象，我們可以使用上面所提到的相似選擇器。
+
+注意，我們並不需要搜索 https://，這個是不必要的，而且這樣的話就無法選中那些 url 是以 https:// 開頭的了。
+
+現在，如果我們希望為所有的，假設，指向照片的錨點來設置樣式。 在這種情況下，我們就需要搜索結束的字符串。
+
+兼容性
+IE7+
+Firefox
+Chrome
+Safari
+Opera
+
+14. X[href$=".jpg"]
+a[href$=".jpg"] {
+   color: red;
+}
+同樣的，我們使用普通的表達式符號 $，來提到尾部的字符串。 在這種情況下，我們需要搜索所有包含鏈接到圖片的錨點——或者至少也是一個以 .jpg 結尾的 url。 記住，這個選擇器肯定不能被用在 gifs 和 pngs 上。
+
+兼容性
+IE7+
+Firefox
+Chrome
+Safari
+Opera
+
+15. X[data-*="foo"]
+a[data-filetype="image"] {
+   color: red;
+}
+參考到第 8 條，我們該如何來選中所有不同種類的圖片呢：png，jpeg，jpg，gif？好吧，我們需要創建多個選擇器，諸如：
+
+a[href$=".jpg"],
+a[href$=".jpeg"],
+a[href$=".png"],
+a[href$=".gif"] {
+   color: red;
+}
+但是，這麼做太蛋疼了，而且還沒效率。 另一種解決辦法會使用自定義屬性。如果我們添加自己的 data-filetype 屬性到每一個鏈接到圖片的錨點會發生什麼呢？
+
+<a href="path/to/image.jpg" data-filetype="image"> Image Link </a>
+然後，由於有這個 hook 在，我們可以使用基本的屬性選擇器來僅僅指向我們需要的那些錨點。
+
+a[data-filetype="image"] {
+   color: red;
+}
+
+兼容性
+IE7+
+Firefox
+Chrome
+Safari
+Opera
+
+16. X[foo~="bar"]
+ a[data-info~="external"] {
+   color: red;
+}
+
+a[data-info~="image"] {
+   border: 1px solid black;
+}
+這裡有一個特別的選擇器，如果你使用會給你的朋友留下深刻的印象。 並不是所有的人都知道這個小訣竅。 這個標籤的標誌（~）可以讓我們分別指向那些有空格分開的多個屬性值。
+
+接著使用上面的我們在第 15 點提到的自定義屬性，我們創建一個 data-info 的屬性，可以允許使用空格來列出我們需要的不同記錄。 在這種情況下，我們需要留下記錄來對應外部鏈接以及鏈接到圖片——只是舉個例子。
+
+"<a href="path/to/image.jpg" data-info="external image"> Click Me, Fool </a>
+當這段基礎代碼到位以後，我們可以指向任何的其中一個值，這裡就需要使用這個 ~ 標記屬性選擇的小技巧。
+
+/* Target data-info attr that contains the value "external" */
+a[data-info~="external"] {
+   color: red;
+}
+
+/* And which contain the value "image" */
+a[data-info~="image"] {
+  border: 1px solid black;
+}
+
+兼容性
+IE7+
+Firefox
+Chrome
+Safari
+Opera
+
+17. X:checked
+input[type=radio]:checked {
+   border: 1px solid black;
+}
+這是一個偽類，它僅僅會指向一個用戶端被選中的元素 - 像是單選框或者多選框。
+
+兼容性
+IE9+
+Firefox
+Chrome
+Safari
+Opera
+
+18. X:after
+這個 before 和 after 的偽類實在是太虎了。 看起來，每天都有人在嘗試尋找新的且有創造性的方法來更有效的使用它們。 它們簡單的在選中的元素周圍生成內容。
+
+很多人都是在嘗試解決 clear-fix 的時候被介紹使用這些類並嘗試用它們來 hack。
+
+.clearfix:after {
+    content: "";
+    display: block;
+    clear: both;
+    visibility: hidden;
+    font-size: 0;
+    height: 0;
+    }
+
+.clearfix { 
+   *display: inline-block; 
+   _height: 1%;
+}
+這個 hack 使用了 :after 偽類來添加一個空格到元素的後面，然後將它清除。 這是你應該放進你工具盒的一個完美的小訣竅，特別是當你想使用 overflow：hidden 的時候卻又不可能的情況下。
+
+另一種有創意的方法，參考如何創建陰影。
+
+根據 CSS3 選擇器的說明，你其實應該使用兩個冒號 :: 作為偽元素的語法。 然而，為了兼容性，用戶端也會接受單一冒號的使用。 事實上，在這裡，更明智的辦法還是使用單一冒號的版本到你的項目裡。
+
+兼容性
+IE8+
+Firefox
+Chrome
+Safari
+Opera
+
+19. X:hover
+div:hover {
+  background: #e3e3e3;
+}
+這是個官方的術語用在用戶活動的偽類。 這個可能聽著比較奇怪，但其實不然。 你想要為用戶鼠標劃過的元素添加樣式麼？ 這一條就可以幫你完成工作！
+
+記得，舊版的 IE 瀏覽器不支持 :hover 偽類用在任何非錨點對像上。
+
+你會經常使用這個選擇器的，舉個例子，生成一個 border-bottom 到錨點對象，當鼠標劃過的時候顯示。
+
+a:hover {
+ border-bottom: 1px solid black;
+}
+專家提示 - border-bottom: 1px solid black; 看起來要比 text-decoration: underline; 更合適。兼容性
+
+兼容性
+IE6+（在 IE6 中，:hover 必須以一個錨對象“”為目標才可以工作）
+Firefox
+Chrome
+Safari
+Opera
+
+20. X:not(selector)
+div:not(#container) {
+   color: blue;
+}
+negation 偽類特別的有用。 我想選擇所有的 div，除了一個有 id 是 container 的。 上面這個小片段可以完成的很完美。
+
+或者，如果你想選擇所有的單個元素（不建議）除了段落對象，我們可以做如下：
+
+*:not(p) {
+  color: green;
+}
+
+兼容性
+IE9+
+Firefox
+Chrome
+Safari
+Opera
+
+21. X::pseudoElement
+p::first-line {
+   font-weight: bold;
+   font-size: 1.2em;
+}
+我們可以使用偽元素（設計為 ::）來為元素的分段添加樣式，比如第一行、或者第一個文字等。 記得，這些必須作用到一個段落的元素中才能有效果。
+
+一個偽元素是由兩個冒號構成的 ::
+
+指向段落中的第一個文字
+p::first-letter {
+   float: left;
+   font-size: 2em;
+   font-weight: bold;
+   font-family: cursive;
+   padding-right: 2px;
+}
+這個小片段是一個抽象的概念，可以找到頁面上的所有段落，並且找到僅僅是它們最開始的文字作為元素。
+
+這個最常被使用在創建報紙上每篇文章的第一個字母的樣式上。
+
+指向段落中的第一行
+p::first-line {
+   font-weight: bold;
+   font-size: 1.2em;
+}
+相似的，::first-line 偽元素會按我們期待的，僅僅為第一行元素添加樣式。
+
+“由於目前已有樣式表的兼容性，用戶端必須也要支持前一個在 CSS1 和 2 裡面被介紹的冒號的註釋方法（換句話說就是 :first-line、:first-letter、:before 和 :after ）。 這些兼容性在我們本次介紹的新的偽元素類中並不被允許。”
+
+兼容性
+IE6+
+Firefox
+Chrome
+Safari
+Opera
+
+22. X:nth-child(n)
+li:nth-child(3) {
+   color: red;
+}
+還記得我們沒辦法從一疊元素中選擇特定的元素的那些日子麼？這個 nth-child 偽類會解決這些問題！
+
+請注意，nth-child 接受整數的參數，這個參數不是以 0 為基數。如果你希望指向第二行物體，使用 li:nth-child(2)。
+
+我們甚至可以使用這個來選擇不同組合的子對象。 舉個例子，我們可以用 li:nth-child(4n) 來選擇所有的第四個列表中的物體。
+
+兼容性
+IE9+
+Firefox 3.5+
+Chrome
+Safari
+
+23. X:nth-last-child(n)
+li:nth-last-child(2) {
+   color: red;
+}
+如果你有一個在 ul 裡數量龐大的列表，而且僅僅需要選擇倒數第三個物品要怎麼辦？與其使用 li:nth-child(397)，不如使用 nth-last-child 來作為替代的偽類。
+
+這種技術的工作原理幾乎和第十六點以後的方法相似，然而，不同的是它在集合的末尾開始和工作並反向數數字。
+
+兼容性
+IE9+
+Firefox 3.5+
+Chrome
+Safari
+Opera
+
+24. X:nth-of-type(n)
+ul:nth-of-type(3) {
+   border: 1px solid black;
+}
+有時候，與其說選擇 child，不如說你會需要根據 type 的元素來選擇。
+
+想想一下，標記包含了 5 個無序列表。 如果你希望僅僅給第三個 ul，並且你並沒有一個特別的 id 與之掛鉤，你可以使用 nth-of-type(n) 偽類來選擇。 在上面的小片段裡，只有第三個 ul 會在周圍有邊框。
+
+兼容性
+IE9+
+Firefox 3.5+
+Chrome
+Safari
+
+25. X:nth-last-of-type(n)
+ul:nth-last-of-type(3) {
+   border: 1px solid black;
+}
+是的，為了保持一致，我們同時可以使用 nth-last-of-type 來從尾部開始選擇列表，讓我們反過來數直到找到我們希望指向的目標。
+
+兼容性
+IE9+
+Firefox 3.5+
+Chrome
+Safari
+Opera
+
+26. X:first-child
+ul li:first-child {
+   border-top: none;
+}
+這個結構性的偽類允許我們僅指向父元素的第一個子對象。 你會經常的使用到這個來「去除第一個和最後一個列表物品的邊框」。
+
+舉個例子，如果你有一個很多行的列表，每個元素都包含 border-top 和 border-bottom。 如果是這種情況，第一個和最後一個元素會看起來有點奇怪。
+
+很多設計師都會使用 class 來命名 first 和 last 來修復這個問題。 作為替代的，你可以使用這些偽類去處理。
+
+兼容性
+IE7+
+Firefox
+Chrome
+Safari
+Opera
+
+27. X:last-child
+ul > li:last-child {
+   color: green;
+}
+與 first-child 相反，last-child 會指向父對象下的最後一個子元素。
+
+例子
+讓我們來創建一個小的例子來解釋使用這種類的情況。 我們創建了一個有格式的一列元素。
+
+結構
+  <ul>
+     <li> List Item </li>
+     <li> List Item </li>
+     <li> List Item </li>
+  </ul>
+只是一個簡單的列表。
+
+CSS
+ul {
+ width: 200px;
+ background: #292929;
+ color: white;
+ list-style: none;
+ padding-left: 0;
+}
+
+li {
+ padding: 10px;
+ border-bottom: 1px solid black;
+ border-top: 1px solid #3c3c3c;
+}
+這些樣式會設置一個北京顏色，移除瀏覽器默認的 ul 上的 padding，然後為每一個 li 添加 border 來提供一點深度。
+
+要添加深度到你的列表，添加 border-bottom 到每一個 li，這樣會創建一個陰影一樣的感覺，會比 li 的背景略深一點點。 下一步，添加一個 border-top 來添加淡一點的陰影。
+
+現在唯一的問題就是，上面圖片可以看出，邊框會同時添加給無序列表的最頂部和底部的元素 - 這樣看起來會有點奇怪。 讓我們使用 :first-child 和 :last-child 偽類來修復這個。
+
+li:first-child {
+    border-top: none;
+}
+
+li:last-child {
+   border-bottom: none;
+}
+
+兼容性
+IE9+
+Firefox
+Chrome
+Safari
+Opera
+
+是的 - IE8 支持 :first-child，但不支持 :last-child。
+
+28. X:only-child
+div p:only-child {
+   color: red;
+}
+說真的，你可能會發現你永遠都不怎麼會用 only-child 這個偽類。 儘管如此，它依然是可用的，有時候你可能也需要它。
+
+它允許你指向那些父對象僅有的一個子對像元素。 舉個例子，根據上面的片段，只有段落 - div 的唯一子對象，會被上色變成紅色。
+
+讓我們假設下面的代碼結構。
+
+<div><p> My paragraph here. </p></div>
+
+<div>
+   <p> Two paragraphs total. </p>
+   <p> Two paragraphs total. </p>
+</div>
+在這個情況下，第二個 div 的段落不會被選中，只有第一個 div。 只要你有多於一個子對象，only-child 的偽類就停止作用。
+
+兼容性
+IE9+
+Firefox
+Chrome
+Safari
+Opera
+
+29. X:only-of-type
+li:only-of-type {
+   font-weight: bold;
+}
+這個結構性的偽類可以使用到很明智的地方。 它會指向那些在其父對象容器中沒有兄弟姐妹的元素。 舉例，我們來選中所有的 ul，這些 ul 都只有一個列表元素。
+
+首先，問問你自己要如何完成這個工作？ 你可以使用 ul li，不過，這樣會指向所有的列表元素。 唯一的解決辦法就是使用 only-of-type。
+
+ul > li:only-of-type {
+   font-weight: bold;
+}
+
+兼容性
+IE9+
+Firefox 3.5+
+Chrome
+Safari
+Opera
+
+30. X:first-of-type
+first-of-type 偽類允許你選擇第一個相同類的兄弟姐妹。
+
+一個測試
+為了更好地理解這個，我們需要做一個測試。 複製下面的這段代碼到你的編輯器裡：
+
+<div>
+   <p> My paragraph here. </p>
+   <ul>
+      <li> List Item 1 </li>
+      <li> List Item 2 </li>
+   </ul>
+
+   <ul>
+      <li> List Item 3 </li>
+      <li> List Item 4 </li>
+   </ul>   
+</div>
+現在，先試試不往下看，嘗試著搞清楚如何只選中“List item 2”。 當你搞明白了（或者放棄了），接著往下讀。
+
+解決方案1
+有幾種不同的方法可以解決這個小測驗。 我們來回顧其中少數的幾個。 首先我們要使用 first-of-type。
+
+ul:first-of-type > li:nth-child(2) {
+   font-weight: bold;
+}
+這個片段本質上來看可以這麼說，“找到頁面上的第一個無序列表，然後找到其最接近的子對象，它們是列表下的元素。 接下來，接著向下過濾到僅選擇第二個列表中的元素。
+
+解決方案2
+另外一個選項是使用相鄰兄弟選擇器。
+
+p + ul li:last-child {
+   font-weight: bold;
+}
+在這個情況下，我們可以看出 ul 是在 p 之前的對象，然後我們需要找到它裡面最後一個子對象。
+
+解決方案3
+當我們想要使用這個選擇器的時候，我們可能會感覺到非常的不開心或者非常好笑。
+
+ul:first-of-type li:nth-last-child(1) {
+   font-weight: bold;   
+}
+這一次，我們抓取了頁面上的第一個ul，然後找到了第一個其內的元素，不過是反過來數的！ :)
+
+兼容性
+IE9+
+Firefox 3.5+
+Chrome
+Safari
+Opera
+
+結論
+如果想為舊版的瀏覽器修正某些代碼，諸如 IE6，可能需要小心使用這些新的選擇器。 但別讓這件事情阻止你學習這些選擇器的決心。 請確保瀏覽器兼容。 作為替代，你可以使用 Dean Edward 的傑出的 IE9.js script 來獲得更多的舊版瀏覽器的支持。
+
+第二，當你使用 JavaScript 庫工作的時候，諸如最流行的 jQuery，記得始終嘗試使用這些「天然的 CSS 選擇器」而不是庫裡的自定義方法/選擇器，可能的話。 它會讓你的代碼運行的更快，因為選擇器的引擎可以使用瀏覽器天然的解析器，而不是庫裡的解碼器。
+___________________________________________________________________________________________________________________________________________________________________________________________________________________
+
+通用選擇器、群組選擇器、子孫選擇器、子選擇器、相鄰選擇器等：
+
+．通用選擇器：
+將樣式套用於全部元素標籤中，通常在 reset css 時才會用到此方法。
+* { margin: 0px; padding: 0px; }
+
+．群組選擇器：
+利用「逗號」串連多個選擇器一併管理的用法，這樣可以將多處不同樣式一次指定，避免重複撰寫相同的 class 內容。
+h1, h2, h3 { color: #333333; }
+.main-title, .sub-title, .small-title { font-weight: bold; }
+
+．子孫選擇器：
+利用元素間的親子關係，依序由「父元素→子元素→孫元素 」的形式特定出範圍的選擇器。
+注意：必須依序以「半形空格」分隔並列出元素標籤
+#main-list ul li a { color: #ff0000; }
+但假如能明確的辨識出目的元素，不會與其他用途的標籤混淆，省略中間的元素直接寫目的元素也是可以的，例如上列可以改為：
+#main-list a { color: #ff0000; }
+
+．子選擇器( > )：
+與子孫選擇器(任意的後代元素皆選)不同，子選擇器是只選擇子元素，子元素的子元素(孫元素)的樣式並不受影響，例如：
+<!DOCTYPE HTML>
+<html>
+<head>
+  <style type="text/css">
+    li { color: #333333; }
+    .main-menu > li { color: #ff0000; }
+  </style>
+</head>
+<body>
+<ul class="main-menu">
+  <li>項目1</li>
+  <li>項目2</li>
+  <li>項目3
+      <ul>
+          <li>項目3-A</li> 
+      </ul>
+  </li>
+</ul>
+</body>
+</html>
+這樣的寫法，ul 中的子元素 li 全部變成紅色，但是孫元素的 li (項目3-A)則不受影響，因為他不是子元素。
+假如改寫成子孫選擇器，所有的 li 元素都會變成紅色的：
+<style type="text/css">
+  .main-menu li { color: #ff0000; }
+</style>
+
+．相鄰選擇器( + )：
+可選擇有相同的父元素，緊接在一個元素後的「第一個」相鄰兄弟元素(同一層中)，例如下列範例中，只有 h1 的下一個 p 是紅色的，其他第二個之後的 p 仍然是黑色的。
+<!DOCTYPE HTML>
+<html>
+<head>
+<style type="text/css">
+    h1 + p { color: #ff0000; }
+</style>
+</head>
+<body>
+  <h1>This is a heading.</h1>
+  <p>This is paragraph.</p>
+  <p>This is paragraph.</p>
+  <p>This is paragraph.</p>
+  <p>This is paragraph.</p>
+  <p>This is paragraph.</p>
+</body>
+</html>
+但是以上這個範例，假如我們改寫成 p + p 的話結果會是什麼？除了第一個 p 其他 p 都變成紅色。
+<!DOCTYPE HTML>
+<html>
+<head>
+<style type="text/css">
+    p + p { color: #ff0000; }
+</style>
+</head>
+<body>
+  <h1>This is a heading.</h1>
+  <p>This is paragraph.</p>
+  <p>This is paragraph.</p>
+  <p>This is paragraph.</p>
+  <p>This is paragraph.</p>
+  <p>This is paragraph.</p>
+</body>
+</html>
+這個技巧常用在「一個區塊中段落與段落之間的間距」(ex.從第二段開始，與上一個段落保持上方外距)，可多設想如何運用這個寫法。
+
+另外介紹一個 css3 新增的選擇器：
+．間接選擇器( ~ )：
+可選擇有相同的父元素，兄元素「之後所有的」弟元素，例如剛剛那個範例若改成 ~ 選擇器，h1 上面再多加一個 p ，結果是除了 h1 上面的那個 p ，底下的 p 全部變成紅色的了。
+<!DOCTYPE HTML>
+<html>
+<head>
+<style type="text/css">
+    h1 ~ p { color: #ff0000; }
+</style>
+</head>
+<body>
+  <p>This is paragraph.</p>
+  <h1>This is a heading.</h1>
+  <p>This is paragraph.</p>
+  <p>This is paragraph.</p>
+  <p>This is paragraph.</p>
+  <p>This is paragraph.</p>
+  <p>This is paragraph.</p>
+</body>
+</html>
+
+還有 屬性選擇器 虛擬類別 虛擬元素(偽元素)等 許多好用的選擇器。
+先複習：
+> 只選擇子元素不選擇孫元素
++ 只選擇相鄰的第一個兄弟元素
+~ 可以選擇兄元素之後所有的弟元素
+___________________________________________________________________________________________________________________________________________________________________________________________________________________
 HTML 的屬性在 CSS 叫做性質
 大部分放在 head 標籤
-
 
 行內		段落		引用設定
 style 屬性		區域性的設定	引入 .css 檔
@@ -259,7 +1032,7 @@ style 屬性		區域性的設定	引入 .css 檔
 字型、段落、顏色
 font      text     color
 
-元件名稱、class 名稱、id 名稱
+標籤(元素)名稱、class 名稱、id 名稱
 div {
 }
 

@@ -1,0 +1,24 @@
+<div th:fragment="copy">
+	&copy; 2011 The good thymes virtual grocery
+</div>
+
+可以使用 th:insert、th:replace 屬性(Thymeleaf 3.0 Deprecated th:include) 輕易地包含進需要的頁面中。
+
+<body>
+	...	<div th:insert="~{footer :: copy}"></div>	...	// ~{} 可有可無
+</body>
+
+footer: 表示模板名稱，就是 html 文件的名稱，如果是 springboot 開發，則根據 Spring Boot 配置的 Thymeleaf 映射查找。
+
+
+<div th:replace="sbAdmin/commons :: paging"></div>
+commons.html 是公共頁，依據映射規則寫全路徑
+
+copy: 表示模板片段名稱，即 th:fragment="copy" 的名稱
+
+被引用的 th:fragment 與引用的 th:insert 或 th:replace 可以在同一個 html 也可以不在同一個 html。
+
+片段表達式語法，有如下三種格式：
+~{templatename :: selector}	templatename 表示模板名稱(html 文件名稱)，springboot 項目就是 templates 目錄下的 html 文件名稱，根據 springboot 對 thymeleaf 的規則進行映射。selector 可以是 th:fragment 定義的片段名稱，也可以是選擇器，如標籤的 id、CSS 選擇器、XPath 等。
+~{templatename
+~{:: selector
