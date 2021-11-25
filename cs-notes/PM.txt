@@ -43,7 +43,7 @@ README.md:
 專案狀態的 badge
 例如目前最新版本的 build 狀態，還是透過 gitter 溝通的網址，這些都可以用 badge 快速呈現讓使用者一看知道一些資訊。
 
-badge可以參考http://shields.io/
+badge 可以參考http://shields.io/
 
 如何快速上手
 怎麼讓人能夠快速使用這個專案，例如透過 nuget 安裝然後使用
@@ -196,3 +196,160 @@ buildNumber.properties
 .classpath
 .settings
 .metadata
+___________________________________________________________________________________________________________________________________________________________________________________________________________________
+（Vue）
+基於 vue.js 的前端開發環境，用於前後端分離後的單頁應用開發，可以在開發時使用 ES Next、scss 等最新語言特性。
+
+專案配置
+
+首先，在確定好使用的框架和元件庫後，先要大致瞭解它們，做到文件基本熟悉。本次開發使用到的有： vue ， vuex ， axios ， elementUI 。
+
+然後可以按官方指引，使用 vue-cli 搭建 vue 的專案，在專案裡按照上面的文件嘗試修改，加深理解：
+
+
+# 安裝依賴庫，建議指定 vue 和 element 版本，避免版本升級帶來意料之外的 bug
+$ npm install vue@2.1.6 element-ui@1.4.6 vuex axios
+#全域性安裝腳手架
+$ npm install -g vue-cli 
+# 建立一個基於 webpack 模板的新專案my-project
+$ vue init webpack my-project
+# 進入專案目錄
+$ cd my-project
+# 安裝依賴
+$ npm install
+# 執行專案
+$ npm run dev
+
+完成後會有如下結構：
+build 資料夾: 裡面是對 webpack 開發和打包的相關設定，包括入口檔案、輸出檔案、使用的模組等；
+config 資料夾: 主要是指定開發和打包中的靜態資源路徑、要壓縮的檔案型別、開發使用的埠號、開發使用虛擬伺服器跨域請求 api 等。
+node_modules: 專案的依賴庫；
+src 資料夾： 我們主要操作的地方，元件的增加修改等都在這個資料夾裡操作，下文會有詳細介紹；
+static 資料夾: 靜態資原始檔夾，放置不會變動的資源，直接被複制到最終的打包目錄（預設是dist/static）下；
+.babelrc: 使用 babel 的配置檔案，用來設定轉碼規則和外掛；
+.editorconfig: 程式碼的規範檔案，規定使用空格或 tab 縮排，縮排的長度是兩位還是四位之類的程式碼風格，使用的話需要在編輯器裡下載對應的外掛；
+.eslintignore: 指定 eslint 忽略的檔案；
+.eslintrc: 配置 eslint 的檢測規則，強制按照規則書寫程式碼；
+.gitignore: 指定 git 忽略的檔案，所有 git 操作均不會對其生效；
+.postcssrc: 指定使用的 css 預編譯器，裡面預設配置了 autoprefixer ，自動補全瀏覽器字首；
+favicon.ico: 瀏覽器標籤頁 title 旁邊的小圖示，這是需要我們自己貼上過來的；
+index.html: 首頁檔案，專案執行的時候，會自動將我們在 src 資料夾裡生成的元件插入這個檔案裡；
+LICENSE: 專案宣告的 license；
+package-lock.json: 當 node_modules 或 package.json 發生變化時自動生成的檔案。這個檔案主要功能是確定當前安裝的包的依賴，以便後續重新安裝的時候生成相同的依賴，而忽略專案開發過程中有些依賴已經發生的更新；
+package.json: 指定專案開發和生成環境中需要使用的依賴庫；
+README.md: 相當於是一個備註檔案，對專案開發過程中需要注意的地方進行一些說明。
+
+
+src 資料夾結構
+
+src 可以根據自己的習慣進行，不必雷同。下面是這次專案的結構：
+
+assets: 放置靜態資源，包括公共的 css 檔案、 js 檔案、iconfont 字型檔案、img 圖片檔案 以及其他資源類檔案。之所以強調是公共的 css 檔案，是因為要在元件的 css 標籤里加入 ‘scoped‘ 標記，將其作用範圍限制在此元件以及呼叫它的父級元件中，避免汙染全域性樣式；
+components: 放置通用模組元件。專案裡總會有一些複用的元件，例如彈出框、傳送手機驗證碼、圖片上傳等，將它們作為通用元件，避免重複工作；
+http: 放置與後臺 api 相關的檔案。這裡面有 axios 庫的例項配置檔案、使用配置的 axios 例項接入 api 獲取資料的函式的集合的檔案；
+mixins: 放置混合選項的檔案。具體來說，相當於是公用函式的集合，在元件中引用時，可以作用於元件而不必書寫重複的方法；
+pages: 放置主要頁面的元件。例如登入頁、使用者資訊頁等。通常是這裡的元件本身寫入一些結構，再引入通用模組元件，形成完整的頁面；
+router: 放置路由設定檔案，指定路由對應的元件；
+store: 放置 vuex 需要的狀態關聯檔案，設定公共的 state、mutations 等；
+App.vue: 入口元件，pages 裡的元件會被插入此元件中，此元件再插入 index.html 檔案裡，形成單頁面應用；
+main.js: 入口 js 檔案，影響全域性，作用是引入全域性使用的庫、公共的樣式和方法、設定路由等。
+___________________________________________________________________________________________________________________________________________________________________________________________________________________
+解析常見的 React.js 專案架構
+React 是 component-based 的前端 UI 函式庫，通常會配合其他函式庫使用:
+
+react-router: 處理 SPA 的路由
+redux: 做統一的狀態管理，協助元件之間的溝通
+redux-thunk or redux-saga: 處理 AJAX 的 side effect
+資料流管理
+Redux 主要就是做為元件之間需要溝通工具，有以下特性:
+
+單向資料流
+公共的狀態儲存 (Store)
+專案架構也會受到這種概念去分類:
+
+actions: 觸發狀態改變用的 function
+containers: 有連接 Store
+components: 沒有連接 Store
+reducers: 收到 action 後的資料邏輯
+Side Effect 處理
+平常不太會去特別注意的名詞，我們用這個來分類 function 或元件:
+
+Pure function or UI 元件
+每次送進去固定的輸入，出來就會是固定的結果
+相同的 props, 產生相同的 component，會放在 components 資料夾
+不寫商業邏輯
+不加入有 side effect 的 code
+有 side effect 的 function or 元件
+因為與狀態相關所以就會放在 containers 資料夾
+AJAX，相關程式在 react hooks 中就會放在 useEffect，class component 就會放在 componentDidMount
+AJAX 跟 redux，side effect 交給 redux-thunk 或是 redux-saga 去管理
+最近開始接觸單元測試後，也深刻感覺到 side effect 越少，測試也越好寫，所以我想如果刻意去寫出好測試的元件，最後也會讓專案的結構變得更好偵錯與維護。
+
+常用第三方工具
+classnames: 讓我們更方便的使用 JavaScript 去套入條件動態的操作 class
+gh-pages: 發佈到 github pages 的工具
+humps: 將收到的資料格式轉成駝峰式
+node-sass: 讓專案能夠使用 scss
+eslint-*, lint-staged, husky, prettier: coding style 交給編輯器處理
+簡化架構的函式庫與框架
+對於專案或是後端收到的資料，若沒有太多需要客製化的部分，可用底下函式庫與框架簡化:
+
+redux-api，將常用的寫法封裝
+簡化架構
+使用配置檔取代 redux 的專案中沒特殊處理的 action, reducers, API 的 CRUD
+減少寫太多重複的程式碼，由函式庫的配置檔取代
+axios，Promise based HTTP client for the browser and node.js
+前後端共構
+使用客製化 instance 的方式可以將收跟送的邏輯統一實作，減少重複的程式碼
+Next.js，是一套以 React.js 生態系打造出來的完整的框架，幫我們配置了
+AMP
+路由
+CSS-in-JS
+靜態頁面輸出
+伺服器渲染
+專案架構
+以最近弄的小專案當例子，如果有加上 redux 的話，專案架構大概會長成下面的樣子，在比較簡單的專案中可以更簡化。
+
+
+├── src/
+│  ├── containers/              # containers 放置與 Redux 連接的相關元件，單元測試檔案為 `元件名稱.test.js`
+│  ├── components/              # components 放置相關元件，單元測試檔案為 `元件名稱.test.js`
+│  │  └── Root.js               # 路由根目錄
+│  ├── hooks/                   # hooks 相關
+│  ├── middleware/              # 資料處理相關
+│  │  ├── API.js                # axios 的 instance
+│  │  └── redux-api.js          # redux-api
+│  ├── styles/                  # 樣式檔們
+│  ├── index.js                 # 程式入口
+│  ├── serviceWorker.js
+│  └── setupTests.js            # 測試相關設定
+├── .eslintrc                   # ESLint 設定檔
+├── .prettierrc                 # prettierrc 工具設定
+├── .travis.yml                 # 持續發佈工具
+├── package-lock.json
+├── package.json
+└── README.md
+資料夾架構
+對新加入專案的工程師來說，最多的時間就是花在找尋相關的程式，其實可以透過小訣竅可以去優化前端開發者體驗，那在資料夾的架構方面，其實很簡單的透過把相近功能的程式碼放在一起 (Co-located) 就可以大量省去尋寶的時間，也能夠更方便的管理。
+
+
+比較大的專案
+├── Login/
+│  ├── SocialButton/
+│  │  ├── LineButton.js         # 社群登入的 Line 按鈕
+│  │  └── FacebookButton.js     # 社群登入的 FB 按鈕
+│  ├── Modal/
+│  │  └── ModalLogin.js         # 登入的 Modal
+│  └── index.js                 # 登入邏輯與主要 Layout
+
+比較小的專案
+api/
+├─ ProfileAPI.js
+└─ UserAPI.js
+components/
+├─ Footer.js
+├─ Footer.css
+├─ Profile.js
+├─ ProfileHeader.js
+└─ ProfileHeader.css
+
