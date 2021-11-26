@@ -1,0 +1,77 @@
+（Docker）：Meta 級別、隔離；Virtual Machine：Giga 級別、完全隔離。
+下載 docker desktop
+到 docker hub (Docker Registry)下載 docker image
+docker file 使 APP 封裝成 docker image
+docker image 能被創建部署成 docker container 的 static 文件
+docker container
+docker engine 將 docker container 放在此運行
+docker instance 在 docker engine 上產出
+
+docker pull
+docker images
+docker run
+docker run -D(detached)
+
+
+Multi Stage：優化重要，減少不必要的額外文件
+Docker VScode Plugin => Docker
+創 docker file
+ctrl + shift + p => Add docker file to workspace
+選擇: 類型、OS、Port
+include optional docker compose file => Yes
+
+
+From ... As base
+workdir
+expose
+ENV
+From ... As build
+workdir
+Copy 本地文件目錄中 File copy 到 Docker 文件目錄中 File
+Run ... "Docker Example"
+Copy ...
+workdir: "/src/."
+Run	// 編譯
+From build As publish
+Run ... " " -c Release
+From base As find
+workdir
+copy ... from = publish	// 從前階段 image 生成 folder 路徑下找原路徑
+EntryPoint [" ", " .dll"]
+
+
+Cmd
+docker build -t myfirstimage:1.0
+docker images
+docker run <ID>
+
+error 因為 startup.cs 因 SQL Server 尚未配完全
+1. 去 Docker Hub 下載數據庫
+2. docker-compose.yml
+version
+	services
+		dockcontainername
+			image
+			build
+				context
+				dockfile
+			ports:8090(外):80(內)	// 解決 port 監聽衝突
+		ms-sql-server
+			image
+			env...
+				ACCEPT.EULA
+				SA-PASS...
+				MSSQL-PID
+
+設定完成後
+docker-compose up
+docker ps(檢查當前運行，列出 container(2個))
+
+Cmd
+docker ps
+docker exec -it <ID> bash	// 進入 container 內部)
+ls
+/opt/mssql-tools/bin/sqlcmd -S localhost -u SA -p <password>	// 進入 DB 內部
+select name from sys.databases
+go
+...
