@@ -1,3 +1,27 @@
+不同的編程環境使用的 SQL 變種各不相同。T-SQL、PL/SQL、MySQL、PostgreSQL 提供強大編程支持，Access SQL、SQLite 對高級編程支持有限，需結合其他工具實現對數據的複雜操作。
+MS SQL Server	> T-SQL 	語法：	標準 SQL 用 FETCH FIRST 選擇前面特定數量的行，這裡用 TOP 關鍵字。SELECT TOP 20 * FROM table_name。支持變量、循環、函數、過程、錯誤處理
+Oracle		> PL/SQL 語法：	支持變量、循環、函數、過程、錯誤處理
+MySQL		> MySQL 	語法：	選擇前面特定數量的行使用 Limit。SELECT * FROM table_name LIMIT 10。支持變量、循環、函數、過程、錯誤處理
+PostgreSQL	> PostgreSQL語法：支持變量、循環、函數、過程、錯誤處理
+
+Access		> Access SQL語法：和 T-SQL 一樣和標準 SQL 有 FETCH FIRST 和 TOP 的差別，Access 的 Wildcard 和標準 SQL 不同。表示多個字符標準 SQL 使用 %，Access 使用 *。複雜的查詢需借助 VBA
+SQLite		> SQLite 語法：	輕巧，和 Python 無縫銜接，本身不支持變量、過程、函數。Python + SQLite + Excel = Access ?
+
+（SQL）
+以下取自維基百科(wikipedia)
+Structured Query Language 結構化查詢語言是一種特定目的程式語言，用於管理關聯式資料庫管理系統（RDBMS），或在關係流資料管理系統（RDSMS）中進行流處理。
+SQL 基於「關係代數」和「元組關係演算」，包括一個資料定義語言(DDL)和資料操縱語言(DML)。SQL 的範圍包括資料插入、查詢、更新和刪除，資料庫模式建立和修改，以及資料存取控制。儘管 SQL 經常被描述為，而且很大程度上是一種聲明式編程（4GL），但是其也含有程序式編程的元素。
+
+SQL是進階的非過程化編程語言，它允許使用者在高層資料結構上工作。它不要求使用者指定對資料的存放方法，也不需要使用者了解其具體的資料存放方式。而它的介面，能使具有底層結構完全不同的資料庫系統和不同資料庫之間，使用相同的SQL作為資料的輸入與管理。它以記錄專案〔records〕的合集（set）〔項集，record set〕作為操縱物件，所有SQL語句接受項集作為輸入，回送出的項集作為輸出，這種項集特性允許一條SQL語句的輸出作為另一條SQL語句的輸入，所以SQL語句可以巢狀，這使它擁有極大的靈活性和強大的功能。在多數情況下，在其他程式語言中需要用一大段程式才可實踐的一個單獨事件，而其在SQL上只需要一個語句就可以被表達出來。這也意味著用SQL可以寫出非常複雜的語句，在不特別考慮效能下。
+
+SQL同時也是資料庫檔案格式的副檔名。
+
+SQL包含四個部分：
+資料定義語言（Data Definition Language, DDL）
+資料操縱語言（Data Manipulation Language, DML）
+資料控制語言（Data Control Language, DCL）
+事務控制語言（Transaction Control Language, TCL）
+
 增刪改查
 CRUD：	create	delete	update	read
 SQL：	insert	delete	update	select
@@ -88,12 +112,12 @@ public class Drvier extends NonRegisteringDriver implements java.sql.Driver {
 		String password="123456";
 		Connection conn = DriverManager.getConnection(url, user, password);
 		System.out.println(conn);	// 能打印代表連接數據庫成功
-		// Thread.sleep(50000);	// 重新運行 Java 再運行 navicat(圖形化資料庫管理及發展軟體)的查詢語句 SHOW PROCESSLIST; 就顯示出來了。
+		// Thread.sleep(50000);	// 重新運行 Java 再運行 navicat (圖形化資料庫管理及發展軟體)的查詢語句 SHOW PROCESSLIST; 就顯示出來了。
 	}
 }
 
 
-mysql中grant all privileges on赋给用户远程权限
+mysql 中 grant all privileges on 赋给用户远程权限
 改表法。
 当你的帐号不允许从远程登陆，只能在localhost连接时。这个时候只要在 mysql 服务器上，更改 mysql 数据库里的 user 表里的 host 项，从 localhost 改成 % 即可实现用户远程登录，或是 % 改成指定 ip 。
 
@@ -120,9 +144,9 @@ Bye
 
 
 授权法
-例如，你想user使用mypwd从任何主机连接到mysql服务器的话。
+例如，你想 user 使用 mypwd 从任何主机连接到 mysql 服务器的话。
 
-在安装mysql的机器上运行：
+在安装 mysql 的机器上运行：
 
 1. GRANT ALL PRIVILEGES ON *.* TO 'user'@'%' IDENTIFIED BY 'mypwd' WITH
 
@@ -136,7 +160,7 @@ grant all privileges on 库名.表名 to '用户名'@'IP地址' identified by '�
 flush privileges;
 
 
-如果你想允许用户user从ip为192.168.1.4的主机连接到mysql服务器，并使用mypwd作为密码
+如果你想允许用户 user 从 ip 为 192.168.1.4 的主机连接到 mysql 服务器，并使用 mypwd 作为密码
 在安装mysql的机器上运行：
 
  GRANT ALL PRIVILEGES ON *.* TO 'user'@'192.168.1.3' IDENTIFIED BY 'mypwd' WITH GRANT OPTION;   
@@ -249,13 +273,24 @@ END IF
 
 	呼叫、檢視、修改、刪除預存程序和函數
 （視圖）
+
 （MySQL 觸發器）
+
 （MySQL 許可權與安全管理）
+
 （資料備份與恢復）
+
 （MySQL 記錄檔）
+
 （效能最佳化）
+
 （MySQL Replication）
+
 （MySQL Workbench）
+
 （MySQL 管理利器 MySQL Utilities）
+
 （讀寫分離的利器 MySQL Proxy）
+
 （精通 MySQL 儲存引擎）
+___________________________________________________________________________________________________________________________________________________________________________________________________________________

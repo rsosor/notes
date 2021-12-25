@@ -75,3 +75,26 @@ ls
 select name from sys.databases
 go
 ...
+___________________________________________________________________________________________________________________________________________________________________________________________________________________
+[x,y] > select one
+
+docker version
+docker-compose version
+
+docker container rm -f $(docker container ls -aq)
+docker image rm -f $(docker image ls -f reference='name'-q)
+
+docker container run [name, image id]
+docker container run --interactive --tty [name, image id]	// -it
+docker container run --detach --publish 8088(host port):80(container port) [name, image id]
+# hostname
+# date
+
+docker container ls
+docker container ls --all
+docker container top [container id]		// login
+docker container logs [container id]
+docker container inspect [container id]
+
+docker container stats [container id]
+docker container rm --force $(docker container ls --all --quiet)
