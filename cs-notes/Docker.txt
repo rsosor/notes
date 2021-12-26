@@ -76,6 +76,33 @@ select name from sys.databases
 go
 ...
 ___________________________________________________________________________________________________________________________________________________________________________________________________________________
+docker container run ...
+　　 ↓
+Docker API
+　　 ｜
+------------------------------------------------------
+　　 ｜				|
+Docker Engine --- Docker 映像檔快取	|
+　　 ｜				|
+　　 OS				|
+	Compputer		|
+------------------------------------------------------
+___________________________________________________________________________________________________________________________________________________________________________________________________________________
+container 有 name、id
+image 也有 name、id，image name 可以用 --tag 設定映像檔名稱
+
+
+-d, --detach	// 背景啟動容器並顯示容器 id
+-e, --env		// 環境變量
+-f, --force
+-i, --interactive	// 互動模式連接到容器
+-t, --tty		// 在容器中連接終端對話視窗
+-p, --publish	// 配發實體網路連接阜給容器，Docker 監聽電腦連接阜上的網路流量發送到容器中。預設不會
+-a, --all
+-q, --quiet
+-n, --name		// 幫 container name 命名，而不是使用 Docker 隨機產生的容器 id
+-t, --tag		// 設定映像檔名稱
+
 [x,y] > select one
 
 docker version
@@ -84,9 +111,9 @@ docker-compose version
 docker container rm -f $(docker container ls -aq)
 docker image rm -f $(docker image ls -f reference='name'-q)
 
-docker container run [name, image id]
-docker container run --interactive --tty [name, image id]	// -it
-docker container run --detach --publish 8088(host port):80(container port) [name, image id]
+docker container run [image name, image id]
+docker container run --interactive --tty [image name, image id]	// -it
+docker container run --detach --publish 8088(host port):80(container port) [image name, image id]
 # hostname
 # date
 
@@ -98,3 +125,22 @@ docker container inspect [container id]
 
 docker container stats [container id]
 docker container rm --force $(docker container ls --all --quiet)
+
+docker image pull [image name]
+docker container run -d --name <幫 container name 命名> [image name]
+docker container run --env TARGET=google.com [image name]
+
+Dockerfile
+FROM
+CMD
+ENV
+WORKDIR
+COPY
+
+docker image build --tag <設定映像檔名稱> <建置目錄>
+docker image ls 'w*'
+
+docker image history [image name, image id]
+docker system df
+
+docker container commit [container name] [設定映像檔名稱]		// 手動建置 Docker Image
