@@ -360,7 +360,7 @@ ________________________________________________________________________________
 Java 中有哪些常見的關鍵字？
 訪問控制			private		protected		public
 類、方法、變量修飾符	abstract		class		extends		final		implements	interface		native
-			new		static		stricfp		synchronized	transient		volatile
+			new		static		strictfp		synchronized	transient		volatile
 程序控制			break		continue		return		do		while		if		else
 			for		instanceof		switch		case		default
 錯誤處理			try		catch		throw		throws		finally
@@ -369,6 +369,9 @@ Java 中有哪些常見的關鍵字？
 			short		null		true		false
 變量引用			super		this		void
 保留字			goto		const
+
+strictfp(strict float point) 聲明類、接口或方法時，那麼所聲明的範圍內 Java 的編譯器以及運行環境會依照浮點規範 IEEE-754 來執行。
+但是不允許對接口中的方法以及構造函數聲明 strictfp。
 
 自增自減運算符，符號在前就先加/減、符號在後就後加/減。
 
@@ -748,18 +751,18 @@ Son{age=13, name='son1', father=Father{name='bigFather'}}
 
 
 （序列化深拷貝）
-在框架中，有的時候我們發現其中並沒有重寫clone方法，那麼我們在需要拷貝一個物件的時候是如何去操作的呢？答案是我們經常會使用序列化方法，實現Serializable介面。
+在框架中，有的時候我們發現其中並沒有重寫 clone 方法，那麼我們在需要拷貝一個物件的時候是如何去操作的呢？答案是我們經常會使用序列化方法，實現 Serializable 介面。
 去尋找其他的方法來替代深拷貝也是無可奈何的事情，如果採用傳統的深拷貝，難道你拷貝一個物件的時候向其中追無數層來拷貝完所有的物件變數麼？先不談這麼做的時間消耗，僅僅是寫這樣的程式碼都會讓人望而生畏。序列化深拷貝就是這樣一個相對簡單的方法。
 
-熟悉物件快取的知道我們經常將Java物件快取到Redis中，然後還可能從Redis中讀取生成Java物件，這就用到序列化和反序列化。一般可以將Java物件儲存為位元組流或者json串然後反序列化成Java物件。因為序列化會儲存物件的屬性但是不會也無法儲存物件在記憶體中地址相關資訊。所以在反序列化成Java物件時候會重新建立所有的引用物件。
+熟悉物件快取的知道我們經常將 Java 物件快取到 Redis 中，然後還可能從 Redis 中讀取生成 Java 物件，這就用到序列化和反序列化。一般可以將 Java 物件儲存為位元組流或者 json 串然後反序列化成 Java 物件。因為序列化會儲存物件的屬性但是不會也無法儲存物件在記憶體中地址相關資訊。所以在反序列化成 Java 物件時候會重新建立所有的引用物件。
 
-把物件寫到流裡的過程是序列化（Serilization）過程，但是在Java程式師圈子裡又非常形象地稱為“冷凍”或者“醃鹹菜（picking）”過程；而把物件從流中讀出來的並行化（Deserialization）過程則叫做 “解凍”或者“回鮮(depicking)”過程。
-應當指出的是，寫在流裡的是物件的一個拷貝，而原物件仍然存在於JVM裡面，因此“醃成鹹菜”的只是物件的一個拷貝，Java鹹菜還可以回鮮。
+把物件寫到流裡的過程是序列化（Serilization）過程，但是在 Java 程式師圈子裡又非常形象地稱為“冷凍”或者“醃鹹菜（picking）”過程；而把物件從流中讀出來的並行化（Deserialization）過程則叫做 “解凍”或者“回鮮(depicking)”過程。
+應當指出的是，寫在流裡的是物件的一個拷貝，而原物件仍然存在於 JVM 裡面，因此“醃成鹹菜”的只是物件的一個拷貝，Java 鹹菜還可以回鮮。
 
-上面是網上的專業解釋。在Java語言裡深複製一個物件，常常可以先使物件實現Serializable介面，然後把物件（實際上只是物件的一個拷貝）寫到一個流裡（醃成鹹菜），再從流裡讀出來（把鹹菜回鮮），便可以重建物件。
+上面是網上的專業解釋。在 Java 語言裡深複製一個物件，常常可以先使物件實現 Serializable 介面，然後把物件（實際上只是物件的一個拷貝）寫到一個流裡（醃成鹹菜），再從流裡讀出來（把鹹菜回鮮），便可以重建物件。
 這樣做的前提是物件以及物件內部所有引用到的物件都是可序列化的，否則，就需要仔細考察那些不可序列化的物件是否設成 transient。
 
-在實際的應用中，深拷貝和淺拷貝只是兩個概念，不一定誰比誰好，要按照實際的工作來確定如何去拷貝一個物件。如果在資料庫操作方面，為了取出一張表時不涉及其他的表，肯定需要使用淺拷貝，而在框架的Serializable中，雖然耗時，但是深拷貝是非常有必要的。
+在實際的應用中，深拷貝和淺拷貝只是兩個概念，不一定誰比誰好，要按照實際的工作來確定如何去拷貝一個物件。如果在資料庫操作方面，為了取出一張表時不涉及其他的表，肯定需要使用淺拷貝，而在框架的 Serializable 中，雖然耗時，但是深拷貝是非常有必要的。
 
 protected Son deepClone() throws IOException, ClassNotFoundException {
 	Son son = null;
@@ -808,6 +811,10 @@ Java 序列化中如果有些字段不想進行序列化怎麼辦？
 
 不想進行序列化的變量，使用 transient 關鍵字修飾。
 transient：阻止實例中那些用此關鍵字修飾的變量序列化。只能修飾 變量，不能修飾 類 和 方法。
+	本地變量不能被 transient 修飾，如果變量是用戶自定義類變量，該類需要實現 Serializable 接口。
+	一個靜態變量不管是否被 transient 修飾，均不能被序列化。
+上述第三，加上 static 依然可以輸出，是因為反序列化後類中 static 型變量 name 的值為當前 JVM 中對應 static 變量的值，這個值是 JVM 中的不是反序列化得出的。
+
 獲取用鍵盤輸入常用的兩種方法：
 Scanner：
 Scanner input = new Scanner(System.in);
@@ -1838,7 +1845,30 @@ public class Variable1Test {
 }
 
 （synchronized）要求達到被標示區塊的「互斥性(Mutual exclusion) 與 可見性(Visibility)」
+
 volatile 的變數，不允許執行緒快取，保證變數的可見性，只能在共享記憶體存取。
+volatile 修飾符告訴編譯器被 volatile 修飾的變量可以被程序的其他部份改變。在 multi threading 有時兩個或更多地線程共享一個相同的實例變量。
+考慮效率問題，每個線程可以保存該共享必量的私有拷貝。實際的變量副本在不同的時候更新，如當進入 synchronized 方法時。
+
+介紹：因為異步線程可以訪問字段，所以有些優化操作是一定不能作用在字段上的。
+volatile 有時可以代替 synchronized。但是 volatile 沒辦法保證對變量操作的原子性。volatile 能在一定程度上保證有序性
+
+共享變量（類的成員變量、靜態成員變量）被 volatile 後，就具備了兩層語義：
+
+1）內存可見性：保證了不同線程對這個變量進行操作時的可見性，即一個線程修改了某個變量的值，這新值對其他線程是立即可見的。
+
+2）禁止進行指令重排序（為了減少內存操作速度遠低於 CPU 運行速度帶來的 CPU 空置影響，JVM 會按照自己的一些規則將程序編寫順序打亂）。
+
+使用場景：
+volatile 在某些情況下性能要優於 synchronized，volatile 關鍵字是無法替代 synchronized，因為 volatile 無法保證操作的原子性。
+
+在某些特定場景，volatile 相當於一個輕量級的 synchronized，因為不會引起線程的上下文切換
+但是使用 volatile 必須滿足兩個條件：
+1）對變量的寫操作不依賴當前值，如多線程下執行 i++，是無法通過 volatile 保證結果準確性的。
+2）該變量沒有包含在具有其他變量的不變式中
+
+可以被寫入 volatile 變量的這些有效值獨立於任何程序的狀態，包括變量的當前狀態。
+
 正確使用 volatile
 public class Some implements Runnable {
 	private volatile boolean isContinue = true ;
