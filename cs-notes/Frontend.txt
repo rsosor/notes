@@ -1613,20 +1613,21 @@ ctx.stroke()
 ˙˙˙˙˙˙˙˙˙˙˙˙˙˙˙˙˙˙˙˙˙˙˙˙˙˙˙˙˙˙˙˙˙˙˙˙˙˙˙˙˙˙˙˙˙˙˙˙˙˙˙˙˙˙˙˙˙˙˙˙˙˙˙˙˙˙˙˙˙˙˙˙˙˙˙˙˙˙˙˙˙˙˙˙˙˙˙˙˙˙˙˙˙˙˙˙˙˙˙˙
 node --experimental-modules my app.mjs
 
-使用NVM安裝NPM
-使用NVM管理不同版本的node與npm
-NPM=Node Package Manager
+使用 NVM 安裝 NPM
+使用 NVM 管理不同版本的 node 與 npm
+NPM = Node Package Manager
 
 install
-安裝node.js自帶npm
+安裝 node.js 自帶 npm
 nvm use 8.9.4
 node -v
 npm -v
-想下載json-server
-$ npm install -g json-server	// -g每個專案都能用的
+npm run build	// 前端打包
+想下載 json-server
+$ npm install -g json-server	// -g 每個專案都能用的
 
-每一個專案前端都能用json server去開想要的json檔，當db當api功能測試
-""不能用''
+每一個專案前端都能用 json server 去開想要的 json 檔，當 db 當 api 功能測試
+"" 不能用 ''
 {}物件
 [] 陣列
 Example
@@ -1641,16 +1642,16 @@ Create a db.json file
 	"profile": { "name": "typicode" }
 }
 Start JSON Server
-$ json-server --watch db.json	// json-server --watch ./data/data.json	./是現在的位置
+$ json-server --watch db.json	// json-server --watch ./data/data.json	./ 是現在的位置
 
 Now if you go to http://localhost:3000/posts/1, you'll get
 { "id": 1, "title": "json-server", "author": "typicode" }
 Also when doing requests, it's good to know that:
 If you make POST, PUT, PATCH or DELETE requests, changes will be automatically and safety saved to db.json using lowdb.
 ___________________________________________________________________________________________________________________________________________________________________________________________________________________
-使用require("fs")載入fs模塊，模塊中所有方法都有同步和異步兩種。
+使用 require("fs") 載入 fs 模塊，模塊中所有方法都有同步和異步兩種。
 異步：有一個回調函數
-var fs = require("fs");		// 載入fs模塊
+var fs = require("fs");		// 載入 fs 模塊
 
 fs.unlink('/tmp/shiyanlou', function(err) {
 	if(err) {
@@ -1667,7 +1668,7 @@ console.log("成功刪除了 /tmp/shiyanlou");
 
 var fs = require("fs");
 
-readFile讀取文件
+readFile 讀取文件
 fs.readFile(filename, [option], callback)
 參數說明:
 filename String 文件名
@@ -1676,7 +1677,7 @@ encoding String |null default=null
 flag String default='r'
 callback Function
 
-readFile的回調函數接收兩個參數，err是讀取文件出錯時觸發的錯誤對象，data是從文件讀取的數據。
+readFile的回調函數接收兩個參數，err 是讀取文件出錯時觸發的錯誤對象，data 是從文件讀取的數據。
 fs.readFile('./test.txt', function(err, data) {
 	if (err) {
 		throw err;
@@ -1694,16 +1695,16 @@ fs.readFile("./test.txt", function(err, data) {
 	console.log(data.toString());
 });
 
-設置UTF-8編碼寫法:
+設置 UTF-8 編碼寫法:
 fs.readFile("./test.txt", "utf-8", function(err, data) {
 	if (err) {
 		throw err;
 	}
 	console.log("utf-8:", data.toString());
-	// 直接用console.log(data);也可
+	// 直接用 console.log(data);也可
 });
 
-readFile同步的寫法就是沒有回調函數(callback)： fs.readFileSync(filename, [options])
+readFile同步的寫法就是沒有回調函數 (callback)： fs.readFileSync(filename, [options])
 ___________________________________________________________________________________________________________________________________________________________________________________________________________________
 Socket.IO 是一個面向即時 web 應用的 JavaScript 庫
 它使得伺服器和客戶端之間即時雙向的通信成為可能。他有兩個部分：在瀏覽器中執行的客戶端庫，和一個面向Node.js的伺服器端庫。兩者有著幾乎一樣的API。像Node.js一樣，它也是事件驅動的

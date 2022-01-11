@@ -1,0 +1,16 @@
+1.war
+打包為 war 包項目時，可以放在 tomcat 下運行
+
+2.jar
+打包成 jar 包就是要使用 java -jar xxx.jar 方式來運行，最常見的就是 SpringBoot 項目
+
+3.pom
+它只是用來做依賴管理，打包成的項目並不能直接運行。比如 Springboot 項目的父依賴以及再往上的依賴打包方式就是 pom，因為它們只做依賴管理。
+
+
+直接用 maven2 相對於 SpringBoot，.idea 少了 encodings.xml、uiDesigner.xml、vcs.xml
+
+
+前端使用 npm run build	在 dist 文件夾
+
+後端使用 run maven build	在 target 文件夾
