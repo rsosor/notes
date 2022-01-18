@@ -7,7 +7,16 @@ PostgreSQL	> PostgreSQL語法：支持變量、循環、函數、過程、錯誤
 Access		> Access SQL語法：和 T-SQL 一樣和標準 SQL 有 FETCH FIRST 和 TOP 的差別，Access 的 Wildcard 和標準 SQL 不同。表示多個字符標準 SQL 使用 %，Access 使用 *。複雜的查詢需借助 VBA
 SQLite		> SQLite 語法：	輕巧，和 Python 無縫銜接，本身不支持變量、過程、函數。Python + SQLite + Excel = Access ?
 
-（SQL）
+
+資料存在硬碟中持久化，內存從硬碟讀取資料 CPU 才能做邏輯運算，資料庫是由硬體與軟體共同組成。
+
+資料庫		儲存資料
+資料庫管理系統	管理資料庫的軟體
+資料庫應用程式	加強資料庫系統的處理能力的管理資料庫的軟體補充
+
+（SQL - Structured Query Language）
+三個主要的標準，ANSI(美國國家標準機構) SQL、SQL-92(SQL 2)、SQL-99
+
 以下取自維基百科(wikipedia)
 Structured Query Language 結構化查詢語言是一種特定目的程式語言，用於管理關聯式資料庫管理系統（RDBMS），或在關係流資料管理系統（RDSMS）中進行流處理。
 SQL 基於「關係代數」和「元組關係演算」，包括一個資料定義語言(DDL)和資料操縱語言(DML)。SQL 的範圍包括資料插入、查詢、更新和刪除，資料庫模式建立和修改，以及資料存取控制。儘管 SQL 經常被描述為，而且很大程度上是一種聲明式編程（4GL），但是其也含有程序式編程的元素。
@@ -17,10 +26,10 @@ SQL是進階的非過程化編程語言，它允許使用者在高層資料結�
 SQL同時也是資料庫檔案格式的副檔名。
 
 SQL包含四個部分：
-資料定義語言（Data Definition Language, DDL）
-資料操縱語言（Data Manipulation Language, DML）
-資料控制語言（Data Control Language, DCL）
-事務控制語言（Transaction Control Language, TCL）
+資料定義語言（Data Definition Language, DDL）		DROP、CREATE、ALTER 等
+資料操縱語言（Data Manipulation Language, DML）	INSERT、UPDATE、DELETE
+資料控制語言（Data Control Language, DCL）		SELECT
+事務控制語言（Transaction Control Language, TCL）	GRANT、REVOKE、COMMIT、ROLLBACK 等
 
 增刪改查
 CRUD：	create	delete	update	read
@@ -61,9 +70,6 @@ select column_name(s) from table_name order by column_name(s) fetch first number
 
 Functions：
 min(column_name)、max(column_name)、count(column_name)、avg(column_name)、sum(column_name)
-
-
-
 
 ___________________________________________________________________________________________________________________________________________________________________________________________________________________
 JDBC 連接 mysql 數據庫有 4 種 url 寫法：
@@ -117,11 +123,10 @@ public class Drvier extends NonRegisteringDriver implements java.sql.Driver {
 }
 
 
-mysql 中 grant all privileges on 赋给用户远程权限
-改表法。
-当你的帐号不允许从远程登陆，只能在localhost连接时。这个时候只要在 mysql 服务器上，更改 mysql 数据库里的 user 表里的 host 项，从 localhost 改成 % 即可实现用户远程登录，或是 % 改成指定 ip 。
+mysql 中 grant all privileges on 給用戶遠程權限
 
-在安装mysql的机器上运行：
+改表
+當你帳號不允許從遠程登錄，只能在 localhost 連接時。只要在 mysql 伺服器上，更改 mysql 數據庫裡的 user 表的 host，localhost 改成 % 代表都可連接，或是改成指定 IP 。
 
 1. mysql -u root -p  
 
@@ -131,7 +136,7 @@ mysql 中 grant all privileges on 赋给用户远程权限
 
 4. select host, user from user where user='root';
 
-授權法
+授權
 [root@aaa-server ~]# mysql -u root -p
 MariaDB [(none)]> grant all privileges on *.* to 'root'@'%' identified by 'root密碼' with grant option;
 Query OK, 0 rows affected (0.00 sec)
@@ -143,52 +148,32 @@ MariaDB [(none)]> exit
 Bye
 
 
-授权法
-例如，你想 user 使用 mypwd 从任何主机连接到 mysql 服务器的话。
+授權
+想 user 使用 mypwd 從任何主機連接到 mysql 伺服器的話
 
-在安装 mysql 的机器上运行：
+grant all privileges on *.* to 'user'@'%' identified by 'mypwd' with grant option;  
 
-1. GRANT ALL PRIVILEGES ON *.* TO 'user'@'%' IDENTIFIED BY 'mypwd' WITH
-
-      GRANT OPTION;  
-
-2.FLUSH   PRIVILEGES;
-
-
-模板：
-grant all privileges on 库名.表名 to '用户名'@'IP地址' identified by '密码' with grant option;
 flush privileges;
 
 
-如果你想允许用户 user 从 ip 为 192.168.1.4 的主机连接到 mysql 服务器，并使用 mypwd 作为密码
-在安装mysql的机器上运行：
+模板
+grant all privileges on 庫.表 to '用戶' @ 'IP' identified by '密碼' with grant option;
 
- GRANT ALL PRIVILEGES ON *.* TO 'user'@'192.168.1.3' IDENTIFIED BY 'mypwd' WITH GRANT OPTION;   
+flush privileges;
 
- FLUSH   PRIVILEGES;
+修改完訪問權限，還需要配置阿里雲的安全組規則。
+登錄阿里云控制台，網路與安全—>安全組—>配置規則—>添加安全組規則，開放 MySQL 的 3306 端口。
 
-注意授权后必须FLUSH PRIVILEGES;否则无法立即生效。
+打開本地的 MySQL Workbench 新建阿里雲 MySQL 連接(把原本的 localhost 修改為阿里雲的公有 ip)。就能打開阿里雲 MySQL 了。
 
+到工程把 application.properties 和 Database 中的 localhost 修改為阿里雲的公網 ip 重新運行，就能打包。
+最後在 IDEA 的 Terminal 窗口中使用 mvn clean package。然後把 xxx-xx-SNAPSHOT.jar 複製到阿里雲的伺服器上，打開 shell 運行 java -jar xxx-xx-SNAPSHOT.jar
 
-修改完访问权限，还需要配置阿里云的安全组规则。
-阿里云的安全组规则的配置：
-登入阿里云控制台，网络与安全—>安全组—>配置规则—>添加安全组规则，开放MySQL的3306端口。
-
-打开本地的MySQL Workbench新建阿里云MySQL的连接（把原本的localhost也就是图中的xxxxx修改为阿里云的公有ip）。此时就能打开阿里云MySQL了。
-
-到工程，把application.properties和Database中的localhost修改为阿里云的公网ip，重新运行，测试OK就可以打包了。
-最后在IDEA的Terminal窗口中使用mvn clean package命令进行打包，打包完成后会在target目录下生成jar包。然后把生成xxx-xx-SNAPSHOT.jar复制到阿里云服务器上，打开cmd运行。
-java -jar xxx-xx-SNAPSHOT.jar
-
-打开浏览器，输入http://阿里云公网ip:8091/getuserlist，8091为端口号，因为一般不使用8080端口号。端口号的设置可以在application.properties中通过server.port=8091设定。看看测试结果。
-
-你有可能踩到的坑：
 1、Could not create connection to database server。
-是因为MySQL的版本与工程中使用的版本不一致。可以修改pom.xml中mysql的版本
+是因為 MySQL 的版本與工程中使用的版本不一致。可修改 pom.xml 中 mysql 的版本
 
-2、运行时出现 org.springframework.orm.jpa.JpaSystemException: could not execute statement; nested exception is org.hibernate.exception.GenericJDBCException: could not execute statement
-数据表的主键没有设置，可以把其设置为自增（AI 打钩）
-___________________________________________________________________________________________________________________________________________________________________________________________________________________
+2、運行時出現 org.springframework.orm.jpa.JpaSystemException: could not execute statement; nested exception is org.hibernate.exception.GenericJDBCException: could not execute statement
+數據表的主鍵沒有設置，可以把其設置為自增___________________________________________________________________________________________________________________________________________________________________________________________________________________
 （萬用字元 SQL Wildcards）
 %			// 代替「零個」至「多個」字元
 _			// 代替「一個」字元
@@ -223,11 +208,77 @@ ALTER user 'root'@'localhost' IDENTIFIED BY 'root';	// 修改密碼為 root
 ___________________________________________________________________________________________________________________________________________________________________________________________________________________
 （進階）
 
+（MySQL 伺服器端工具程式）
+
+mysqld：SQL 後台程式(MySQL 伺服器處理程序)。必須在該程式執行之後，用戶端才能透過連接伺服器來存取資料庫
+
+mysqld_safe：伺服器啟動指令搞。在 UNIX 和 NetWare 中推薦使用 mysqld_safe 來啟動 mysqld 伺服器。增加了一些安全特性，例如當錯誤時重新啟動伺服器並向錯誤記錄檔寫入執行時間資訊。
+
+mysql.server：伺服器啟動指令搞。該指令搞用於使用包含為特定等級的、執行啟動服務的指令搞的、執行目錄的系統。它呼叫 mysqld_safe 來啟動 MySQL 伺服器。
+
+mysql_multi：伺服器啟動指令搞。可以啟動或停止系統上安裝的多個伺服器。
+
+myisamchk：描述、檢查、最佳化、維護 MyISAM 表的工具程式。
+
+mysqlbug：MySQL 缺陷報告指令搞。它可以用來向 MySQL 郵件系統發送缺陷報告。
+
+mysql_install_db：該指令搞用預設許可權建立 MySQL 授權表。通常只是在系統上第一次安裝 MySQL 時執行一次。
+
+（MySQL 用戶端工具程式）
+
+myisampack：壓縮 MyISAM 表，以產生更小的唯讀表的工具。
+
+mysql：互動式輸入 SQL 敘述或從檔案以批次處理模式執行它們的命令列工具
+
+mysqlaccess：檢查存取主機名稱、使用者名稱、資料庫群組合的許可權的指令搞。
+
+mysqladmin：執行管理操作的客戶程式，例如建立或刪除資料庫、多載授權表、將表更新到硬碟上、重新開啟記錄檔。mysqladmin 還可以用來檢索版本、處理程序、伺服器的狀態資訊。
+
+mysqlbinlog：從二進位記錄檔讀取敘述的工具。在二進位記錄檔中包含執行過的敘述，可用來說明系統從當機中恢復。
+
+mysqlcheck：檢查、修復、分析、最佳化表的表維護客戶程式。
+
+mysqldump：將 MySQL 資料庫轉儲到一個檔案(例如 SQL 敘述或 tab 分隔符號文字檔)的客戶程式。
+
+mysqlhotcopy：當伺服器在執行時期，快速備份 MyISAM 或 ISAM 表的工具。
+
+mysqlimport：使用 LOAD DATA INFILE 將文字檔匯入相關表的客戶程式。
+
+mysqlshow：顯示資料庫、表、列、索引相關資訊的客戶程式。
+
+perror：顯示系統或 MySQL 錯誤程式含義的工具。
+
+（MySQL 8.0 特性）
+
+資料字典：
+最小資料定義敘述：
+安全和帳戶管理：
+資源管理：
+InnoDB 增強功能：
+字元集支援：
+增強 JSON 功能：
+資料類型的支援：
+查詢的最佳化：
+公用表運算式：
+視窗函數：
+統計長條圖：
+備份鎖：
+
+通用表運算式 CTE(Common Table Expressions)，是命名的臨時結果集，作用範圍是目前敘述，CTE 可以了解成可重複使用的子查詢，CTE 可以參考其他 CTE，但子查詢不能參考其他子查詢。
+with_clauses:
+	WITH [RECURSIVE]
+		cte_name [(col_name [, col_name] ... )] AS (subquery)
+		[, cte_name [(col_name [, col_name] ...)] AS (subquery)] ...
+
+
+
 delimiter //
 使用預存程式怕跟子句的 ; 衝突
 delimiter ;
 
 （索引）
+
+
 （預存程序和函數）
 	變數
 	定義條件、處理常式
@@ -288,9 +339,49 @@ END IF
 
 （MySQL Workbench）
 
-（MySQL 管理利器 MySQL Utilities）
+（MySQL Shell 管理） Some features of Utilities are on the roadmap for shell, users are encouraged to migrate to MySQL Shell.）
 
-（讀寫分離的利器 MySQL Proxy）
+（MySQL Router 讀寫分離）Proxy is not GA, recommend MySQL Router for production use.）
 
-（精通 MySQL 儲存引擎）
+（MySQL 存儲引擎）
+
+MyISAM	堆表
+
+InnoDB	聚集
+一行紀錄可以不同格式存在 InnoDB，Compact、Redundant、Dynamic、Compressed 行格式
+
+
+每行最大字節 65535(包含格式訊息)
+每頁最大字節 16384(可以調整)
+----------------------------------------------------------------
+作業系統處理頁是 4 KB
+Linux 同時支援正常大小的記憶體頁和大記憶體頁(Huge Page)，絕大多數處理器上的記憶體頁的預設大小都是 4KB，雖然部分處理器會使用 8KB、16KB 或者 64KB 作為預設的頁面大小，但是 4KB 的頁面仍然是作業系統預設記憶體頁配置的主流；除了正常的記憶體頁大小之外，不同的處理器上也包含不同大小的大頁面，我們在 x86 處理器上就可以使用 2MB 的記憶體頁。
+
+過小的頁面大小會帶來較大的頁表項增加定址時 TLB（Translation lookaside buffer）的查詢速度和額外開銷；
+過大的頁面大小會浪費記憶體空間，造成記憶體碎片，降低記憶體的利用率
+
+頁表項
+我們在 為什麼 Linux 需要虛擬記憶體 一文中曾經介紹過 Linux 中的虛擬記憶體，每個程式能夠看到的都是獨立的虛擬記憶體空間，虛擬記憶體空間只是邏輯上的概念，程式仍然需要訪問虛擬記憶體對應的實體記憶體，從虛擬記憶體到實體記憶體的轉換就需要使用每個程式持有頁表。
+為了儲存 64 位作業系統中 128 TiB 虛擬記憶體的對映資料，Linux 在 2.6.10 中引入了四層的頁表輔助虛擬地址的轉換，在 4.11 中引入了五層的頁表結構，在未來還可能會引入更多層的頁表結構以支援 64 位的虛擬地址。
+四層頁表結構中，作業系統用最低的 12 位為頁面偏移量，剩下 36 位會分四組分別表示當前層級在上一層中的索引，所有的虛擬地址都可以用上述的多層頁表查詢到對應的實體地址。
+因作業系統的虛擬地址空間大小都是一定的，整片虛擬地址空間被均勻分成 N 個大小相同的記憶體頁，所以記憶體頁大小最終決定每個程式中頁表項的層級結構和具體數量，虛擬頁大小越小，單個程式頁表項和虛擬頁就越多。
+因為目前的虛擬頁大小為 4096 位元組，所以虛擬地址末尾的 12 位可以表示虛擬頁中的地址，如果虛擬頁的大小降到了 512 位元組，那麼原本的四層頁表結構或者五層頁表結構會變成五層或者六層，這不僅會增加記憶體訪問的額外開銷，還會增加每個程式中頁表項佔用的記憶體大小。
+碎片化
+因為記憶體對映裝置會在記憶體頁的層面工作，所以作業系統認為記憶體分配的最小單元就是虛擬頁。哪怕使用者程式只是申請了 1 位元組的記憶體，作業系統也會為它申請一個虛擬頁，如果記憶體頁的大小為 24KB，那麼申請 1 位元組的記憶體會浪費 ~99.9939% 的空間。記憶體的價格大幅降低的今天，碎片化的記憶體不再是需要解決的關鍵問題了。
+除了記憶體的利用率之外，較大的記憶體頁也會增加記憶體拷貝時的額外開銷，因為 Linux 上的寫時拷貝機制，在多個程式共享同一塊記憶體時，當其中的一個程式修改了共享的虛擬記憶體會觸發記憶體頁的拷貝，這時作業系統的記憶體頁越小，寫時拷貝帶來的額外開銷也就越小。
+----------------------------------------------------------------
+
+
+
+File Header		文件頭部			38 字節		頁的一些通用訊息
+Page Header		頁面頭部			56 字節		數據頁專有的一些訊息
+Infimum + Supremum Records	最小紀錄和最大紀錄	26 字節		兩個虛擬的行紀錄
+User Record		用戶紀錄	  		  ?		實際存儲的行紀錄內容
+Free Space		空閒空間	  		  ?		頁中尚未使用的空間
+Page Directory		頁面目錄	  		  ?		頁中某些紀錄的相對位置
+File Trailer		文件尾部	  		  8 字節		校驗頁是否完整
+
+
+
+
 ___________________________________________________________________________________________________________________________________________________________________________________________________________________

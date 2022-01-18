@@ -2602,3 +2602,126 @@ public @interface ComponentScan {
 
 SpringBoot 遇到 @ComponentScan 掃描對應包路徑下面的所有 Class，根據這些 Class 上標註的其他註解繼續進行後續處理。例如掃到 @RestController，而 @RestController 又標註了 @Controller 。
 SpringBoot 對 @Controller 進行了特殊處裡，會將此類當成 URL 處理器註冊到 Servlet 的請求處理器中，在創建 TomcatServer 時，會將請求處理器傳遞進去。
+___________________________________________________________________________________________________________________________________________________________________________________________________________________
+AOP全名為Aspect-Oriented Programming，有關於 AOP 的許多名詞術語都過於抽象，單從字面上並不容易理解其名詞意義，這邊將以之前介紹代理機制的範例來逐一對照以介紹 AOP 的術語與觀念：
+
+Cross-cutting concern
+在 DynamicProxyDemo 專案的例子中，記錄的 動作原先被橫切（Cross-cutting）入至 HelloSpeaker 本身所負責的商務流程之中，另外類似於日誌這類的動作，如安全 （Security）檢查、交易（Transaction）等系統層面的服務（Service），在一些應用程式之中常被見到安插至各個物件的處理流程之 中，這些動作在 AOP 的術語中被稱之為 Cross-cutting concerns。
+
+以圖片說明可強調出 Cross-cutting concerns 的意涵，例如原來的商務流程是很單純的：
+
+
+
+Cross-cutting concerns 若直接撰寫在負責某商務的物件之流程中，會使得維護程式的成本增高，例如若您今天要將物件中的記錄功能修改或是移除該服務，則必須修改所 有撰寫曾記錄服務的程式碼，然後重新編譯，另一方面，Cross-cutting concerns 混雜於商務邏輯之中，使得商務物件本身的邏輯或程式的撰寫更為複雜。
+
+現在為了要加入日誌（Logging）與安全（Security）檢查等服務，物件的程式碼中若被硬生生的寫入相關的 Logging、Security 程式片段，則可使用以下圖解表示出 Cross-cutting 與 Cross-cutting concerns 的概念：
+
+
+
+
+Cross-cutting concerns 若直接撰寫在負責某商務的物件之流程中，會使得維護程式的成本增高，例如若您今天要將物件中的日誌功能修改或是移除該服務，則必須修改所 有撰寫曾日誌服務的程式碼，然後重新編譯，另一方面，Cross-cutting concerns 混雜於商務邏輯之中，使得商務物件本身的邏輯或程式的撰寫更為複雜。
+
+Aspect
+將散落於各個商務物件之中的 Cross-cutting concerns 收集起來，設計各個獨立可重用的物件，這些物件稱之為 Aspect，例如在 動態代理 中將日誌的動作設計為一個LogHandler類別，LogHandler 類別在 AOP 的術語就是 Aspect 的一個具體實例，在 AOP 中著重於 Aspect 的辨認，將之從商務流程中獨立出來，在需要該服務的時候，縫合（Weave）至應用程式之上，不需要服務的時候，也可以馬上從應用程式中脫 離，應用程式中的可重用元件不用作任何的修改，例如在 動態代理 中的HelloSpeaker所代表的角色就是應用程式中可重用的元件，在它需要日誌服務時並不用修改本身的程式碼。
+
+另一方面，對於應用程式中可重用的元件來說，以AOP的設 計方式，它不用知道處理提供服務的物件之存在，具體的說，與服務相關的 API 不會出現在可重用的應用程式元件之中，因而可提高這些元件的重用性，您可以將 這些元件應用至其它的應用程式之中，而不會因為目前加入了某些服務而與目前的應用程式框架發生耦合。
+
+Advice
+Aspect 的具體實作稱之為 Advice，以日誌的動作而言，Advice 中會包括真正的日誌程式碼是如何實作的，像是動態代理 中的 LogHandler 類別就是 Advice 的一個具體實例，Advice 中包括了 Cross-cutting concerns 的行為或所要提供的服務。
+
+Joinpoint
+Aspect 在應用程式執行時加入商務流程的點或時機稱之為 Joinpoint，具體來說，就是Advice在應用程式中被呼叫執行的時機，這個時機可能是某個方法被呼叫之前或之後（或兩者都有），或是某個例外發生的時候。
+
+Pointcut
+Pointcut 是一個定義，藉由這個定義您可以指定某個Aspect在哪些Joinpoint時被應用至應用程式之上。具體的說，您可以在某個定義檔中撰寫 Pointcut，當中說明了哪些 Aspect 要應用至應用程式中的哪些 Joinpoint。
+
+Target
+一個 Advice 被應用的對象或目標物件，例如 動態代理 中的 HelloSpeaker 就是 LogHandler 這個 Advice 的 Target。
+
+Introduction
+對於一個現存的類別，Introduction 可以為其增加行為，而不用修改該類別的程式，具體的說，您可以為某個已撰寫、編譯完成的類別，在執行時期動態加入一些方法或行為，而不用修改或新增任何一行程式碼。
+
+Proxy
+在《Expert One-on-One J2EE Development WIthout EJB》一書中，Rod Johnson、Juergen Hoeller 在第八章中有提到，AOP 的實作有五個主要的策略： Dynamic Proxies、Dynamic Byte Code Generation、Java Code Generation、Use of a Custon Class Loader、Language Extensions。
+
+在之前 從代理機制初探 AOP 與 動態代理 中，已經使用實際的程式範例介紹過代理機制的實現，Spring 的 AOP 主要是透過動態代理來完成。
+
+Weave
+Advice被應用至物件之上的過程稱之為縫合（Weave），在AOP中縫合的方式有幾個時間點：編譯時期（Compile time）、類別載入時期（Classload time）、執行時期（Runtime）。
+___________________________________________________________________________________________________________________________________________________________________________________________________________________
+（mybatis-spring-boot-starter）
+
+快速建立基於 Spring Boot 的 MyBatis 應用程式
+
+構件獨立的 MyBatis 應用程序
+零模板
+更少的 XML 配置文件
+
+自動檢測 DataSource
+使用 SqlSessionFactoryBean 註冊 SqlSessionFactory 實例，並設置 DataSource 數據源
+基於 SqlSessionFactory 自動註冊 SqlSessionTemplate 實例
+自動掃描 @Mapper 註解類，並通過 SqlSessionTemplate 註冊到 Spring Context 中
+
+創建 Mapper
+@Repository
+public interface UserMapper {
+
+	@Select("SELECT * FROM Person WHERE id = #{id}")
+	Person selectUser(int id);
+
+	@Delete("delete from person where id = #{id}")
+	void deleteByPrimaryKey(int id);
+}
+啟動類
+@MapperScan("com.rsosor.ec.mapper")
+@SpringBootApplication
+public class EcApplication {
+	public static void main(String[] args) {
+		SpringApplication.run(EcApplication.class, args);
+	}
+}
+
+mybatis-spring-boot-starter 作用，在 SpringBoot 啟動時，掃描所有 Mapper 接口，為其增加一個代理實現類，在調用中我們實際調用的就是這個代理對象。
+統一配置文件 spring.factories
+classpath 下的 META-INF 文件夾下創建 spring.factories，本質是 Properties 所以按照 key-value 配置。
+
+# Auto Configure
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+org.mybatis.spring.boot.autoconfigure.MybatisLanguageDriverAutoConfiguration,\
+org.mybatis.spring.boot.autoconfigure.MybatisAutoConfiguration
+
+key 聲明的是一個接口，value 則是這接口對應的實現類，通過這些配置 + 反射處理就可以拿到相應的實現類。
+類似插件式的設計方式，只要引入對應的 jar 包，對應的 spring.factories 就會被掃描到，對應的實現類就會被實例化，不需要時直接把 jar 包移除即可。
+
+
+@Configuration
+
+@ConditionalOnClass
+
+@AutoConfigureBefore
+
+@AutoConfigureAfter
+
+@ConditionalOnBean
+
+@EnableConfigurationProperties
+
+@ConditionalOnMissingBean
+
+@ConditionalOnSingleCandidate
+@ConditionalOnMissingBean
+@ConditionalOnBean
+@ConditionalOnMissingClass
+@ConditionalOnClass
+@ConditionalOnCloudPlatform
+@ConditionalOnExpression
+@ConditionalOnJava
+@ConditionalOnProperty
+@ConditionalOnJndi
+@ConditionalOnNotWebApplication
+@ConditionalOnWebApplication
+@ConditionalOnResource
+
+mybatis-spring-boot-starter 中最主要一個類 MybatisAutoConfiguration 是 Spring Boot 下 MyBatis 默認的配置類，開啟注釋 @EnableAutoConfiguration 就可。@SpringBootApplication 中組合了 EnableAutoConfiguration，屬於 spring boot 自動配置和啟動過程，SpringBoot 啟動時會進入到 MybatisAutoConfiguration 這個自動配置類，裡面初始化了 SqlSessionFactory、SqlSessionTemplate 等一些我們在 Spring 項目中需要手動配置的。
+
+
