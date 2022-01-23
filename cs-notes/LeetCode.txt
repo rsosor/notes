@@ -1,0 +1,239 @@
+Single Number
+hash table 在 C 語言要自己實作
+可以使用 hash table 或 Xor(互斥或)
+
+int singleNumber(int* nums, int numsSize) {
+	// nums: [2, 2, 1], numsSize: 3
+
+	// sizeOf(int) == 4 bytes
+	// 用到 bitwise，^、&、|、~
+	// 不用使用雙層for迴圈，O(n^2) 時間複雜度太高，用 O(n) 來解
+
+	int n = nums[0];
+	for (int i = 1 ; i < numsSize; i++) {
+		n^= nums[i];		// 一樣會變 0，所以非 0 就是那個單獨數字
+	}
+	return n;
+}
+
+	// 求解 nums[0]^nums[1]^nums[2] 的意思
+	// 只是假設 nums: 2, 2, 3, 3, 3答案會變成 3，而解答應該為 2
+___________________________________________________________________________________________________________________________________________________________________________________________________________________
+Happy Number	// 雙指標，循環偵測、Cycle Finding
+
+Example:
+Intput: 19
+Output: true
+Explanation:
+1*1+9*9 = 82
+8*8+2*2 = 68
+...
+1*1+0*0+0*0 = 1
+
+int next_n(int n) {
+	int r = 0;
+	while (n != 0) {
+		int d = s % 10;
+		n /= 10;
+		r +=d*d;
+	}
+	return r;
+
+bool contains(int* history, int size, int n) {
+	for (int i = 0; i < size; i++) {
+		if (history[i] == n) {
+			return true;
+		}
+	}
+	return flase;
+}
+
+bool isHappy(int n) {
+	int history[1000];
+	int size = 0;
+	n = next_n(n);	// 以防 n 太大導致 history 要很大，我們直接 next_n，n 最多就是三位數而已。
+	while (!contains(history, size, n)) {
+		history[size] = n; // history[0] = 19
+		size++;
+		n = next_n(n);
+	}
+	return n == 1;	
+}
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+int next_n(int n) {
+	int r = 0;
+	while (n != 0) {
+		int d = s % 10;
+		n /= 10;
+		r +=d*d;
+	}
+	return r;
+
+bool isHappy(int n) {
+	int slow = n;
+	int fast = n;
+
+	do {
+		slow = next_n(slow);
+		fast = next_n(next_n(fast));
+	} while (slow != fast);
+
+	return fast == 1;
+}
+
+___________________________________________________________________________________________________________________________________________________________________________________________________________________
+ArrayList of ArrayList	// like 列, 欄	// 非 LeetCode 考題，僅 LeetCode 解題須知
+import java.util.*;
+public class ArrayList {
+	public static void main (String[] args) {
+		int n = 3;
+
+		ArrayList<ArrayList<Integer>> aList = new ArrayList<ArrayList<Integer>>(n);
+
+		ArrayList<Integer> a1 = new ArrayList<Integer>();
+		a1.add(1);
+		a1.add(2);
+		aList.add(a1);
+
+		ArrayList<Integer> a2 = new ArrayList<Integer>();
+		a2.add(5);
+		aList.add(a2);
+
+		ArrayList<Integer> a3 = new ArrayList<Integer>();
+		a3.add(10);
+		a3.add(20);
+		a3.add(30);
+		aList.add(a3);
+
+		for ( int i = 0; i< aList.size(); i++) {
+			for( int j = 0; j<aList.get(i).size(); j++) {
+				System.out.print(aList.get(i).get(j) + " ");
+			}
+			System.out.println();
+		}
+	}
+}
+1 2
+5
+10 20 30
+___________________________________________________________________________________________________________________________________________________________________________________________________________________
+Duplicate Number
+
+public class Solution {
+public:
+	int fundDuplicate(vector<int>& nums) {
+		int left = 1, right = nums.size();
+		while (left < right) {
+			int mid = left + (right - left) / 2, cnt = 0;
+			for (int num: nums) {
+				if (num <= mid) ++cnt;
+			}
+			if (cnt <= mid) left = mid +1;
+			else right = mid;
+		}
+		return right;
+	}
+};
+
+O(n)解法，快慢指針，由於題目限定區間 [1, n]，所以可以利用座標和數值之間相互轉換，重複數字存在一定會形成環，用快慢指針可以找到環並確定環的起始位置。
+class Solution {
+public:
+	int findDuplicate(vector<int>& nums) {
+		int slow = 0, fast = 0, t = 0;
+		while(true) {
+			slow = nums[slow];
+			fast = nums[nums[fast]];
+			if (slow == fast) break;
+		}
+		while(true) {
+			slow = nums[slow];
+			t = nums[t];
+			if (slow== t) break;
+		}
+		return slow;
+	}
+};
+
+Bit Manipulation解法，traversal 每一位，對於 32 位中的每一個 bit，都 traversal 從 0~n-1，將 0~n-1 中每一個 data 都跟 bit 相與，若 > 0，計數器 cnt1++。同時 0~n-1 也可當作 nums 數組的下標，一樣就 cnt2++。最後比較弱 cnt2>cnt1 則將 bit 加入結果 res 中。因為對於每一位，0~n-1 中所有數字中該位上的 1 的個數應該是固定的，如果 nums 數組中所有數字中該位上 1 的個數多了，說明重複數字在該位上一定是 1，這樣我們把重複數字的所有為 1 的位都累加起來，就可以還原出這個重複數字。
+class Solution {
+public:
+	int findDuplicate(vector<int>& nums) {
+		int res = 0, n = nums.size();
+		for (int i = 0; i< 32; i++) {
+			int bit = (i << i), cnt1 = 0, cnt2 = 0;
+			for (int k = 0; k<n; ++k) {
+				if ((k & bit) > 0) ++cnt1;
+				if (( nums[k] & bit) > 0) ++cnt2;
+			}
+			if ( cnt2 > cnt1) res +=bit;
+		}
+		return res;
+	}
+};
+___________________________________________________________________________________________________________________________________________________________________________________________________________________
+Number of Connected Components in an Undirected Graph
+無向圖中連通區域的個數，Graph的題都是要先構建鄰接鏈表 Adjacency List 來做。這道題一種解法是用 DFS 來做，給每個節點都有個 flag 標記其是否被訪問過，否則自增 1，因為這肯定是一個新的連通區域，然後我們通過鄰接鏈表來遍歷與其相鄰的節點，直到所有都被訪問過。
+class Solution {
+public:
+	int countComponents(int n, vector<pair<int, int> > & edges) {
+		int res = 0;
+		vector<vector<int>> g(n);
+		vector<bool> v(n, false);
+		for(auto a : edges) {
+			g[a.first].push_back(a.second);
+			g[a.second].push_back(a.first);
+		}
+		for (int i = 0 ; i < n; ++i) {
+			if (!v[i]) {
+				++res;
+				dfs(g, v, i);
+			}
+		}
+		return res;
+	}
+	void dfs(vector<vector<int>>&g, vector<bool>&v, int i) {
+		if (v[i]) return;
+		v[i] = true;
+		for (int j = 0; j < g[i].size(); ++j) {
+			dfs(g, v, g[i][j]);
+		}
+	}
+};
+
+另一種比較巧妙的解法，不用建立鄰接鏈表、也不用 DFS，建立一個 roo t數組，下標和節點值相同，此時root[i]表示節點i屬於group i，我們初始化了 n 個部分(res = n)，假設開始的時候每個節點都屬於一個單獨的空間，然後我們開始遍歷所有的 edge，對於一條邊的兩個點，他們起始時在 root 中的值不同，就將結果 -1，表示少了一個區間，然後更新其中一個節點的 root 值，使兩個節點的 root 值相同，那麼這樣我們就能把連通區間的所有節點的 root 值都標記成相同的值，不同連通區間的 root 值不同，這樣也能找出連通區間的個數。
+class Solution {
+public:
+	int countComponents(int n, vector<pair<int, int>>& edges) {
+		int res = n;
+		vector<int> root(n);
+		for (int i = 0; i< n; ++i) root[i] = i;
+		for (auto a : edges) {
+			int x  = find(root, a.first), y = find(root, a.second);
+			if (x != y) {
+				--res;
+				root[y] = x;
+			}
+		}
+		return res;
+	}
+	int find(vector<int> &root, int i) {
+		while (root[i] != i) i = root[i];
+		return i;
+	}
+};
+
+JAVA
+import java.util.ArrayList;
+class Graph {
+	int V;
+	ArrayList<ArrayList<Integer>> adjListArray;
+
+	Graph(int V) {
+		this.V = V;
+		adjListArray = new ArrayList<>();
+
+		for (int = 0; i < V; i++) {
+			adjListArray.add(i, new ArrayList<>());
+		}
+	}
+___________________________________________________________________________________________________________________________________________________________________________________________________________________
