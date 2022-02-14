@@ -146,3 +146,65 @@ docker system df
 docker container commit [container name] [設定映像檔名稱]		// 手動建置 Docker Image
 ___________________________________________________________________________________________________________________________________________________________________________________________________________________
 Docker 私服
+___________________________________________________________________________________________________________________________________________________________________________________________________________________
+Prerequisite
+1. Install Docker and Docker Compose
+2. Know JDK and Gradle version for your code
+
+1. Clone your project
+Clone your project in required directory inside server.
+Checkout required branch
+Make sure Docker is installed in the system
+
+2. Create Dockerfile
+At current working directory, where we cloned our code,
+
+Go inside directory
+Create new Dockerfile
+Paste below-mentioned code
+
+FROM gradle as dependencies
+WORKDIR /app
+ADD . .
+RUN gradle build
+FROM openjdk:13.0.2-jdk-slim
+WORKDIR /app
+COPY --from=dependencies /app/build/libs/spring-boot-0.0.1-SNAPSHOT.jar app.jar
+ENV JAVA_OPTS=""
+EXPOSE 8080
+ENTRYPOINT exec java $JAVA_OPTS -jar app.jar
+
+1. Mention gradle version as per your project's requirement
+2. Add all project files from current directory to Docker container to create a build
+If few files are not required to be copied, you can mention them in .dockerignore file
+3. RUN gradle command as per your requirement to create Jar file
+You can use "gradle clean build" also
+4. In previous step, our Jar file got created. Now, Let’s again take jdk image and run this jar file
+5. Now, let's copy jar file created from previous step, and copy it to current openjdk container
+6. Pass environment variable if required to run this jar file (optional)
+7. Expose port number mentioned in your spring boot application. By default it is 8080
+8. Finally, paste command to run this jar file
+
+3. Build Dockerfile
+docker build -t java-springboot:1 .
+where, java-springboot is your image name and 1 is image tag
+
+4. Deploy Docker image
+docker run -d --name java-spring --restart always -p 8080:8080 java-springboot:1
+
+5. Automation
+使用 shell-script
+
+java-deployment.sh
+
+#!/bin/bash
+
+docker build -t java-springboot:latest . 
+docker rm -f java-spring || date
+docker run -d --name java-spring --restart always -p 8080:8080 java-springboot:latests
+
+6. Test
+curl localhost:8080
+curl $Elastic-IP:8080
+
+If you want to share this Docker image with your teammates or colleagues, simply upload it to Docker hub or AWS ECR and share it.

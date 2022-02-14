@@ -2723,5 +2723,202 @@ key 聲明的是一個接口，value 則是這接口對應的實現類，通過�
 @ConditionalOnResource
 
 mybatis-spring-boot-starter 中最主要一個類 MybatisAutoConfiguration 是 Spring Boot 下 MyBatis 默認的配置類，開啟注釋 @EnableAutoConfiguration 就可。@SpringBootApplication 中組合了 EnableAutoConfiguration，屬於 spring boot 自動配置和啟動過程，SpringBoot 啟動時會進入到 MybatisAutoConfiguration 這個自動配置類，裡面初始化了 SqlSessionFactory、SqlSessionTemplate 等一些我們在 Spring 項目中需要手動配置的。
+___________________________________________________________________________________________________________________________________________________________________________________________________________________
+（WebApplicationInitializer 理解）
+JavaConfig 配置方式在逐步取代 xml 配置方式。而 WebApplicationInitializer 可以看做是 Web.xml 的替代，它是一個介面。
+通過實現 WebApplicationInitializer，在其中可以添加 servlet、listener 等，在加載 web 項目的時候會加載這個介面實現類，從而起到 web.xml 相同的作用。
+
+此類的方法又會掃描找到 WebApplicationInitializer 的實現類，調用它的 onStartUp()，從而起到啟動 web.xml 相同的作用
+
+@HandlesTypes(WebApplicationInitializer.class)		// 將感興趣的一些類注入到 ServletContainerInitializer)
+public class SpringServletContainerInitializer implements ServletContainerInitializer {
+	@Override
+	public void onStartup(@Nullable Set<Class<?>> webAppInitializerClasses, ServletContext servletContext) throws ServletException {
+		List<WebApplicationInitializer> initializers = new LinkedList<>();
+
+		if (webAppInitializerClasses != null) {
+			for (Class<?> waiClass : webAppInitializerClasses) {
+				if (!waiClass.isInterface() && !Modifier.isAbstract(waiClass.getModifiers()) &&
+					WebApplicationInitializer.class.isAssignableFrom(waiClass)) {
+					try {
+						initializers.add((WebApplicationInitializer)
+							ReflectionUtils.accessibleConstructor(waiClass).newInstance());
+					} catch (Throwable ex) {
+						throw new ServletException("Failed to instantiate WebApplicationInitializer class", ex);
+					}
+				}
+			}
+		}
+
+		if (initializers.isEmpty()) {
+			servletContext.log("No Spring WebApplicationInitializer types detected on classpath");
+			return;
+		}
+
+		servletContext.log(initializers.size() + " Spring WebApplicationInitializers detected on classpath");
+		AnnotationAwareOrderComparator.sort(initializers);
+		for (WebApplicationInitializer initializer : initiazliers) {
+			initializer.onStartup(servletContext);
+		}
+	}
+}
+
+package javax.servlet;
+public interface ServletContainerInitializer {
+void onStartUp(Set<Class<?>> var1, ServletContext var2) throws ServletException;
+}
+為支持可以不使用 web.xml。提供了 ServletContainerInitializer，通過 SPI 機制，當啟動 Web 容器的時候，會自動到添加的相應 jar 包下找到 META-INF/services 下以 ServletContainerInitializer 的全路徑名稱命名的文件，
+他的內容為 ServletContainerInitializer 實現類的全路徑，將它們實例化。如 SpringServletContainerInitializer 作為 ServletContainerInitializer 的實現類，它的 jar 包(org.springframework:spring-web)下也該有相應的文件。
 
 
+自己通過一個實例來實現相同的功能，通過一樣的方式來訪問一個 servlet
+
+1. 定義介面 WebParameter，相當於 WebApplicationInitializer。
+public interface WebParameter {
+	void loadOnStartUp(ServletContext servletContext);
+}
+可在這裡面添加 servlet、listener 等
+2. 定義 Servlet
+public class MyServlet extends HttpServlet {
+	@Override
+	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+		resp.getWriter().write("TestServlet");
+	}
+}
+3. 定義 MyWebParameter 作為 WebParameter 的實現類，將 Servlet 添加到上下文，並設置好映射
+public class MyWebParameter implements WebParameter {
+	public void loadOnStartUp(ServletContext servletContext) {
+		ServletRegistration.Dynamic testServlet = servletContext.addServlet("test", "com.test.servlet.MyServlet");
+		testServlet.setLoadOnStartUp(1);
+		testServlet.addMapping("/test");
+	}
+}
+4. 定義好 WebConfig 作為 ServletContainerInitializer 的實現類，它的作用是掃描找到 WebParameter 的實現類，並調用其方法
+@HandlesTypes({WebParameters.class})
+	pubilc class WebConfig implements ServletContainerInitializer {
+		public void onStartUp(Set<Class<?>> set, ServletContext servletContext) throws ServletException {
+			Iterator var4;		// 可以不需要使用 Iterator，Collection 裡有 default method 了
+			if (set != null) {
+				var4 = set.iterator();
+				while(var4.hasNext()) {
+					Class<?> clazz = (Class<?>) var4.next();
+					if (!clazz.isInterface() && !Modifier.isAbstract(clazz.getModifiers()) && WebParameter.class.isAssignableFrom(clazz)) {
+						try {
+							((WebParameter) clazz.newInstance()).loadOnStartUp(servletContext);
+						} catch (Exception e) {
+							e.printStackTrace();
+					}
+				}
+			}
+		}
+	}
+}
+5. 根據 SPI 機制，定義一個 META-INF/services 文件夾，並在其下定義相關文件名稱，並將 WebConfig 的類全名填入其中
+com.test.config.WebConfig
+相關內容就完成了，因為使用 maven，通過 install 將其作為 jar 包上傳到本地倉庫。從另外一個 web 項目調用這個包進行訪問
+6. 結果完成(localhost:8080/test 並查看 Test-1.0-SNAPSHOT.jar 內的 META-INF.services 有個 javax.servlet.ServletContainerInitializer)
+
+SPI = Service Provider Interface -> 提供給服務提供廠商與擴展框架功能的開發者使用的接口。
+
+（SpringBootServletInitializer 理解）
+使用嵌入式 Servlet 容器
+優點: 簡單、便攜
+缺點: 默認不支持 jsp，優化訂製比較複雜
+
+使用外置 Servlet 容器的步驟
+1. 必須創建 war 項目，需要建好 web 項目的目錄結構
+2. 嵌入式 Tomcat 依賴 scope 指定 provided
+3. 編寫 SpringBootServletInitializer 類子類，並重寫 configure 方法
+public class ServletInitializer extends SpringBootServletInitializer {
+	@Override
+	protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
+		return application.sources(SpringBoot04WebJspApplication.class);
+	}
+}
+4. 啟動伺服器
+jar: 執行 SpringBootApplication 的 run()，啟動 IOC 容器，然後創建嵌入式 Servlet 容器
+war: 先是啟動 Servlet 伺服器，伺服器啟動 SpringBoot 應用(SpringBootServletInitializer)，然後啟動 IOC 容器
+
+Servlet 3.0 + 規則
+1. 伺服器啟動(web 應用啟動)，會創建當前 web 應用裡面所有 jar 包裡面的 ServletContainerInitiazlier 實例
+2. ServletContainerInitiazlier 的實現放在 jar 包的 META-INF/services 文件夾下
+3. 還可以使用 @HandlesTypes 註解，在應用啟動的時候加載指定的類
+
+外部 Tomcat 流程以及原理
+1. 啟動 Tomcat
+2. 根據上述描述的 Servlet 3.0 + 規則，可在 Spring 的 web 模塊裡找到文件名為 javax.servlet.ServletContainerInitializer 的文件夾，內容為 org.springframework.web.SpringServletContainerInitializer，用於加載 SpringServletContainerInitializer 類
+3. 看 SpringServletContainerInitializer 定義
+SpringServletContainerInitializer 將 @HandlesTypes(WebApplicationInitializer.class) 標註的所有 WebApplicationInitializer 這個類型的類都傳入到 onStartUp() 的 Set 參數中，並通過反射為這些 WebApplicationInitializer 類型的類創建實例。
+4. 方法最後，每一個 WebApplicationInitializer 實現調用自己 onStartUp()
+5. 而 WebApplicationInitializer 有個抽象實現類 SpringBootServletInitializer (記住我們繼承了該抽象類)，則會調用每一個 WebApplicationInitializer 實例(包括 SpringBootServletInitializer)的 onStartUp()
+
+ErrorPageFilter 是 SpringBoot 在 1.4.0 版本提供的一個類，本質上是一個 Filter。作用主要有兩方面
+1. 提供應用程序註冊 ErrorPage 的接口，此時它的腳色是 ErrorPageRegistry。
+2. 處理應用程序異常，根據異常的類型轉發到對應的 ErrorPage 頁，從而不依賴部署的容器錯誤處理機制。
+
+
+（SpringBootServletInitializer 深入）
+熟悉 SpringApplication 的原理之後，再來了解 SpringBootServletInitializer 的原理就比較容易了。
+public class ServletInitializer extends SpringBootServletInitializer {
+	@Override
+	protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
+		return application.sources(DemoWarApplication.class);
+	}
+}
+SpringBootServletInitializer 就是一個 org.springframework.web.context.WebApplicationContext，容器啟動時會調用其 onStartUp(ServletContext servletContext)，接下來就看一下這個方法。
+public void onStartUp(ServletContext servletContext) throws ServletException {
+	this.logger = LogFactory.getLog(this.getClass());
+	final WebApplicationContext rootAppContext = this.createRootApplicationContext(servletContext);
+	if (rootAppContext != null) {
+		servletContext.addListener(new ContextLoaderListener(rootAppContext) {
+			public void contextInitialized(ServvletContextEvent event) {
+			}
+		});
+	} else {
+		this.logger.devug("No ContextLoaderListener registered, as createRootApplicationContext() did not return an application context");
+	}
+}
+
+這裡的核心方法就是 createRootApplicationContext(ServletContext servletContext)
+protected WebApplicationContext createRootApplicationContext(ServletContext servletContext) {
+	// 創建 SpringApplicationBuilder，並用其生產出 SpringApplication 對象
+	SpringApplicationBuilder builder = this.createSpringApplicationBuilder();
+	builder.main(this.getClass());
+
+	ApplicationContext parent = this.getExistingRootWebApplicationContext(servletContext);
+	if (parent != null) {
+		this.logger.info("Root context already created (using as parent).");
+		servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, (Object)null);
+		builder.initializers(new ApplicationContextInitializer[]{new ParentContextApplicationContextInitializer(parent)});
+	}
+
+	builder.initializers(new ApplicationContextInitializer[]{new ServletContextApplicationContextInitializer(servletContext)});
+	builder.contextClass(AnnotationConfigServletWebServerApplicationContext.class);
+	builder = this.configure(builder);
+	builder.listeners(new ApplicationListener[]{new SpringBootServletInitializer.WebEnvironmentPropertySourceInitializer(servletContext)});
+	SpringApplication application = builder.build();
+	if (application.getAllSources().isEmpty() && MergedAnnotations.from(this.getClass(), SearchStrategy.TYPE_HIERARCHY).isPresent(Configuration.class)) {
+		application.addPrimarySources(Collections.singleton(this.getClass()));
+	}
+
+	Assert.state(!application.getAllSources().isEmpty(), "No SpringApplication sources have been defined. Either override the configure method or add an @Configuration annotation");
+	if (this.registerErrorPageFilter) {
+		application.addPrimarySources(Collections.singleton(ErrorPageFilterConfiguration.class));
+	}
+
+	application.setRegisterShutdownHook(false);
+	return this.run(application);	
+}
+
+SpringBootServletInitializer 執行過程，簡單來說就是通過 SpringApplicationBuilder 構建並封裝 SpringApplication 對象，並最終調用 SpringApplication 的 run() 的過程。
+
+擴展 SpringBootServletInitializer
+與擴展 SpringApplication 類似，ApplicationContextInitializer 和 ApplicationListener 可以基於 SpringApplicationBuilder 提供的 public 方法進行擴展
+public class ServletInitializer extends SpringBootServletInitializer {
+	@Override
+	protected SpringApplicationBuilder ocnfigure(SpringApplicationBuilder application) {
+		application.initializers(MyApplicationContextInitializer1, MyApplicationContextInitializer2);
+		application.listeners(MyApplicationListener1, MyApplicationListener2);
+		return application.sources(DemoWarApplication.class);
+	}
+}

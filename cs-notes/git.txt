@@ -232,6 +232,8 @@ git remote						// 觀看遠端數據庫列表
 git remote -v					// 觀看遠端數據庫列表(包含 url)
 git remote add origin https://github.com/rsosor/demo.git
 git remote add origin git@github.com:rsosor/demo.git
+git remote rm origin
+
 
 git fetch <remote name> 這個指令一次只能更新一個 remote
 如果你的專案底下有多個 remote，而且全部都想要更新的話，就可以使用這個指令
@@ -268,6 +270,34 @@ git push -u origin main
 git push -u origin main -f	// -f 強制 force
 git push 預設的遠端是 origin，並且會將所有有和 remote 有對應的 local branch 都 push 上去。如果要把新的 local branch push 上去，需要下 git push origin <local_vranch_name> 指令。
 git push 也可能會失敗，例如出現 ! [rejected] master -> master (non-fast forward)，這個 non-fast forward 的意思是你的 parent commit 和遠端的不相同，也就是線圖有分岔，需要先 pull 回來處理好 merge 才能 push 上去。
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+（remote）
+git pull is probably creating the commit. If you make a local commit and then run git pull after someone else pushes a commit up to the repository, Git downloads the other developer's commit and then merges it into your local branch.
+
+tracking branches / remote tracking branches
+前者是本地從遠端克隆下來，後者是遠端跟蹤分支，那 commit 出現的多於 remote，代表我們直接在本地分支合併了遠端分支的引用記錄(origin/main等)。
+前者是 pull origin/xxx，後者是 merge origin/xxx
+
+要對遠端分支通常可使用 fast forward，因為通常都是同步相同的分支，預設是 fast forward，但也有 --ff-only 跟預設的 fast forward 還是有區別。
+
+How to avoid these merge commits in the future
+
+如果想要避免出現 merge remote-tracking branch 'xxx' into 'xxxx，可使用 git pull --rebase，也可以使用以下的方式更好，因為 git pull --rebase 沒有辦法方便的使用 git rebase -p 這個保存合併訊息的功能(如功能分支合併開發分支)。
+
+# 更新本地遠程所有分支 commit 記錄，會下載遠程所有記錄並且會更新遠程跟蹤分支(如 origin/main)，不涉及你的工作區文件、索引、本地分支。-p 修剪遠程已刪除的分支。如刪除本地對遠程已刪除分支的引用
+git remote update -p
+# 更新本地分支，合併遠程分支到本地，僅當本地分支可以快進到遠程分支的記錄處，就是說本地和遠程分支並沒有衝突，獲得錯誤，代表本地和遠程分支有衝突，暗示你要使用 rebase，rebase 好查看每一個合併的衝突。
+git merge --ff-only @{u}
+# 如果上述報錯說本地出現衝突，可使用。有效的將你已生成的但未提交的記錄移動到要推送的分支的頂部，保證了開發歷史的線性(沒額外合併訊息)，能更簡單的回滾。-p 保持合併訊息，會阻止 git 線性化正在被重構的訊息。
+git rebase -p @{u}
+
+若要讓本地和遠端的同分支合併，使用 fast forward 避免合併訊息出現，能更簡單回滾；但是例如把功能分支合併到開發分支，就必須使用 git rebase -p(--preserve-merges) 或者 git merge --no-ff，顯示合併的額外訊息，方便回滾歷史。
+
+git log --graph --oneline --decorate --date-order --color --boundary @{u}..
+
+一個 rebase --onto, merge, reset, 或者 push -f 都可能比一個單獨的 rebase 要合適。
+
+
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 Git commit 修改之 1 – git commit --amend
 透過這樣的方式修改後 git commit hash 會變得與原本不相符，對比前面的 commit hash 就能看到不同。要上傳到 GitHub 的話會需要 force push：
@@ -579,6 +609,8 @@ ________________________________________________________________________________
 --no-ff
 不要使用 fast-forward
 例如避免了 feature 分支感染了 develop | main 分支
+git checkout main
+git merge --no-ff develop
 ___________________________________________________________________________________________________________________________________________________________________________________________________________________
 git reset -p lyrics.txt #用当前分支HEAD指向的版本库内容替换暂存区的内容
 s # 分割成更小的块
