@@ -67,4 +67,35 @@ jpython 的語法就是 python 語言，對於熟悉 python 的人應該很容�
 >>>HelloWorld
 如果出現HelloWorld代表成功了
 
-根據專家指出利用 java 搭配 jython 來開發你的專案可以使開發的速度大大提升，因為 jython 的語法簡單，用短短的描述即可達成很多工作，最後更神奇的好像在jython中可以將它本身結合java的程式碼組譯成新的.class檔提供java vm使用，他本身也提供.jar檔讓你能夠直接在Java中享用jython的便利
+Java 搭配 jython 來開發你的專案可以使開發的速度大大提升，因為 jython 的語法簡單，用短短的描述即可達成很多工作，像在 jython中可以將它本身結合 java 的程式碼組譯成新的 .class 檔提供 java vm 使用，他本身也提供 .jar 檔讓你能夠直接在 Java 中享用 jython 的便利。
+___________________________________________________________________________________________________________________________________________________________________________________________________________________
+P/Invoke 又名平台調用，是 .NET CLR 提供的，為了使開發者從託管代碼調用動態鏈結庫中的非託管代碼（通常是 C）而提供的一種服務。
+類似的功能如 Java JNI、Python Ctypes。
+因為不同語言、不同開發環境的數據類型、結構都是不同的，當你使用 P/Invoke 調用 dll 的時候，平台會自動給你加載這個 dll，並且在託管代碼和非託管代碼的邊界自動完成數據類型轉換。
+使用 P/Invoke 的話，一般分三步驟：聲明、調用、異常處理。
+
+P／Invoke 依次執行以下操作．（理解重要）
+
+　　1 查找包含該函數的非託管 DLL
+
+　　2 將該非託管 DLL 加載到內存中
+
+　　3 查找函數在內存中的地址並將其參數按照函數的調用約定壓棧
+
+　　：只在第一次調用函數時，才會查找和加載非託管 DLL 並查找函數在內存中的地址。
+
+　　4 將控制權轉移給非託管函數
+
+　　：當非託管函數產生異常時，P/Invoke 會將異常傳遞給託管調用方。但需要設置相關特性。
+
+在 user32.dll
+BOOL SetCursorPos（int X，int Y）
+
+在 C# 中聲明
+[DllImportAttribute("user32.dll", EntryPoint = "SetCursorPos")]
+[return: MarshalAsAttribute(UnmanagedType.Bool)]
+public static external bool SetCursorPos(int x, int y);
+調用
+static void Main(String[] args) {
+	SetCursorPos(250, 250);
+}

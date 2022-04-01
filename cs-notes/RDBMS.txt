@@ -396,3 +396,134 @@ MySQL 排序規則 utf8mb4_0900_ai_ci 是啥？
 
 utf8mb4 已成為默認字符集，utf8mb4_0900_ai_ci在 MySQL 8.0.1 及更高版本中作為默認排序規則。以前 utf8mb4_general_ci 是默認排序規則。因為 utf8mb4_0900_ai_ci 排序規則現在是默認值，所以新表默認能夠在基本多語言平面之外儲存字符。現在可以默認儲存表情符號。如果需要區分重音和區分大小寫，則可以 utf8mb4_0900_as_cs。
 ___________________________________________________________________________________________________________________________________________________________________________________________________________________
+PostgreSQL 登入的兩種方式
+psql postgresql://postgres:pg123@172.17.0.3:5434/postgres
+psql -U postgres -h172.17.0.3 -p5434 -dpostgres
+
+如果想用 psql 直接連接數據庫，需要通過設置 postgres 用戶的環境變量來實現：
+
+export PGHOME=/usr/pgsql-13
+
+export PGUSER=postgres
+
+export PGPORT=5434
+
+export PGHOST=localhost
+
+export PATH=$PGHOME/bin:$PATH:$HOME/bin
+
+PostgreSQL 函數也稱 PostgreSQL 存儲過程。
+
+PostgreSQL 函數或存儲過程是存儲在數據庫服務器上並可以使用 SQL 介面調用的一組 SQL 和過程語句(聲明、分配、循環、流程控制等)。它有助於您執行通常在數據庫中的單個函數中進行多次查詢和往返操作的操作。
+
+可以在許多語言如 SQL、PL/pgSQL、C、Python 等中創建 PostgreSQL 函數。
+要在 PostgreSQL 定義一個新的用戶自定義函數，需要使用 CREATE FUNCTION 語句，如下所示：
+
+CREATE [OR REPLACE] FUNCTION function_name (arguments)   
+RETURNS return_datatype AS $variable_name$  
+  DECLARE  
+    declaration;  
+    [...]  
+  BEGIN  
+    < function_body -- 函數邏輯 >  
+    [...]  
+    RETURN { variable_name | value }  
+  END; 
+  LANGUAGE plpgsql;
+---------------------------------------------------------
+CREATE FUNCTION function_name(p1 type, p2 type)
+ RETURNS type AS
+BEGIN
+ -- 函數邏輯
+END;
+LANGUAGE language_name;
+ 
+CREATE FUNCTION 語句的細節：
+
+先在 CREATE FUNCTION 語句後面給定函數的名稱
+後在函數名稱後面的圓括號內放置逗號分隔的參數列表
+接下來，在 RETURNS 關鍵字之後指定函數的返回類型
+之後，將程式放在 BEGIN 和 END 塊內。該函數始終以分號結尾，緊跟在 END 關鍵字之後
+最後，說明函數的過程語言。比如，使用 plpgsql 表示 PL/pgSQL
+創建函數1（只包含函數輸入參數，不包含輸出參數）
+
+CREATE OR REPLACE FUNCTION add(a INTEGER, b NUMERIC)
+RETURNS NUMERIC AS $$
+	SELECT a+b;
+$$ 
+LANGUAGE SQL;
+已創建好的函數
+ 
+CREATE OR REPLACE FUNCTION "public"."add"("a" int4, "b" numeric)
+  RETURNS "pg_catalog"."numeric" AS $BODY$
+	SELECT a+b;
+$BODY$
+  LANGUAGE sql VOLATILE
+  COST 100
+ 
+調用函數 1 
+
+創建函數 2（同時包含輸入參數和輸出參數）
+
+IN 代表輸入參數，OUT 代表輸出參數  
+
+CREATE OR REPLACE FUNCTION input_and_output(IN a INTEGER, IN b NUMERIC, OUT c NUMERIC, OUT d NUMERIC)
+AS $$
+	SELECT a+b, a-b;
+$$ 
+LANGUAGE SQL;
+已創建好的函數 
+
+CREATE OR REPLACE FUNCTION "public"."input_and_output"(IN "a" int4, IN "b" numeric, OUT "c" numeric, OUT "d" numeric)
+  RETURNS "pg_catalog"."record" AS $BODY$
+	SELECT a+b, a-b;
+$BODY$
+  LANGUAGE sql VOLATILE
+  COST 100
+調用函數 2 
+
+創建函數 3（Mybatis mapper 中使用函數）
+
+    <!-- Mybatis 中使用函數 -->
+    <insert id="testFun">
+         DO $$
+            DECLARE num INTEGER=0;
+            BEGIN
+             select count(*) into num as  num from (select distinct cardnum from         
+             bus_data) as A;
+             insert into ic_test
+             select num, dt
+             from bus_data limit 100;
+            END  $$;
+    </insert>
+調用函數 3
+
+/**
+ * testFun  Dao 接口
+ * @param dtstr
+ */
+void testFun(String dtstr);
+ 
+// 調用函數 3
+sqlSession = SqlSessionFactoryUtil.getLocalSqlSessionFactory().openSession();
+TrackDao trackDao = sqlSession.getMapper(TrackDao.class);
+trackDao.testFun(dtstr);
+存儲過程的劣勢：
+
+1. 降低或減少應用程序與數據庫服務器的網路通信開銷，從而提升整體性能，BI 系統中尤為重要
+
+2. 可以有效減少程序開發的複雜性，達到多次複用的目的，保證不同應用之間的一致性。
+
+3. 一次編譯多次調用，提高性能。存儲過程在第一次被調用後即被編譯，之後再調用時無需再次編譯，執行執行，提高了性能
+
+4. 較好的保護數據元訊息。使用存儲過程並不知道數據庫表結構，不會將數據庫表結構暴露給調用方。
+
+5. 很好的將業務邏輯實現與應用程序解耦合。當業務需求更新時，只需更改存儲過程的定義，而不需要更改應用程序。
+
+6. 更細粒度的數據庫權限管理。使用存儲過程可在存儲過程中將應用程序無權訪問的數據屏遮
+
+存儲過程的劣勢：
+
+1. 可移植性差。不像sql一样，针对大多数数据库而不影响应用程序使用，存储过程由于不同数据库的定义方式不同，支持的语言及语法也都不同，移植成本较高
+
+2. 不便於調適。以 PostgreSQL 為例，使用存儲過程時，無法使用 EXPLAIN 分析其內部執行計畫，不方便進行性能調優。

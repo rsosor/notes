@@ -10,7 +10,6 @@ working directory	   →	staging area	→	local repository	→	remote repository
 Working tree means the directory that contains the .git folder, including all sub directories and files.
 
 
-
 Header: <type>(<scope>): <subject>
  - type: 代表 commit 的類別：feat, fix, docs, style, refactor, test, chore，必要欄位。
  - scope 代表 commit 影響的範圍，例如資料庫、控制層、模板層等等，視專案不同而不同，為可選欄位。
@@ -397,11 +396,25 @@ git rm --cached test.js		// 如果我們想將忽略文件添加到緩存中，r
 git pull <branch> = git fetch <branch> && git merge <branch>
 
 其他操作：
-git fetch 把遠端的 branch 更新下載回來，但不會 merge 到 local branch
-git branch -r 顯示 local 有追蹤的遠端 branch。注意到你不能直接修改這個 remote branch，一定要用一個 local branch 對應它。
-git remote show origin 顯示遠端 server 的 branch
-git remote add foobar git:// 可以新增別的 repo. 位置，於是 pull 的時候就可以指定要從哪一個遠端更新回來。
-git push origin :foobar 刪除遠端的 branch
+git fetch			// 把遠端的 branch 更新下載回來，但不會 merge 到 local branch
+git branch -r		// 顯示 local 有追蹤的遠端 branch。注意到你不能直接修改這個 remote branch，一定要用一個 local branch 對應它。
+git remote show <remote name>	// 顯示遠端 server 的 branch
+git remote add <branch name> git:// 可以新增別的 repo. 位置，於是 pull 的時候就可以指定要從哪一個遠端更新回來。
+git push <remote name> :<branch name> 刪除遠端分支
+
+刪除遠端分支發現並沒有成功刪除
+即使用了 git remote update 還是一樣，本機端的分支依然無法跟遠端同步
+使用 git remote show <remote name> 查看更多關於 remote 的資訊
+refs/remotes/github/hotfix stale(use 'git remote prune' to remove)
+
+--prune 刪除遠端過時的分支
+git remote prune <remote name>		// 刪除 remote 底下所有過時的分支
+git fetch -p			// 也可以用 git fetch 來代替
+
+git remote show 再用 git remote prune 過於繁瑣
+git remote update -p			// 同步遠端分支，並且移除過時的遠端分支。
+git fetch --all -p			// 也可以用 git fetch 來代替
+
 --------------------------------------------------
 如果要換 branch 的暫時的解決方式是使用 git stash 會先把修改暫存下來，要回復則執行 git stash pop。
 $ git stash // 儲存工作區
@@ -846,5 +859,12 @@ git config core.autocrlf false
 ___________________________________________________________________________________________________________________________________________________________________________________________________________________
 Git 是基於元數據方式分布式儲存文件信息，會在每一次 clone 將所有信息都取回到本地
 SVN 是基於文件方式儲存
+___________________________________________________________________________________________________________________________________________________________________________________________________________________
+ssh-keygen -l -E md5 -f ~/.ssh/id_rsa.pub
 
+ssh -v git@github.com
+ssh -T git@github.com	驗證 Key
 
+track 概念就是去指向(指針)commit，包括 remote branch
+git checkout -b mybranch origin/abranch
+git checkout --track origin/abranch
