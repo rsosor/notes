@@ -1,0 +1,54 @@
+雖然現在以經到 ASP.Net 的時代了，但因很多系統產品跟客戶端的程式還是用 ASP 寫的
+rs.open 與 conn.execute 的差別
+
+rs.open sql,conn：
+如果 sql 是 delete, update, insert 則會返回一個關閉的記錄集，在使用過程中不用rs.close，在文件最後再寫 rs.close，中間可以來多個記錄集 rs1.open sql1, conn，最後再一起關閉記錄集-->rs.close 、rs1.close。
+conn.execute(sql)：
+如果 sql 是 delete,update,insert 則會返回一個關閉的記錄集，在使用過程中不用再 rs.close 在文件最後再寫 rs.close 中間可以來多個記錄集 rs1.open sql1, conn，最後一塊關閉記錄集 -> rs.close; rs1.close
+如果 sql 是 update,insert,delete 則應該使用 conn.execute(sql) 也可以不要括號 conn.execute sql 如果 sql 是 select 語句則應該使用 set rs = conn.execute(sql) 括號一定要，不能省略，這是因為 vbscript 的特性，帶返回值的調用必須加括號，不帶返回值的調用可以不要括號。
+
+注意：不管是 rs.open sql,conn 還是 conn.execute(sql) [這裡的 SQL 是 delete,update,insert]執行以後都會返回一個關閉的記錄集也就是說如果 sql 是插入，更新，刪除語句，那麼 set rs=conn.execute(sql) 中的 RS 就沒什麼意義。
+
+EX：
+1、conn.execute
+sql="select * from admin where username='xiaozhu'"
+set rs=conn.execute(sql)
+執行完以後自動關閉記錄集，最後只需要關閉連接就可以了
+conn.closeset conn = nothing
+
+2、rs.open
+set rs = server.createobject("adodb.recordset")
+sql = "select * from admin where username = 'xiaozhu'"rs.open sql,conn,1,1
+可以自己設定一些參數，即鎖定和游標的移動方式，最後要關閉記錄集和連接
+rs.close
+set rs = nothing
+conn.close
+set conn = nothing
+
+3、command.execute
+sql="select * from admin where username = 'xiaozhu'"
+set rs=command.execute(sql)
+
+*****************************************************************************
+(1.) set rs=conn.execute("如果是select語句") 得到的rs.recordcount=-1
+rs.open sql,conn("sql為select語句") ，得到的rs.recordcount為正常的記錄數。
+
+(2.) rs.open是打開資料庫 conn.execute 是執行SQL指令
+set rs=conn.execute(insert,update,delete) 返回一個關閉了的記錄集
+set rs=conn.execute(select) 返回一個沒有關閉的記錄集。
+
+(3.) CONN.EXECUTE(SQL,RowsAffected,C)
+參數含義 :SQL 的值可以是 SQL 語句、表名、存儲過程名，也可以是數據提供者所能接受的任意字符串。為了提高性能，最好為C參數指定合適的值
+可選參數RowsAffected將返回INSERT、UPDATE或DELETE查詢執行以後所影響的數目。這些查詢會返回一個關閉的 Recordset 對象。
+一個SELECT查詢將返回RowsAffected值為-1並且返回帶有一行或多行內容的打開的Recordset。
+
+(4.)
+conn.execute sql 適合於不需返回 recordset 對象時使用，比如下面的代碼：
+sql="delete from enews where id =" & cstr(id)
+conn.execute sql
+如果需要返回 recordset 對象，則使用如下代碼：
+sql="select from enews where id=" & cstr(id)
+set rs = conn.execute(sql)
+如果去掉 execute(sql) 這兒的括號(即為 set rs = conn.execute sql)，就會提示「語句未結束」這樣的錯誤提示，我翻看了一下語法格式，發現有二種格式，詳解如下：
+格式一：Connection 對象名.Execute(SQL指令)；
+格式二：Connection 對象名.Execute(資料庫名)。

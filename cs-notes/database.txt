@@ -1,0 +1,74 @@
+OLTP 是指 Online Transactional Processing 的簡稱，這個詞中 Transactional 是非常重要的，代表的是說他的處理通常包含了讀以及寫，通常 OLTP 是指系統能夠處理大量的更新以及新增的查詢。所以在傳統的 OLTP 系統中，數據的正確性以及一致性是首要要達到的目標之一。所以一般的 OLTP 中會常常聽到 ACID (Atomatic, Consistent, Isolated, Durable) 合規。這代表他們諄循著一個事務 (Transaction) 完成後才會執行下一筆，確保整個系統的資料一致性。
+數據一致性為什麼這麼重要？因為 OLTP 可能同時有多位使用者同時操作，所以要確保當一個使用者更新資料後，另一個操作中的使用者也能拿到最終的狀態。不然就可能會有數據不一致以及不同步問題。這也是為什麼常常會聽到 ACID compliance 這個詞在 OLTP 中。
+
+什麼是 OLAP 呢？
+OLAP 又是什麼呢？它代表著 Online Analytical Processing。一般的 OLAP 的系統可以讓數據聚合 (data aggregation) 以及批次處理 (Batch processing)，OLAP 大部分是用來做歷史資料的分析以及報告。和 OLDP 最大的不一樣是他不需要處理、儲存、以及保持資料的一致性，而是用 OLAP 可以很快的使用 Query 去得到數據洞察得到數據聚合後的結果。
+OLAP 使用情境
+對於所有的 BI 系統以及報告工具都是 OLAP 的系統。像是如果銀行中他有 OLTP 的系統確保他的一致性後，他就能用 OLAP 的系統去做報告以及商業智慧分析等應用。例如：他可以把所有全台灣的使用者在過去一個月的交易做分析，這時候他就會較適合使用 OLAP 系統作分析。
+
+結論
+OLTP 重視數據處理以及一致性，OLAP 重視數據分析。但通常他們兩個會搭配使用，儲存資料的時候先存到 OLTP 中確保數據一致性，要做分析的時候再使用 OLAP 做重要報表。線上分析處理（英語：Online analytical processing），簡稱OLAP，是電腦技術中快速解決多維分析問題一種方法。
+OLAP通常與 OLTP（線上交易處理）形成對比，OLTP的特點是查詢的複雜性要小得多，而且查詢量要大得多，以處理事務，而不是用於商業智慧型或報告。OLAP系統主要針對讀取進行最佳化，而 OLTP得能處理各種查詢（讀取、插入、更新和刪除）。
+撰自 — 維基百科 (線上分析處理)
+
+OLAP 由四個基本的分析操作組成，分別為：上卷 (roll-up)、鑽取 (drill-down)、切片 (slicing) 和切塊 (dicing)。
+
+我們可以透過 OLAP Cube 來輕易了解這四個動作。
+上圖是由三維資料所組成的，但實際上，OLAP Cube 是可以由多維資料組成，不管是四維、七維、甚至十維都可以，所以它又被稱為 Hypercube！
+
+而我們常用的表單 (欄、列) 是個二維的的資料模型，所以當需要多個表單集合來進行操作與分析都很困難，因為本質上它們就不是多維的資料集合！
+
+1. Roll-up:
+
+Roll-up 亦可被稱為合拼 (consolidation) 或聚合 (aggregation)。Roll-up 可以用作減少數據維度與概念層聚合 (Climbing up concept hierarchy)。如在上圖中，可以看到原來的城市類可以被聚合為國家類。
+
+2. Drill-down:
+
+Drill-down 可以增加數據維度或概念層折分 (Moving down the concept hierarchy) ，剛好是與 Roll-up 形成相反操作。如上圖中，可以把季 (Qx) 拆分為月份。
+
+3. Slice:
+
+Slice 可以在多維中選擇某一個維度為條件，產生出一個新的子 Cube，更集中的地去處理某一範圍的資料集。如上圖是選擇 Q1 時間維度的資料來產出新的資料集。
+
+4. Dice:
+
+Dice 的操作與 Slice 相似，只是 Dice 可以從原來的 Cube 中選擇多個維度的資料來產生出新的子 Cube。
+
+常見的三種 OLAP 實作型態
+
+1. ROLAP
+R 是 relational 的意思，所以 ROLAP 就是基於關聯式資料庫的 OLAP。也就是說，ROLAP 沒有在使用上文所說的 OLAP Cube！ROLAP 可以使用 slicing 和 dicing 功能，因為 slicing 或 dicing 功能和 SQL 語句中 WHERE 關鍵字的功能是類似的。
+
+優點：
+
+可擴充性：因為基於關聯式資料庫，以為硬體提供的空間有多大，ROLAP 的數據量就可以存放多大。
+靈活度高：因為使用 SQL 查詢且計算未被預處理，所以比 MOLAP 擁有更高的資料運用上的靈活度。
+
+缺點：
+
+功能受限：因為其實是由 SQL 實作，所以 SQL 有什麼它才能做什麼。
+面對大數據量的低性能：因為基於關聯式資料庫，所以在查詢大數據量時會愈多資料愈慢。
+
+2. MOLAP
+
+MOLAP 是基於多維數據儲存引擎來實現多維數據的視圖 (view)，通常就是使用上文說的 OLAP Cube。而 MOLAP 引擎多數都是商用的，如 Mircosoft 的 Azure Analysis Services。
+
+優點：
+
+足夠的功能：MOLAP Cube 是為了快速數據檢索而構建，所以具有最 native 的 Cube 操作。
+高效能：所有的計算都是在 Cube 上建立的，因為在 Cube 中是有限且被處理過的數據，所以 MOLAP 會比 ROLAP 更迅速的得出結果。
+缺點：
+
+它可以處理的數據量有限：同樣地，因為在 Cube 中是有限且被處理過的數據，Cube 不能像 ROLAP 的隨意地計算任意的數據，每次要計算新的內容，我們都需要時間來建構新的數據模型。
+3. Hybrid OLAP
+
+HOLAP 基於混合數據組織的 OLAP 實現 (Hybrid OLAP)，也就是 ROLAP 與 MOLAP 的混合體。HOLAP 將預計算過的數據儲存在多 OLAP Cube 中，將詳細數據儲存到關聯式資料庫中。
+
+優點：
+
+擁有 ROLAP 的可擴充性 。
+擁有 ROLAP 的即時資料更新。
+擁有 MOLAP 的高效能。
+缺點：
+
+高複雜度：混合式的系統當然要付出操作更複雜的代價。

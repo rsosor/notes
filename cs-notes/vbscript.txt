@@ -1,0 +1,21 @@
+Request 物件與Response 物件是一對的的，為何如此說呢？因為Response 物件是回應資料給瀏覽器，而Request 物件是讀取瀏覽器的資料，通常包含了使用者端的相關訊息，如瀏覽器的種類、表頭資訊、表單參數及 Cookies....等，Request物件提供下列資料集合。
+
+Request.Form("變數名")			取得客戶端利用表單所傳送的資料
+
+Request.QueryString ("變數名")		取得附帶在網址後面的參數
+
+Request.Cookies("變數名")		取得存在於客戶端瀏覽器的Cookies資料
+
+Request.ServerVariables("變數名")	取得網頁伺服端的環境變數資訊
+
+
+提示:<%=顯示內容%>是<%response.write "顯示內容"%>的簡便寫法！
+若單純只有取得表單之變數名稱，則 Request.Form("變數名稱")， 亦可寫成 Request("變數名稱")。
+
+name=request("name");
+email=request("email");
+memo=request("memo");
+
+<%=name%>
+<%=email%>
+<%=memo%>

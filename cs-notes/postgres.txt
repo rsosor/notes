@@ -1,0 +1,84 @@
+win R -> services.msc
+postgresql-x64-14 啟動
+
+然後 postgresql 有 users，godpk 密碼忘了，postgres 密碼 rsosor
+conf 文件可以修改環境變量
+
+
+psql -U postgres
+root
+
+
+pg_ctl -D start
+pg_ctl -D stop
+_____________________________________________________________________________________________________________________________________________________________________________________________________________________________________________
+
+1. On macOS
+
+If you installed PostgreSQL via Homebrew:
+
+To start manually:
+pg_ctl -D /usr/local/var/postgres start
+To stop manually:
+pg_ctl -D /usr/local/var/postgres stop
+To start PostgreSQL server now and relaunch at login:
+brew services start postgresql
+And stop PostgreSQL:
+brew services stop postgresql
+
+
+2. On Windows
+First, you need to find the PostgreSQL database directory, it can be something like C:\Program Files\PostgreSQL\10.4\data. Then open Command Prompt and execute this command:
+
+pg_ctl -D "C:\Program Files\PostgreSQL\9.6\data" start
+To stop the server
+pg_ctl -D "C:\Program Files\PostgreSQL\9.6\data" stop
+To restart the server:
+pg_ctl -D "C:\Program Files\PostgreSQL\9.6\data" restart
+Another way:
+
+Open Run Window by Winkey + R
+Type services.msc
+Search Postgres service based on version installed.
+Click stop, start or restart the service option.
+
+
+3. On Linux
+
+Update and install PostgreSQL 10.4
+
+sudo apt-get update
+sudo apt-get install postgresql-10.4
+By default, the postgres user has no password and can hence only connect if ran by the postgres system user. The following command will assign it:
+
+sudo -u postgres psql -c "ALTER USER postgres PASSWORD 'postgres';"
+sudo -u postgres psql -c "CREATE DATABASE testdb;"
+Start the PostgreSQL server
+sudo service postgresql start
+Stop the PostgreSQL server:
+sudo service postgresql stop
+_____________________________________________________________________________________________________________________________________________________________________________________________________________________________________________
+這三個對象都可以實現自增
+類別		允許顯式插入	顯式插入後會基於新 max(id) 做自動修改		truncate table 後自動重置	是否跟隨事務回滾一同回滾	多對象共享	是否支持手動重置
+serial		Y				N					N				N			N		Y
+select setval((select pg_get_serial_sequence('myschema.test_serial','id')), 1, false)
+
+sequence	Y				N					N				N			Y		Y
+select setval('myschema.seq_1',(select max(id) from my schema.test_seq)::bigint);
+alter sequence test_old_id_seq restart with 1000;"
+
+identity	Y				N					N				N			N		Y
+alter table myschema.test_identify_1 alter column id restart with 100;
+truncate table *** restart identity;
+
+
+CREATE TABLE color (
+    color_id INT  primary key GENERATED ALWAYS AS IDENTITY,
+    color_name VARCHAR NOT NULL
+);
+_____________________________________________________________________________________________________________________________________________________________________________________________________________________________________________
+（pgAdmin4）
+
+Servers -> PostgreSQL 14 -> Login/Group Roles -> postgres，右鍵 CREATE Script
+或是使用指令
+alter user postgres with password '';

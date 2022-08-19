@@ -1,0 +1,747 @@
+FernFlower Idea 內建的反編譯工具，相較之下 java-decompiler 無法反編譯 lambda 表達式。
+
+1. POJO(Plain Ordinary Java Object): 避免和 EJB 混淆
+	// 例如在該實體 EJB 中，實體包含業務邏輯，同時也包含自身的持久化邏輯
+	// 當更換數據源，或改變中間件框架時，則需要修改大量程式
+	public class Customer {
+		private Long id;
+		private String name;
+		private Set<Order> orders = new HashSet();
+		// 省略業務邏輯
+		// 數據庫訪問方法
+		public void remove() {
+			// 通過不同方式訪問數據庫，JDBC、MyBatis、Hibernate
+		}
+		public Customer load() { ... }
+		public Customer create() { ... }
+	}
+	// 當改為 POJO 時，則可以運行在任一 JAVA 環境中
+	public class Customer {
+		private Long id;
+		private String name;
+		private Set<Order> orders = new HashSet();
+		// 省略 getter、setter
+	}
+
+
+2. PO(Persistence Object): ORM(對象關係映射)中與數據表的一條記錄匹配，自身屬性與數據表字段一一對應。可將數據表中一條記錄作為一個對象處理，通常存放在 bean、entity、model 目錄
+	主鍵 ID(Martin Flowler 稱之委派標識，區別於實體標識)，例如身分證字號作為身分證的實體標識，唯一區分其他身分證。但是存在數據庫中依然可分配主鍵 ID。若 VO 需要持久化，也會被分配委派標識(主鍵 ID)，方便查詢或與外鍵關聯
+	getter、setter
+	no business logic、no data access function
+	平常不一定需要序列化，分布式存儲、前端輸出、遠程調用時，應實現序列化
+	Entity 的標識與業務有關，PO 的委派標識僅方便存儲，與技術有關
+	public class User implements Serializable {
+		// 序列化版本，通過 IDEA 自動生成
+		private static final long serialVersionUID = 1L;
+		private Long id;
+		private String username;
+		private String password;
+		// 省略 getter、setter
+	}
+
+
+3. DAO(Data Access Object): 本身為一層，存放在 dao(MyBatis)、mapper(MyBatis)、repository(Hibernate) 目錄
+	在基於事務腳本的業務設計時，它包含業務邏輯。否則，一般只包含持久化的封裝
+	public interface Dao {
+		int insert(User user);
+		User selectById(long id);
+	}
+
+
+4. DTO(Data Transfer Object): 有人會說這是 VO，但是 VO 是 Immutable、DTO 是 mutable。通常存放在 command、representation、dto 目錄
+	在應用網路層需要傳輸的對象，為了減少方法調用次數而在進程間傳輸數據的對象
+	從輸入來看: 應用在接口接收傳入對象(DTO)，然後轉換成 Entity 進行持久化
+	從輸出來看: 假設數據表 100 個字段，PO(Entity)會有 100 個屬性，而 UI 可能只需要其中 10 個屬性，那查詢數據庫後，對象就需要由 PO(Entity) 轉化成 DTO
+	DTO 可能還需要組合多個聚合成一個大對象，以減少網路的調用，或者給前端傳輸一些不在數據庫中查到的屬性，所以需要添加屬性
+	屬性必須為原始數據類型，因為需要被序列化以便在連接中傳播
+	// 繼承 Entity(實體類、PO)，從查詢到的 PO 中添加屬性返回給前端
+	public class UserDTO extends User {
+		// 序列化版本
+		private static final long serialVersionUID = 2L;
+		// 用戶標識
+		private String username;
+		public String getUsername() { return username; }
+		public void setUsername(String username) { this.username = username; }
+		// 添加額外屬性
+		private HashMap<String, Object> extProperties;
+		public HashMap<String, Object> getExtProperties() {
+			return extProperties;
+		}
+		public void setExtProperties(HashMap<String, Object> extProperties) {
+			this.extProperties = extProperties;
+		}
+	}
+
+	在不同的客戶端之間，通常需 DTO 組裝器完成 DO(領域對象)和 DTO 之間的轉化
+	public interface DTOAssembler {
+		public DTO createDTO(DO domainObject);
+		public void updateDO(DTO dataTransferObject);
+		public DO createDO(DTO dataTransferObject);
+	}
+	對於不同的客戶端展現，可以一次封裝所有可能的數據組成 DTO，也可以為每種展現創建不同的 DTO
+	大 DTO: 減少調用次數，只創建一次，但難掌握傳輸的數據
+	不同的小DTO: 要創建很多 DTO，傳輸數據很清楚
+	對於輸入和輸出方，可以共用一個 DTO 也可以各準備一個 DTO
+
+
+5. Entity: 使用 Hibernate 存放在名為 entity 目錄，與 VO 區別是
+	如抽象訂單有一個唯一標識，訂單從下單創建到最後交貨完成的生命週期，實體對象的狀態可以變化
+	對象唯一標識相等就判斷相等，屬性不用一樣
+	unique id(以區分其他 Entity)
+	life cycle
+	mutable
+	Entity 的標識與業務有關，PO 的委派標識僅方便存儲，與技術有關
+	public class Entity {
+		private int id;
+		int getId() { return id; }
+	}
+
+
+6. VO(Value Object): 通常用於業務層之間數據傳遞，僅僅包含自身的數據，與 Entity 區別是
+	對象所有屬性相等才算相等。只能創建新的 VO 不能修改
+	no unique id
+	no life cycle
+	Immutable
+	與 PO 的區別是，PO 只在數據層，作為存儲。VO 在商業邏輯層和表示層，做為一個概念整體
+	通常是小而簡單的對象，如貨幣、日期、地址
+	參數傳遞時通常是傳遞值，而不是引用
+	VO 不應被持久化，對象被創建後只能被引用，當沒有引用時交給 GC 自動處理
+	某些 DTO 也是一種 VO，Martin Flowler 稱 VO；J2EE 社團中稱 DTO
+	// 比如 Address 這種無唯一標識的就是 VO
+	public class Address {
+		private String country;
+		private String province;
+		private String city;
+		public Address(String country, String province, String city) {
+			this.country = country;
+			this.province = province;
+			this.city = city;
+		}
+		// 省略 equals 方法
+	}
+	// 調用 VO，若要修改 VO，VO 不用維護，直接創建一個新的 Address 對象
+	// 原對象直接被拋棄，而不是在原對象上修改
+	public Address changeAddress(String newCountry, String newProvince, String newCity) {
+		return new Address(newCountry, newProvince, newCity);
+	}
+
+
+7. BO(Business Object): 通常存放在 service、manager、business、domain、model 目錄
+	把業務邏輯封裝為一個對象(對象本身的業務邏輯，而不是協調其他對象的邏輯)
+	這個對象可以包括一個或多個其他的對象
+	一般，實現業務是包括數據而不包含行為的領域對象 DO(貧血模型) + Service 類來實現，當業務邏輯越來越複雜，不利於重用
+	DDD(面向領域驅動設計)，將對象本身邏輯也封裝在對象中(充血模型)，Service 類僅僅起協調作用，如對 DO 的調用及其他工具的調用，不包含業務本身的邏輯，名為應用服	務層，當業務不斷演進，通常只需要關注業務對象(BO)即可，而應用層較少變化，因此，BO 也是 DO(Domain Object)的另一說法
+	BO 通常是 Entity(實體)，或者是 AggregateRoot(聚合根)，包含多個 Entity(實體) 或 VO(值對象)，內部實現業務邏輯
+	public class User implements Serializable {
+		private String name;
+		private String password;
+		// 對象自身的業務邏輯
+		public void changePassword(String newPassword) {
+			this.setPassword(newPassword);
+		}
+		// 省略 getter、setter
+	}
+
+
+
+pojo、model
+po、entity
+dao、
+dto
+
+
+
+DTO	→	VO	→
+mutable		immutable	
+
+
+_____________________________________________________________________________________________________________________________________________________________________________________________________________________________________________
+（Log）
+import java.util.logging.Logger;
+import org.junit.Test;
+import org.springframework.test.context.ContextConfiguration;
+
+/**
+ * ServiceTest 父類別
+ * 默認載入/applicationContext*.xml
+ * 子類屬性只需聲明 setter 函數，就會自動進行注入
+ */
+@ContextConfiguration(locations={//"classpath:master/dao/applicationContext-hibernate-master.xml",
+		                         "classpath:master/service/applicationContext-service-master.xml",
+		                         "classpath:master/dao/applicationContext-hibernate-master.xml",
+								 "classpath:master/dao/database/applicationContext-database-postgresql-local.xml",
+		                         "classpath:master/Interface/webserviceclient/applicationContext-webservice-client-auth.xml",
+		                         "classpath:master/service/applicationContext-resources-localjunit.xml"
+		                         //"classpath:master/rmiserviceclient/applicationContext-rmiservice-client-master.xml",
+		                         //"classpath:master/service/applicationContext-resources.xml",
+		                         //"classpath:com/pic/pointCard/systemName/applicationContext-resources-test.xml"
+		})
+public class BaseServiceTest {
+	private static final Logger LOG = Logger.getLogger(BaseServiceTest.class.getName());
+
+	// @Test
+	public void testHelloWorld() { LOG.info("Hello, Service"); }
+}
+_____________________________________________________________________________________________________________________________________________________________________________________________________________________________________________
+（Test）
+@RunWith(SpringJUnit4ClassRunner.class)
+
+
+_____________________________________________________________________________________________________________________________________________________________________________________________________________________________________________
+（Data Structure）
+1. 數據不斷比較並輸出數據，利用 HashMap、List 結合實現數據緩存
+HashMap<String, List<String>> 實現數據的緩存
+public class MapTest {
+	privat static HashMap<String, List<String>> mapSave = new HashMap<>();
+	public static void main(String[] arsg) {
+		mapSave.clear();
+		List<String> list = new ArrayList<>();
+		list.add("aaa");
+		list.add("bbb");
+		list.add("ccc");
+		list.add(3+"");
+		list.add(4+"");
+		list.add(5+"");
+		String key = Integer.toString(mapSave.size());
+		mapSave.putIfAbsent(key, list);	// 將數據緩存進去，putIfAbsent 會對 key 進行排序。
+		if (mapSave != null && mapSave.size() > 0) {
+			Iterator<Map.Entry<String, List<String>>> it = mapSave.entrySet().iterator();
+			List<String> field = new ArrayList<>();
+			List<String> value = new ArrayList<>();
+			while (it.hasNext()) {
+				Map.Entry<String, List<String>> entry = it.next();
+				System.out.println("key = " + entry.getKey() + "," + "value = " entry.getValue());
+				field.add(entry.getKey().toString());
+				value.add(entry.getValue().toString());
+			}
+			System.out.println("keyList = " + field = "," + "valueList = " value);
+		}
+	}
+}
+结果：
+key = 0,value = [aaa, bbb, ccc, 3, 4, 5]
+keyList = [0], valueList = [[aaa, bbb, ccc, 3, 4, 5]]
+2. 單個數據進行緩存寫入和取出
+public class MapTest {
+	private static HashMap<String, Integer> map = new HashMap<>();
+	public static void main(String[] args) {
+		int a;
+		map.clear();
+		if (map.isEmpty()) {
+			a = 888;	
+			map.put("first", a);
+			map.get("first");
+		}
+		System.out.println(map.get("first");
+	}
+}
+_____________________________________________________________________________________________________________________________________________________________________________________________________________________________________________
+（Spring）
+spring 的專案中，一般都會在 web.xml 中配置 ContextLoaderListener，它就是 spring ioc 的入口
+
+
+Spring Bean 是在 Spring 框架下透過 IOC 容器來自動注入物件。
+在 Spring 框架中可以透過 3 種方式建立 Spring Bean
+
+1. 透過 Spring 提供的 ClassPathXmlApplicationContext 類別，根據定義生成 bean 物件，前提是要在 Spring 的配置文件中使用 <bean></bean> 標籤定義 bean
+例如：<bean id="article" class="petforum.model.Article" />
+// 使用 Spring 的 ClassPathXmlApplicationContext 產生 IOC 容器
+ClassPathXmlApplicationContext appContext = new ClassPathXmlApplicationContext("spring.xml");
+Article article = appContext.getBean("article", Article.class);
+此方式 IOC 容器會透過 Contructor 生成 Bean
+
+
+2. 透過建立Config類別並宣告一個方法，在方法上使用 @Bean 註釋，再透過 Spring 提供的 AnnotationConfigApplicationContext 類別進行以下操作。
+ 
+// 假設我建立一個Config類別
+
+// 在此類別建立一個方法，並使用註釋
+@Bean
+public Article article(){
+return new Article();
+}
+
+
+// 然後在使用 Spring 的 AnnotationConfigApplicationContext 類別產生IOC容器
+AnnotationConfigApplicationContext appContext = new AnnotationConfigApplicationContext();
+// 再註冊
+appContext.register(Config.class);
+Article article = appContext.getBean("article", Article.class);
+第 2 種方式不需使用到 spring 的配置文件，Spring Bean 物件是透過 article() 方法 new 出來的。
+
+
+3. 在 Config 類別使用 @ComponentScan("petforum.model")，代表在 "petforum.model" package 下，凡是使用到 @Component 註釋的類別
+在 IOC 容器建立後會掃描 "petforum.model"package​，再透過類別的 Contructor 生成 Spring Bean
+// 在 Article 類別加上 @Component 註釋
+
+@Component
+public class Article{
+private Integer posterUid;
+........
+
+public Article(){
+}
+........
+
+}
+
+
+// 然後在使用 Spring 的 AnnotationConfigApplicationContext 類別產生 IOC 容器
+AnnotationConfigApplicationContext appContext = new AnnotationConfigApplicationContext();
+Article article = appContext.getBean("article", Article.class);
+_____________________________________________________________________________________________________________________________________________________________________________________________________________________________________________
+（Spring Boot）
+application.yaml 取代 web.xml
+
+
+（Jackson, 3rd library）
+
+（@JsonInclude）
+在 Spring Web 專案的 RestController 回傳 Java 物件時，Spring 會自動透過 Jaskson 把回傳的 Java 物件轉換成 JSON。
+
+如果希望 Java 物件的屬性在某些情況下不要被轉成 JSON 屬性，可以設定 @JsonInclude 來達成。
+此註解 scope 在「類別」、「變量」
+import com.fasterxml.jackson.annotation.JsonInclude;
+
+@JsonInclude(JsonInclude.Include.NON_NULL)
+
+{
+    "num": 20000,
+    "str": null,
+    "strList": null
+}
+
+變成
+
+{
+    "num": 20000
+}
+
+@JsonInclude 其他可用的設定值如下：
+
+JsonInclude.Include.ALWAYS：		總是包含所有屬性。
+JsonInclude.Include.CUSTOM：		自訂過濾條件排除屬性。
+JsonInclude.Include.NON_ABSENT：	不要包含如 Optional，AtomicReference 內容為空的屬性。
+JsonInclude.Include.NON_DEFAULT：	不要包含預設值的屬性，例如屬性為原始型別的預設值。
+JsonInclude.Include.NON_EMPTY：		不要使用值為 null 或內容為空的屬性。
+JsonInclude.Include.USE_DEFAULTS：	忽略現有層級的定義，使用高一層的定義。
+
+value = JsonInclude.Include.CUSTOM 會搭配, valueFilter = xxx.class | contentFilter = xxx.class
+過濾器類的 equals() 用於過濾值
+valueFilter:	true 則值不會序列化
+contentFilter:	true 則不會序列化目標屬性的內容值
+
+public class Employee {
+	private String name;
+
+	@JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = DateOfBirthFilter.class)
+	private Date dateOfBirth;
+
+	@JsonInclude(value = JSonInclude.Include.CUSTOM, contentFilter = PhoneFilter.class)
+	private Map<String, String> phones;
+	...
+}
+
+@JsonIgnore
+@JsonProperty
+@JsonUnwrapped
+@ObjectMapper
+@JsonFormat(pattern = "yyyy-MM-dd")
+
+_____________________________________________________________________________________________________________________________________________________________________________________________________________________________________________
+（SSM）
+mybatis 搭建過程:
+1. 導入 jar(mybatis、log4j、mysql)
+2. 創建 mybatis 的核心(全局)配置文件 mybatis-config.xml，並配置(如何連接數據庫)
+3. 創建映射文件 XxxMapper.xml，並配置(如何操作數據庫)
+4. 創建 mapper 接口，實現兩個綁定(不需要 dao 的實現類，透過映射文件)
+	(1) 接口全限定名要和映射文件的 namespace 保持一致
+	(2) 接口中方法名要和 SQL 語句的 id 保持一致
+5. 獲取 mybatis 操作數據庫的會話對象 SqlSession. 通過 getMapper() 獲取接口的動態代理實現類
+6. 測試
+
+參數傳遞的方式
+1. 單個普通類型參數
+可接受基本類型、包裝類型、字符串類型等等。MyBatis 可以直接使用這個參數，不需經過任何處裡
+2. 多個參數
+任意多個參數，都會被 MyBatis 重新包裝成一個 Map 傳入，詳情見下。
+3. 命名參數
+詳情見下。
+4. POJO
+當這些參數屬於我們業務 POJO 時，我們直接傳遞 POJO
+5. Map
+也可以自己封裝多個參數為 Map，直接傳遞
+6. Collection/Array
+會被 MyBatis 封裝成一個 Map 傳入，Collection 對應的 key 是 collection，Array 對應的 key 是 array，如果確定是 List，key 還可以是 list。
+
+mybatis 獲取參數值的兩種方式
+${}: insert into emp values(null, admin, 23, 男)
+Statement		// 不能通過通配符賦值，只能通過字符串拼接。一定要注意單引號。
+#{}: insert into emp values(null, ?, ?, ?)
+PreparedStatement	// 通過通配符賦值。自動加單引號(因為在為 String 賦值時，可以自動加引號，因此不需要注意單引號問題)。可以防止 SQL 注入。
+建議使用 #{}，在特殊情況下，需要使用 ${}，例如模糊查詢、批量刪除
+
+不同的參數類型，${}、#{} 的不同取值方式:
+1. 當傳輸參數為單個 String 或 基本數據類型和其包裝類
+#{}: {} 裡可以以任意的名字獲取參數值
+${}: {} 裡只能以 ${value} 或 ${_parameter} 獲取		// 假設用 ${eid}，報錯在 java.lang.string 沒有找到 eid 的 get 方法
+2. 當傳輸參數為 JavaBean 時
+#{} 和 ${} 都可以通過屬性名直接獲取屬性值，但是要注意 ${} 的單引號問題
+3. 當傳輸多個參數時，mybatis 會默認將這些參數放在 map 集合中
+兩種方式:
+1. 鍵為 0, 1, 2, 3...N-1，以參數為值
+2. 鍵為 param1, param2, param3...paramN，以參數為值
+#{}: #{0}、#{1}；#{param1}、#{param2}
+${}: ${param1}、${param2} ，但是要注意 ${} 的單引號問題。${} 可以在裡面寫表達式，所以你輸入 0 當然就會被認為是 0 而不符合此邏輯。
+4. 當傳輸 map 的參數時
+#{}、${} 都可以通過鍵的名字直接獲取值(而且不用注意參數的順序了)。也要注意 ${} 的單引號問題
+5. 命名參數
+可以通過 @Param("key") 為 map 集合指定鍵的名字
+Emp getEmpByEidAndEnameByParam(@Param("eid") String eid, @Param("ename") String ename);
+#{}、${} 都可以通過鍵的名字直接獲取值(而且不用注意參數的順序了)。也要注意 ${} 的單引號問題
+6. 當傳輸參數為 List 或 Array，mybatis 會將 List 或 Array 放在 map 中，
+List 以 list 為鍵，Array 以 array 為鍵
+
+在 Emp emp = mapper.getEmptyByEidAndEnameByParam("1", "型"); 設斷點：
+(進入 public class MapperProxy<T> implements InvocationHandler, Serializable {)的：
+public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+	if (Object.class.equals(method.getDeclaringClass())) {
+		try {
+			return method.invoke(this, args);
+		} catch (Throwable t) {
+			throw ExceptionUtil.unwrapThrowable(t);
+		}
+	} 
+	final MapperMethod mapperMethod = cachedMapperMethod(method);	// mapperMethod 的 command = MapperMethod$SqlCommand (id=75) 下有 name 和 type
+	return mapperMethod.execute(sqlSession, args);		// 
+}
+name: com.example.mybatis02.mapper.ParamMapper.getEmpByEidAndEnameByParam	// 可以理解為 SQL 語句的 ID
+type --> name: SELECT
+(進入 MapperMethod.class 的 public Object execute(SqlSession sqlSession, Object[] args) {)
+(因為是 SELECT 所以進入 MapperMethod.class 的 public Object convertArgsToSqlCommandParam(Object[] args) {)
+(進入 MapperMethod.class 的 public Object getNamedParams(Object[] args) {)
+因為上述開頭使用到 names.size() 所以下一行回顧 names 在哪裡被賦值的
+(在 public ParamNameResolver(Configuration config, Method method) { 對 private final SortedMap<Integer, String> names 進行賦值，names = Collections.unmodifiableSortedMap(map);)
+而 getNamedParams 方法是以下列方式進行遍歷的(Map 裡面塞入 Map，呈現出鍵鍵值。
+for (Map.Entry<Integer, String> entry : names.entrySet()) {
+	param.put(entry.getValue(), args[entry.getKey()]);
+	// add generic param names (param1, param2, ...)
+	final String genericParamName = GENERIC_NAME_PREFIX + String.valueOf(i + 1);
+	// ensure not to overwrite parameter named with @Param
+	if (!names.containValue(genericParamName)) {
+		param.put(genericParamName, args[entry.getKey()]);
+	}
+	i++;
+}
+return param;
+
+
+
+mybatis xml 文件
+Public ID
+URI
+
+xml 的提示功能:
+1. 聯網
+2. 配置: xml -> xmlCatalog -> add
+	(1) Public ID: -//mybatis.org//DTD Config 3.0//EN
+	(2) URI: http://mybatis.org/dtd/mybatis-3-config.dtd
+
+<association>
+
+一對一
+
+多對一
+建議不設置主外鍵關聯，譬如部門、員工表。要刪除部門表資料，就要先刪除員工表中使用到的部門欄位資料才能刪除
+在 hibernate 可以有兩種處裡
+1. 先把要刪除的部門表員工欄位 did 資料設定為 null，再刪除部門
+2. 部門沒了，部門的員工也給你刪了
+
+多對一(分步查詢)
+
+
+<collection>
+
+多對多
+
+一對多
+<resultMap id="deptMap" type="Dept">
+	<id column property ...
+	<result column property ...
+	<collection property="emps" ofType="Emp">
+		<id column property ...
+		<result column property ...
+	</collection>
+</resultMap>
+
+一對多(分步查詢)
+<resultMap id="deptMapStep" type="Dept">
+	<id column property ...
+	<result column property ...
+	<collection property="emps" select="com.example.mybatis02.mapper.EmpDeptMapper.getEmpListByDid" column="did"></collection>	// column 底層在這還是把它封裝成一個 Map 對象，可以寫為 column="{did=did}"
+</resultMap>
+
+分步查詢比較簡單，只是要寫兩個 SQL 語句，如專案已有這些查詢就能現用，必且延遲加載只有在分步查詢時才有
+fetchType="lazy | eager"
+
+
+
+
+
+
+
+
+延遲加載(懶加載)只對分步查詢有效果
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+spring、springMVC 的整合:
+1. 不整合: 需要將 spring 所管理的內容都交給 springMVC 管理，會造成業務邏輯混亂
+2. 整合: spring 的配置文件什麼時候加載？怎麼加載？
+解決方法: 監聽器，可以在 ServletContext 加載時，通過監聽器加載 spring 的配置文件，創建 spring 容器
+spring 提供的監聽器: ContextLoaderListener
+
+3. bean 被創建兩次的問題: 在 springMVC 中只掃描控制層，在 spring 中，通過包含或排除對所掃描的包進行指定
+springMVC: 主要管理請求、響應(controller)
+剩下交給 spring 管理
+
+4. spring、springMVC 的關係:
+spring 是父容器
+springMVC 是子容器
+規定: 子容器能夠調用訪問父容器中的 bean，而父容器不能夠調用訪問子容器中的 bean
+
+springMVC	spring
+controller-----service-----dao
+
+spring:Root WebApplicationContext: startup date [Fri Jun 21 11:45:00 CST 2019]; root of context hierarchy
+springMVC: WebApplicationContext for namespace 'springDispatcherServlet-servlet': startup date [Fri Jun 21 11:47:42 CST]; parent: Root WebApplicationContext
+
+client-----web.xml'springMVCDispatcherServlet(URL)[DefaultServlet]，成功、不成功[交給 DefaultServlet]，無法處理則 404
+
+spring 容器的加載要先於 springMVC
+_____________________________________________________________________________________________________________________________________________________________________________________________________________________________________________
+（jsp）
+---------------------------------------------------------------------------------------------------------------------------------------------------
+登入
+login.jsp
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<html>
+	<head>
+		<title學生管理系統</title>
+	</head>
+	<body>
+		<form action="loginServlet" method="post">
+			學號<input type="text" name="num"><br>
+			密碼<input type="password" name="password"><br>
+			<input type="submit" value="登入"><br>
+			<a href="toRegisterServlet">註冊</a><br>${msg}
+		</form>
+	</body>
+</html>
+後端通過前端的 name 接收
+@WebServlet("/loginServlet")
+public class loginServlet extends HttpServlet {
+	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		request.setCharacterEncoding("UTF-8");
+		String num = request.getParameter("num");
+		String pasword = request.getParameter("password");
+		HttpSession session = request.getSession();
+		if (num.trim().length() != 11) {
+			session.setAttribute("msg", "帳號應當為 11 位學號");
+			response.sendRedirect("login.jsp");
+			return;
+		}
+		if (password.trim().length() < 6 || password.trim().length() > 18) {
+			session.setAttribute("msg", "密碼應為 6-18 位");
+		}
+		boolean flag= false;
+		if (num == "123" && password == "123")
+		flag = true;
+		if (flag) {
+			request.getRequestDispatcher("index.jsp").forward(request, response);
+			// index.jsp 是需要自建，是登入成功後的頁面
+		} else {
+			session.setAttribute("msg", "帳號或密碼有誤");
+			response.sendRedirect("login.jsp");
+			return;
+		}
+	}
+}		
+---------------------------------------------------------------------------------------------------------------------------------------------------
+<%！ %>，這裏面可以申明變量或方法，註意：這裏面申明的變量是全局的
+
+<% %>，與上面的方法相比，這個方法的局部的
+
+<%= %>，用於輸出表達式到瀏覽器，註意：這裏面的表達式不能跟分號
+
+在 jsp2.0 中定義了三個指令：page 指令，include 指令，taglib 指令。
+
+
+1.關於page指令，我們平時見得最多的就是這樣的：
+
+<%@page contentType="text/html;charset=gb2312" import="java.util.Date"%>		// 主要用於：設置編碼，導入jar包
+
+
+2.關於 include 指令，他用於引入其他 jsp 頁面，jsp 引擎會將兩個 jsp 翻譯成一個 servlet，所以也稱為靜態引入
+
+
+3.關於 taglib 指令，是定義一個標簽庫以及其自定義標簽的前綴。比如我們常用的c:foreach的使用。先導入jstl的包，然後在jsp中加入這個標簽：<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>就可以使用c:foreach了
+
+jsp中寫java代碼的方法
+
+
+
+
+HttpServletRequest.getSession(ture) 等同於 HttpServletRequest.getSession() 
+HttpServletRequest.getSession(false) 等同於如果當前 Session 沒有就為 null； 
+
+當向Session中存取登入資訊時，一般建議：HttpSession session =request.getSession();
+當從Session中獲取登入資訊時，一般建議：HttpSession session =request.getSession(false);
+
+
+更簡潔的方式
+
+如果你的專案中使用到了 Spring，對 session 的操作就方便多了。如果需要在 Session 中取值，可以用 WebUtils 工具（org.springframework.web.util.WebUtils）的 WebUtils.getSessionAttribute(HttpServletRequestrequest, String name);方法，看看原始碼：
+public static Object getSessionAttribute(HttpServletRequest request, String name){ 
+Assert.notNull(request, "Request must not be null"); 
+HttpSession session = request.getSession(false); 
+return (session != null ? session.getAttribute(name) : null);
+}
+
+注：Assert 是 Spring 工具包中的一個工具，用來判斷一些驗證操作，本例中用來判斷 request 是否為空，若為空就拋異常
+
+
+你使用時：
+
+
+WebUtils.setSessionAttribute(request, "user", User);
+User user = (User)WebUtils.getSessionAttribute(request, "user");
+
+
+
+（jsp 中四種傳遞參數的方法）
+1、form 表單
+
+2、request.setAttribute();和request.getAttribute();
+
+3、超連結：<a herf="index.jsp"?a=a&b=b&c=c>name</a>
+
+
+1、form表單
+form.jsp:
+result.jsp:
+
+form表單的提交方式為 get
+解決參數傳遞時會遇到中文亂碼的問題
+將接受到的字符串先轉換成一個 byte 數組，再用 String 構造一個新的編碼格式的 String，如：
+1 String name = request.getParameter("name");
+2 name = new String(name.getBytes("iso-8859-1"), "GB2312");
+
+form 表單的提交方式為 post
+request.setCharacterEncoding("GB2312"); 設置 request 的編碼方式。
+中文亂碼問題呢？因為 Tomcat伺服器默認的系統編碼方式為 iso- 8859-1，你傳遞參數給伺服器時，使用的是默認的 iso-8859-1 的編碼方式，但是伺服器向你返回信息時，是按 page 指令中設置的編碼方式，
+如：<%@page language="java" import="java.util.*" pageEncoding="GB2312"%>，這樣就混合了兩種編碼方式，所以會出現亂碼，所以解決之道就是統一傳遞和接收的編碼方式。
+
+2、request.setAttribute()和request.getAttribute()
+set.jsp:
+get.jsp:
+request.setAttribute()和request.getAttribute()是配合<jsp:forward>或是include指令來實現的。
+
+
+
+3、超連結：<a herf="index.jsp?a=a&b=b&c=c">name</a>
+href.jsp:
+getHref.jsp:
+這種傳遞參數的方法和form表單的get方式類似，是通過地址欄傳遞的參數，其亂碼解決方法也和form 的get方式一樣。
+
+4、<jsp:param>
+param.jsp:
+getParam.jsp:
+
+form表單的例子中，如果傳遞方式為post，則只需要在接收參數的頁面設置request的編碼方式就可以了，即request.setCharacterEncoding("GB2312");
+注意是在接收參數的頁面，如果將該句放到form 表單里，那麼不起作用，仍然是亂碼。
+而在本例中，為了使傳遞的參數不出現亂碼，卻是將 request.setCharacterEncoding("GB2312");放在發送參數的頁面中，才會正常顯示中文，放在接收參數的頁面中，不起作用。
+
+
+也許這就是<jsp:param>和form表單傳遞參數不同的地方。
+可能是因為form表單中的參數是由客戶端傳送到服務端上的，需要經過一個request的打包過程
+但是<jsp:param>傳遞的參數本身就是在伺服器端的，不需要經歷由客戶端到服務端這麼一個過程，但是伺服器裡的參數傳遞是這麼回事呢？
+_____________________________________________________________________________________________________________________________________________________________________________________________________________________________________________
+（操作數據庫）
+基本上討論的是 spring 或是 spring boot 對原生 JDBC 的封裝與預設設定(convention over configuration)
+JdbcTemplate 使用 RowMapper<T> 接口在每行的基礎上映射 ResultSet 的行。該接口的實現執行將每行映射到結果對象的實際工作。如果拋出 SQLException 將被調用的 JdbcTemplate 捕獲和處理
+用 PreparedStatement 執行一個針對數據庫表的查詢，JDBC 驅動會發送一個網路請求到數據解析和優化這個查詢，而執行時會產生另一個網路請求，JDBC 驅動中減少網路通訊是最終目的。
+用 Statement 同一個查詢只會產生一次網路到數據庫的通訊
+如果程式在運行期間只需要一次請求，就使用 Statement，多次請求就使用 PreparedStatement
+_____________________________________________________________________________________________________________________________________________________________________________________________________________________________________________
+（Spring MVC）
+@Controller		標識為處理器類
+@RequestMapping		請求 ~ 處理器方法的映射規則
+@RequestParam		請求參數 ~ 處理器方法的方法參數綁定
+@ModelAttribute		請求參數 ~ 命令對象的綁定
+@SessionAttributes	用於聲明 session 級別存儲的屬性，放置在處理器類上，通常列出模型屬性(@ModelAttribute)
+@InitBinder		自定義數據綁定註冊支持，用於將「請求參數」轉換到「命令對象屬性的對應類型」
+@CookieValue		cookie 數據 ~ 處理器方法的方法參數綁定
+@RequestHeader		header 數據 ~ 處理器方法的方法參數綁定
+@RequestBody		body 體的綁定(通過 HttpMessageConverter 進行類型轉換)
+@RequestStatus		定義處理器功能處理方法/異常處理器返回的狀態碼和原因
+@ExceptionHandler	註解式聲明異常處理器
+@PathVariable		請求 URI 中的模板變量部分 ~ 處理器方法的方法參數綁定，從而支持 RESTful 架構風格的 URL
+
+
+
+
+（Spring MVC 的 controller 向 jsp 傳遞數據的五種方式）
+1. model
+@RequestMapping("/demo")
+public String Model(Model model) {
+	UserBean bean = new UserBean();
+	bean.setName("admin");
+	bean.setPwd("admin");
+	model.addAttribute("admin", bean);
+	return "Model";
+}
+
+2. ModelAndView
+@RequestMapping("/demo1")
+public ModelAndView ModelView() {
+	ModelAndView view = new ModelAndView();
+	UserBean bean = new UserBean();
+	bean.setName("孫悟空");
+	bean.setPwd("Hi");
+	view.addObject("admin", bean);
+	view.setViewName("Model");
+	return view;
+}
+
+3. hashmap
+@RequestMapping("/demo2")
+public String Hashmap(HashMap<String, Object> hashmap) {
+	UserBean bean = new UserBean();
+	bean.setName("111");
+	bean.setPwd("222");
+	hashMap.put("admin", bean);
+	return "Model";
+}
+
+4. session
+@RequestMapping("/demo3")
+public String session(HttpSession session) {
+	UserBean bean = new UserBean();
+	bean.setName("111");
+	bean.setPwd("222");
+	session.setAttribute("admin", bean);
+	return "Model";
+}
+
+5. request
+@RequestMapping("/demo4")
+public String request(HttpServletRequest request) {
+	UserBean bean = new UserBean();
+	bean.setName("111");
+	bean.setPwd("222");
+	request.setAttribute("admin", bean);
+	return "Model";
+}
+
+前端皆為 Model.jsp
+_____________________________________________________________________________________________________________________________________________________________________________________________________________________________________________

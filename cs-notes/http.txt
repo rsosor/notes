@@ -1,0 +1,53 @@
+基於 Http 協議，根據 HTTP Request Methods 對應的數據傳輸能力把 HTTP Request 分為：
+		Url 類請求: GET、HEAD、OPTIONS、TRACE 等
+		Body 類請求: POST、PUT、PATCH、DELETE 等
+
+
+（Url 類請求）
+Url 類請求沒有 Body，因此 Url 類請求想要提交參數，參數寫在 url 後面(條件和要求)
+
+網址參數 叫做 Query，拆開後組成鍵、值對的形式又叫做 Parameters(Arguments)，大多數情況一個 Key 對應一個 Value，當然允許一個 Key 對應多個 Values。
+
+
+（Body 類請求）
+在語義和能力上來說應該是兼容 Url 類請求的，伺服器端可以通過 Body 接受數據。因此能上傳到伺服器端的數據比 Url 類請求的多。
+
+「RFC2616 沒有規定 url 的最大長度，但規定當伺服器不能處理太長的 url 時就返回 414(Request-URI Too Long)，因此幾乎可以說 URL 不能直接傳輸 Binary 數據，除非 ToString，例如 Base64。」
+
+參數可以放 Url 也可以放 Body
+
+Content-Type 是 application/x-www-form-urlencoded 時，客戶端可以通過 body 發送鍵值對數據，例如 key1=value&key2=value2。
+		application/json 時，客戶端可以通過 body 發送 json 字符串。
+		application/xml  時，客戶端可以通過 body 發送 xml 字符串。
+		application/octet-stream 時，客戶端可通過 body 發送 Binary 數據，例如文件或者任何能轉成流的數據。
+
+Content-Type 是 multipart-form-data 時，客戶端可以通過 body 發送一個表單。
+
+注：表單是有格式的，不像 json、xml 的格式，json、xml 的格式是字符串排版格式，而表單的格式裡面有 字符串、換行、Binary。
+
+
+HTTP 裡很多東西如果不按照某種規範，就需要前後端協定，不是一定要怎麼做。如 application/octet-stream 時，也可以發送一段 json、xml、text 數據。
+
+form	Content-Type: application/x-www-form-urlencoded
+
+XHR 包裝成 AJAX 包裝成以下
+jQuery	Content-Type: application/x-www-form-urlencoded; charset=UTF-8
+	Form Data 裡面是傳遞的參數
+
+Axios	Content-Type: application/json;charset=UTF-8
+	Request Payload 請求格式是 application/json 格式進行數據傳輸，所以傳遞的參數自動轉換成 json 格式
+
+Fetch
+
+
+RESTFul
+URL
+Header
+HttpVerb
+(Body)
+
+
+請求重定向：客戶端行為，相當於兩次請求，前一次請求的內容不會被儲存，url路徑會改變（檢視上面的圖片中的URL）。
+response.sendRedirect（"request.jsp"）
+請求轉發：伺服器行為，一次請求，轉發後請求物件會儲存，url路徑不變（檢視上面的圖片中的URL）！
+requst.getRequestDispatcher（"st.jsp"）.forward（request，response）

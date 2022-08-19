@@ -1,0 +1,12 @@
+要在ASP.NET MVC的View 裡實作超連結的功能其實很簡單
+例如:
+<a class="btn btn-default" href="http://go.microsoft.com/fwlink/?LinkId=301865">Try it &raquo;</a>
+除此之外我們也可以使用 @Url.Content 將url的相對路徑轉成絕對路徑
+例如:
+<a class="btn btn-default" href="@Url.Content("~/Home/Contact")">Try it &raquo;</a>
+或是使用 @Url.Action 來取得指定的controller下的action的路徑
+例如:
+<a class="btn btn-default" href="@Url.Action("Contact","home")">Try it &raquo;</a>
+而我們也可以透過 htmlhelp @Html.ActionLink 做到一樣的事情
+例如:
+<li>@Html.ActionLink("Home", "Index", "Home")</li>

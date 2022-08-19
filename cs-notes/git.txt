@@ -868,3 +868,60 @@ ssh -T git@github.com	驗證 Key
 track 概念就是去指向(指針)commit，包括 remote branch
 git checkout -b mybranch origin/abranch
 git checkout --track origin/abranch
+___________________________________________________________________________________________________________________________________________________________________________________________________________________
+ERROR: Repository not found.
+fatal: Could not read from remote repository.
+ 
+Please make sure you have the correct access rights
+and the repository exists.
+
+
+# 先確定目前遠端位置
+git remote -v
+ 
+# 如果出現這樣，代表前人用的是 SSH 連線方式
+origin	git@github.com:{username}/{repo}.git (fetch)
+origin	git@github.com:{username}/{repo}.git (push)
+ 
+# 打這行會不給修改
+git remote add origin https://github.com/{username}/{repo}.git
+ 
+# 會說已經存在
+fatal: remote origin already exists.
+ 
+# 所以要打這行，修改為走 https 通道的詢問模式
+git remote set-url origin https://github.com/{username}/{repo}.git
+ 
+# 接著確認一下
+git remote -v
+ 
+# 代表成功替換
+origin	https://github.com/{username}/{repo}.git (fetch)
+origin	https://github.com/{username}/{repo}.git (push)
+ 
+# 接著 pull 
+git pull
+ 
+# 就會詢問我們 GitHub 帳號密碼了
+Username for 'https://github.com':
+
+
+
+fatal: refusing to merge unrelated histories
+
+
+如果你是 git pull 或者 git push 報 fatal: refusing to merge unrelated histories
+同理：
+git pull origin master --allow-unrelated-histories
+
+
+
+從客戶端看，有兩種驗證方式：基於密碼、基於密鑰
+說明: 
+1. 先在客戶端生成一對密鑰(公、私)
+2. 客戶端將生成的公鑰複製到需要訪問的伺服器機器上
+3. 當客戶端再次發送一個連接請求，包括 ip、用戶名
+4. 服務端得到客戶端的請求後，會到 authorized keys 中查找，如有相應的 IP 和用戶，就會隨機生成一個字符串，例如: qwer
+5. 服務端將使用客戶端複製過來的公鑰對隨機字符串 qwer 進行加密，然後發送給客戶端
+6. 得到服務端發來的消息後，客戶端會使用私鑰解密，然後將解密後的字符串發送給服務端
+7. 服務端接收到客戶端發來的字符串後，跟之前的字符串對比，如果一致就允許免密碼登錄

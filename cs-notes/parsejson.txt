@@ -1,0 +1,520 @@
+從 db 拿取 資料		select
+從 entity 獲取 db 映射出來的資料
+
+rowDate 是 String(因為 DB )
+
+解析為 Json 輸出 給 client
+
+
+字串 -> JSONObject
+JSONObject -> JSONArray
+JSONArray -> JSONObject
+
+  static String myJson;
+ 
+    static void EncodingExamples() {
+        JSONObject obj = new JSONObject();
+        obj.put("A", "aaa");
+        obj.put("B", 123);
+        obj.put("C", 1.2345);
+        obj.put("D", true);
+ 
+        JSONArray list = new JSONArray();
+        list.put("E");
+        list.put("F");
+        list.put("G");
+
+        Map m = new HashMap();
+        m.put("X", "xxx");
+        m.put("Y", "yyy");
+        m.put("Z", "zzz");
+ 
+        list.put(m);
+ 
+        obj.put("Messages", list);
+ 
+        myJson = obj.toString();
+ 
+        System.out.println("Encoding Examples : " + myJson);
+        System.out.println("---------------------------------------------------");
+    }
+
+
+物 {raw_data
+	陣 [invoices
+		物 {
+			一般
+			物 {buyer
+				一般
+			}
+			陣 [remarks
+				null
+			]
+			一般
+			物 {donee
+				一般
+			}
+			陣 [items
+				物{
+					一般
+					物 {bundle
+						一般
+					}
+					一般
+				}
+				物{
+					一般
+					物 {bundle
+						一般
+					}
+					一般
+				}
+			]
+			一般
+			物 {issuer
+				一般
+			}
+			陣 [printHistories
+			]
+		}
+	]
+}
+
+
+輸出：
+
+'{ 
+
+"invoices":[ 
+
+{ 
+
+"issueDate":"2022-04-12 22:52:11", 
+
+"orderNo":"2022041000000038", 
+
+"irKey":"BNPL_2022041000000038", 
+
+"invoiceNo":null, 
+
+"grandTotalWithoutTax":null, 
+
+"buyer":{ 
+
+"buyerName":"Peggy Test", 
+
+"buyerType":"C", 
+
+"buyerId":"A123456789", 
+
+"buyerTitle":"F", 
+
+"address":"台北市大安區敦化南路二段206號", 
+
+"zipCode":"105", 
+
+"msisdn":"0928610990", 
+
+"email":"vddaniellin@taiwanmobile.com", 
+
+"customerId":"A123456789", 
+
+"twmId":"117165" 
+
+}, 
+
+"remarks":[ 
+
+null 
+
+], 
+
+"sellingAmount":32435, 
+
+"taxCategory":"Y", 
+
+"taxAmount":0, 
+
+"grandTotal":32435, 
+
+"status":"APPLY", 
+
+"originalStatus":"N", 
+
+"originalSendDate":null, 
+
+"issueMethod":"R", 
+
+"prizeFlag":null, 
+
+"isDonate":true, 
+
+"donee":{ 
+
+"doneeCode":"2888", 
+
+"doneeName":"財團法人臺中市私立種籽社會福利慈善事業基金會" 
+
+}, 
+
+"items":[ 
+
+{ 
+
+"itemName":"【空壓殼支架組】Samsung Galaxy S21 Ultra (12G256G)6.8吋5G雙卡機", 
+
+"quantity":1, 
+
+"unitPrice":32885, 
+
+"tax":0, 
+
+"itemSubtotal":32885, 
+
+"materialCode":"ECP0159503348088", 
+
+"composeMaterialCode":null, 
+
+"allowanceStatus":"1", 
+
+"posOrderNo":null, 
+
+"posReturnNo":null, 
+
+"posReturnDate":null, 
+
+"bundle":{ 
+
+ 
+
+}, 
+
+"invoiceNo":null, 
+
+"allowanceNo":null, 
+
+"seqID":0, 
+
+"discountTransNo":6453852, 
+
+"orderDetailSeq":1, 
+
+"priceWithTax":32885, 
+
+"priceWithoutTax":null, 
+
+"voucherAmount":null, 
+
+"voucherDiscount":null, 
+
+"ifrsBdlVoucherAmt":null, 
+
+"bdlDiscountTransNo":null, 
+
+"activityDiscountTransNo":null, 
+
+"bdlVoucherAmount":null, 
+
+"activityVoucherAmount":null, 
+
+"serviceInfo":null, 
+
+"installmentFee":1097, 
+
+"uLevel":null 
+
+}, 
+
+{ 
+
+"itemName":"手機折扣", 
+
+"quantity":1, 
+
+"unitPrice":-450, 
+
+"tax":0, 
+
+"itemSubtotal":-450, 
+
+"materialCode":"V06-1173", 
+
+"composeMaterialCode":null, 
+
+"allowanceStatus":"1", 
+
+"posOrderNo":null, 
+
+"posReturnNo":null, 
+
+"posReturnDate":null, 
+
+"bundle":{ 
+
+ 
+
+}, 
+
+"invoiceNo":null, 
+
+"allowanceNo":null, 
+
+"seqID":0, 
+
+"discountTransNo":6453852, 
+
+"orderDetailSeq":2, 
+
+"priceWithTax":-450, 
+
+"priceWithoutTax":null, 
+
+"voucherAmount":null, 
+
+"voucherDiscount":null, 
+
+"ifrsBdlVoucherAmt":null, 
+
+"bdlDiscountTransNo":null, 
+
+"activityDiscountTransNo":null, 
+
+"bdlVoucherAmount":null, 
+
+"activityVoucherAmount":null, 
+
+"serviceInfo":null, 
+
+"installmentFee":null, 
+
+"uLevel":null 
+
+} 
+
+], 
+
+"paymentType":"BI", 
+
+"actionType":"1", 
+
+"accountType":"2", 
+
+"issueType":"2", 
+
+"printOutFlag":"N", 
+
+"sysName":"BNPL", 
+
+"dateOfService":null, 
+
+"irpApplyFlag":"N", 
+
+"checkDigit":0, 
+
+"strIssueTime":"2022-04-12 22:52:11", 
+
+"cancelAct":"ALLOW", 
+
+"cancelTime":null, 
+
+"markFlag":null, 
+
+"strOriginalSendDate":null, 
+
+"randomCode":null, 
+
+"totalInstallmentFee":1097, 
+
+"totalInstallmentFeeTax":52, 
+
+"sslApprovalCode":"2021092201601728", 
+
+"billDate":null, 
+
+"paymentAmount":null, 
+
+"paymentDiscount":null, 
+
+"issuer":{ 
+
+"issuerCode":"TWM", 
+
+"issuerName":"台灣大哥大股份有限公司", 
+
+"guiNumber":"97176270", 
+
+"responsiblePerson":"台灣大哥大", 
+
+"address":"台北市信義區菸廠路88號12樓", 
+
+"phoneNumber":"0935123123", 
+
+"faxNumber":"0203045678", 
+
+"approvalAuthority":"財政部", 
+
+"approvalDate":"2011-01-01 00:00:00", 
+
+"approvalContext":"財政部國稅局" 
+
+}, 
+
+"printHistories":[ 
+
+ 
+
+] 
+
+} 
+
+] 
+
+}' 
+
+
+
+{
+	"invoices":[
+		{
+			"issueDate":"2022-04-12 22:52:11",
+			"orderNo":"2022041000000138",
+			"irKey":"BNPL_2022041000000138",
+			"invoiceNo":null,
+			"grandTotalWithoutTax":null,
+			"buyer":{
+				"buyerName":"Peggy Test",
+				"buyerType":"C",
+				"buyerId":"A123456789",
+				"buyerTitle":"F",
+				"address":"¥x¥_¥«¤j¦w°Ï´°¤Æ«n¸ô¤G¬q206¸¹",
+				"zipCode":"105",
+				"msisdn":"0928610990",
+				"email":"vddaniellin@taiwanmobile.com",
+				"customerId":"A123456789",
+				"twmId":"117165"
+			},
+			"remarks":[
+				null
+			],
+			"sellingAmount":32435,
+			"taxCategory":"N",
+			"taxAmount":0,
+			"grandTotal":32435,
+			"status":"APPLY",
+			"originalStatus":"N",
+			"originalSendDate":null,
+			"issueMethod":"R",
+			"prizeFlag":null,
+			"isDonate":true,
+			"donee":{
+				"doneeCode":"2888",
+				"doneeName":"°]¹Îªk¤H»O¤¤¥«¨p¥ßºØ¬óªÀ·|ºÖ§Q·Oµ½¨Æ·~°òª÷·|"
+			},
+			"items":[
+				{
+					"itemName":"¡iªÅÀ£´ß¤ä¬[²Õ¡jSamsung Galaxy S21 Ultra (12G256G)6.8¦T5GÂù¥d¾÷",
+					"quantity":1,
+					"unitPrice":32885,
+					"tax":0,
+					"itemSubtotal":32885,
+					"materialCode":"ECP0159503348088",
+					"composeMaterialCode":null,
+					"allowanceStatus":"1",
+					"posOrderNo":null,
+					"posReturnNo":null,
+					"posReturnDate":null,
+					"bundle":{
+						
+					},
+					"invoiceNo":null,
+					"allowanceNo":null,
+					"seqID":0,
+					"discountTransNo":6453852,
+					"orderDetailSeq":1,
+					"priceWithTax":32885,
+					"priceWithoutTax":null,
+					"voucherAmount":null,
+					"voucherDiscount":null,
+					"ifrsBdlVoucherAmt":null,
+					"bdlDiscountTransNo":null,
+					"activityDiscountTransNo":null,
+					"bdlVoucherAmount":null,
+					"activityVoucherAmount":null,
+					"serviceInfo":null,
+					"installmentFee":1097,
+					"uLevel":null
+				},
+				{
+					"itemName":"¤â¾÷§é¦©",
+					"quantity":1,
+					"unitPrice":-450,
+					"tax":0,
+					"itemSubtotal":-450,
+					"materialCode":"V06-1173",
+					"composeMaterialCode":null,
+					"allowanceStatus":"1",
+					"posOrderNo":null,
+					"posReturnNo":null,
+					"posReturnDate":null,
+					"bundle":{
+						
+					},
+					"invoiceNo":null,
+					"allowanceNo":null,
+					"seqID":0,
+					"discountTransNo":6453852,
+					"orderDetailSeq":2,
+					"priceWithTax":-450,
+					"priceWithoutTax":null,
+					"voucherAmount":null,
+
+					"voucherDiscount":null,
+					"ifrsBdlVoucherAmt":null,
+					"bdlDiscountTransNo":null,
+					"activityDiscountTransNo":null,
+					"bdlVoucherAmount":null,
+					"activityVoucherAmount":null,
+					"serviceInfo":null,
+					"installmentFee":null,
+					"uLevel":null
+				}
+			],
+			"paymentType":"BI",
+			"actionType":"1",
+			"accountType":"2",
+			"issueType":"2",
+			"printOutFlag":"N",
+			"sysName":"BNPL",
+			"dateOfService":null,
+			"irpApplyFlag":"N",
+			"checkDigit":0,
+			"strIssueTime":"2022-04-12 22:52:11",
+			"cancelAct":"ALLOW",
+			"cancelTime":null,
+			"markFlag":null,
+			"strOriginalSendDate":null,
+			"randomCode":null,
+			"totalInstallmentFee":1097,
+			"totalInstallmentFeeTax":52,
+			"sslApprovalCode":"2021092201601728",
+			"billDate":null,
+			"paymentAmount":null,
+			"paymentDiscount":null,
+			"issuer":{
+				"issuerCode":"TWM",
+				"issuerName":"¥xÆW¤j­ô¤jªÑ¥÷¦³­­¤½¥q",
+				"guiNumber":"97176270",
+				"responsiblePerson":"¥xÆW¤j­ô¤j",
+				"address":"¥x¥_¥««H¸q°ÏµÒ¼t¸ô88¸¹12¼Ó",
+				"phoneNumber":"0935123123",
+				"faxNumber":"0203045678",
+				"approvalAuthority":"°]¬F³¡",
+				"approvalDate":"2011-01-01 00:00:00",
+				"approvalContext":"°]¬F³¡°êµ|§½"
+			},
+			"printHistories":[
+				
+			]
+		}
+	]
+}

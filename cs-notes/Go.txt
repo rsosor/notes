@@ -1,3 +1,47 @@
+go path
+go root
+go modules
+
+
+go install ...
+swag -h
+swag init
+
+
+go mod init
+go mod tidy
+
+
+
+import( . “fmt” ) . 就是包導入後，調用函數時可以省略前缀包名，fmt.Println(“hello world”) -> Println(“hello world”)
+
+import( f “fmt” ) 別名操作，前缀變成重命名的前缀，f.Println(“hello world”)
+
+
+
+insert data -> get id -> response
+
+insert return 
+
+get return object 用 model 去拿
+
+
+addUser-> postName -> insert
+react		go	go
+記得 model 映射
+
+
+SQL Server
+INSERT INTO table (name)
+OUTPUT Inserted.ID
+VALUES('bob');
+
+Use SCOPE_IDENTITY() to get the new ID value
+INSERT INTO files (title) VALUES ('whatever'); 
+SELECT * FROM files WHERE id = SCOPE_IDENTITY();
+
+
+
 func httpGet() {
 	resp, err :=http.Get("https://tw.yahoo.com/")
 if err != nil {
@@ -30,10 +74,10 @@ if err != nil {
 fmt.Println(string(body))
 }
 
-為方便閱讀與維護，所以Go支援另外一個方法：
+為方便閱讀與維護，所以 Go 支援另外一個方法：
 	resp, err := http.PostForm("https://tw.yahoo.com/",
 			url.Values{"key": {"Value"}, "id": {"test"}})
-如果你想要輸入更複雜的參數，例如Cookie等，可以使用client.Do方法來處理：
+如果你想要輸入更複雜的參數，例如 Cookie 等，可以使用 client.Do 方法來處理：
 client :=&http.Client{}
 
 req, err := http.NewRequest("POST", "https://tw.yahoo.com/", strings.NewReader("name=test"))
@@ -51,4 +95,4 @@ if err != nil {
 }
 
 defer resp.Body.Close()
-首先先宣告http.Client方便後面使用，前面輸入的方法差不多，不同的是你這邊可以設置更加詳細的參數，最後再用client.Do送出
+首先先宣告 http.Client 方便後面使用，前面輸入的方法差不多，不同的是你這邊可以設置更加詳細的參數，最後再用 client.Do 送出
