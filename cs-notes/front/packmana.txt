@@ -1,0 +1,7 @@
+npm install [package-name] –save: When –save is used without -dev, it signifies that the package is core dependency.
+...
+What is the difference between –save and –save-dev in Node. js ?
+
+
+--save						--save-dev
+The package installed is core dependency.	The package installed is not a core rather development dependency.

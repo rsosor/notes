@@ -1,0 +1,164 @@
+JavaScript 中透過 fetch 或 XMLHttpRequest 存取資源時，需要遵守 CORS (Cross-Origin Resource Sharing，跨來源資源共用)。瀏覽器在發送請求之前會先發送 preflight request (預檢請求)，確認伺服器端設定正確的 Access-Control-Allow-Methods、Access-Control-Allow-Headers 及 Access-Control-Allow-Origin 等 header，才會實際發送請求。使用 cookie 的情況下還需額外設定 Access-Control-Allow-Credentials header。
+
+
+
+在同源政策下，非同源的 request 則會因為安全性的考量受到限制。瀏覽器會強制你遵守 CORS (Cross-Origin Resource Sharing，跨域資源存取) 的規範，否則瀏覽器會讓 request 失敗。
+
+同源，必須滿足以下三個條件：
+相同的通訊協定 (protocol)，即 http/https
+相同的網域 (domain)
+相同的通訊埠 (port)
+
+不是同源的情況下，就會產生一個跨來源 http 請求（cross-origin http request）。
+
+當伺服器沒有正確設定時，請求就會因為違反 CORS 失敗，在 Chrome DevTool 就會一些經典錯誤例如：Access to fetch at *** from origin *** has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource. If an opaque response serves your needs, set the request's mode to 'no-cors' to fetch the resource with CORS disabled.
+
+（CORS, Cross-Origin Resource Sharing）
+針對不同源的請求而定的規範，透過 JavaScript 存取非同源資源時，server 必須明確告知瀏覽器允許何種請求，只有 server 允許的請求能夠被瀏覽器實際發送，否則會失敗。
+
+在 CORS 的規範裡面，跨來源請求有分兩種：「簡單」的請求和非「簡單」的請求。
+
+
+
+（簡單跨來源請求）
+1. 只能是 HTTP GET、POST、HEAD 方法
+2. 自訂的 request header 只能是 Accept、Accept-Language、Content-Language 或 Content-Type（值只能是 application/x-www-form-urlencoded、multipart/form-data 或 text/plain）。
+不符合以上任一條件的請求就是非簡單請求。
+
+
+．Origin
+「瀏覽器」發送「跨來源」請求時，會帶一個 Origin header，表示這個請求的來源。
+Origin 包含通訊協定、網域和通訊埠三個部分。
+
+
+．Access-Control-Allow-Origin
+當 server 端收到這個跨來源請求時，它可以依據「請求的來源」，亦即 Origin 的值，決定是否要允許這個跨來源請求。如果 server 允許這個跨來源請求，它可以「授權」給這個來源的 JavaScript 存取這個資源。
+
+授權的方法是在 response 裡加上 Access-Control-Allow-Origin header：
+Access-Control-Allow-Origin: https://shubo.io
+
+如果 server 允許任何來源的跨來源請求，那可以直接回 *：
+Access-Control-Allow-Origin: *
+
+當瀏覽器收到回應時，會檢查請求中的 Origin header 是否符合回應的 Access-Control-Allow-Origin header，相符的情況下瀏覽器就會讓這個請求成功，我們也可以順利地用 JavaScript 讀取到回應；反之，則瀏覽器會將這個 request 視為是不安全的而讓他失敗，即便 server 確實收到請求也成功地回應了，但基於安全性的理由 JavaScript 中沒有辦法讀到回應。
+
+
+．Access-Control-Expose-Headers
+JavaScript 預設可以存取的「簡單」response header 有以下這些：
+
+Cache-Control
+Content-Language
+Content-Type
+Expires
+Last-Modified
+Pragma
+如果要讓 JavaScript 存取其他 header，server 端可以用 Access-Control-Expose-Headers header 設定。
+X-MY-CUSTOM-HEADER: 123
+X-MY-OTHER-CUSTOM-HEADER: 123
+Access-Control-Expose-Headers: X-MY-CUSTOM-HEADER, X-MY-OTHER-CUSTOM-HEADER
+
+
+（一般跨來源請求）
+非「簡單」的跨來源請求，例如：HTTP PUT/DELETE 方法，或是 Content-Type: application/json 等，瀏覽器在發送請求之前會先發送一個 「preflight request（預檢請求）」
+其作用在於先問伺服器：你是否允許這樣的請求？真的允許的話，我才會把請求完整地送過去。
+
+．Preflight Request(預檢請求)
+Preflight request 是一個 http OPTIONS 方法，會帶有兩個 request header：Access-Control-Request-Method 和 Access-Control-Request-Headers。
+
+
+比方說我發送的非「簡單」跨來源請求是這樣：
+
+fetch('https://othersite.com/data/', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'X-CUSTOM-HEADER': '123'
+  }
+})
+
+那我的 request header 預計會長得會像這樣：
+
+POST /data/
+Host: othersite.com
+Origin: https://shubo.io
+Content-Type: application/json
+X-MY-CUSTOM-HEADER: 123
+
+瀏覽器幫我們發送的 preflight request 就會像這樣：
+
+OPTIONS /data/
+Host: othersite.com
+Origin: https://shubo.io
+Access-Control-Request-Method: POST
+Access-Control-Request-Headers: X-MY-CUSTOM-HEADER, Content-Type
+
+
+．Preflight Response
+收到 preflight request 時，Server 必須告訴瀏覽器：我允許的方法和 header 有哪些。因此 Server 的回應必須帶有以下兩個 header:
+
+Access-Control-Allow-Methods: 允許的 HTTP 方法。
+Access-Control-Allow-Headers: 允許的非「簡單」header。
+
+當瀏覽器看到跨來源請求的方法和 header 都有被列在允許的方法和 header 中，就表示可以實際發送請求
+以上面提到例子來說，如果 server 可以接受上述的請求，server 的 preflight response 應該要像這樣：
+
+Access-Control-Allow-Methods: POST
+Access-Control-Allow-Headers: X-MY-CUSTOM-HEADER, Content-Type
+
+接下來，瀏覽器實際幫我們送出以下的跨來源請求：
+
+POST /data/
+Host: othersite.com
+Origin: https://shubo.io
+Content-Type: application/json
+X-MY-CUSTOM-HEADER: 123
+
+
+最後一步，server 還是要回應 Access-Control-Allow-Origin header。瀏覽器會再檢查一次跨來源請求的回應是否帶有正確的 Access-Control-Allow-Origin header：
+
+Access-Control-Allow-Origin: https://shubo.io
+
+
+（跨來源請求的 Cookie）
+一般的 http request 會帶有該網域底下的 cookie；然而，跨來源請求預設是不能帶 cookie 的。
+所以瀏覽器端針對跨來源請求的 cookie 也做了規範。
+
+首先，請求必須要明確地標示「我要存取跨域 cookie」。使用 fetch API 和 XMLHttpRequest 的設定方法如下：
+
+
+credentials
+透過 fetch API 發送跨來源請求，需要設定 credentials: 'include'：
+
+fetch('https://othersite.com/data', {
+  credentials: 'include'
+})
+
+withCredentials
+透過 XMLHttpRequest 發送跨來源請求，需要設定 withCredentials = true;
+
+const xhr = new XMLHttpRequest();
+xhr.withCredentials = true;
+xhr.open('POST', 'https://othersite.com/data');
+
+
+如此一來跨來源請求就會攜帶 cookie 了
+Server 端也需要額外的設定：如果是信任的來源，回應要帶有 Access-Control-Allow-Credentials header：
+
+Access-Control-Allow-Credentials: true
+
+如此一來，瀏覽器才會將 cookie 寫進該 domain。
+
+注意：如果是允許使用 cookie 的情況，Access-Control-Allow-Origin 不能用 *
+必須明確標示哪些來源允許存取。理由也是基於安全性考量，因為可以用 cookie 的情況下，通常表示會存取一些比較個人化的資料，假設任何網站都能夠存取這樣的資料，顯然是有點危險的！所以不能設為 *
+
+如果你偷懶地用了 Access-Control-Allow-Origin: *，就會收到來自瀏覽器的錯誤：
+The value of the 'Access-Control-Allow-Origin' header in the response must not be the wildcard '*' when therequest's credentials mode is 'include'. Origin http://localhost:8080 is therefore not allowed access. Thecredentials mode of requests initiated by the XMLHttpRequest is controlled by the withCredentials attribute.
+
+
+（總結）
+遇到 CORS 的問題，可以歸納出 SOP：
+
+1. 先認清楚是否為「簡單」的跨來源請求，如果是，在「後端 GET/POST/HEAD 方法本身」加上 Access-Control-Allow-Origin header。
+2. 如果非「簡單」跨來源請求，在「後端 OPTIONS」加上 Access-Control-Allow-Methods 及 Access-Control-Allow-Headers header。另外，在「後端方法本身」加上 Access-Control-Allow-Origin header。
+3. (Optional) 需要使用 cookie 的情況下，「前端」要加上 credentials: 'include' 或是 withCredentials 參數，「後端」要加上 Access-Control-Allow-Credentials header，而且 Access-Control-Allow-Origin header 不能用 *。
+

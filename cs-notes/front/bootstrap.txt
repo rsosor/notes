@@ -1,0 +1,148 @@
+B3
+Bootstrap 3 是最穩定的 Bootstrap 版本，團隊仍然支持它進行關鍵錯誤修復和文檔更改。
+Bootstrap 3 is the most stable version of Bootstrap, and it is still supported by the team for critical bugfixes and documentation changes.
+
+B4
+Bootstrap 4 是 Bootstrap 的更新版本；使用新組件、更快的樣式表和更快的響應能力。但是，不支持 Internet Explorer 9 及以下版本。
+Bootstrap 4 is a newer version of Bootstrap; with new components, faster stylesheet and more responsiveness. However, Internet Explorer 9 and down is not supported.
+
+B5
+Bootstrap 5 是 Bootstrap 的最新版本；順利檢修。但是，不支持 Internet Explorer 11 及以下版本，並且將 jQuery 替換為 vanilla JavaScript。
+Bootstrap 5 is the newest version of Bootstrap; with a smooth overhaul. However, Internet Explorer 11 and down is not supported, and jQuery is replaced with vanilla JavaScript.
+
+
+（Bootstrap 3）
+1. 流體容器
+
+2. 固定容器(槽寬預設 30 -> 1140 + 30、940 + 30、720 + 30)
+		閥值		width
+		>= 1200		1170
+
+		>=  992		970
+		<  1200
+
+		>=  768		750
+		<   992
+
+		<   768		auto
+3. 網格系統
+
+網格源碼分析
+mixin
+	clearfix.less、grid.less、grid-framework.less
+grid.less
+variables.less
+
+grid-framework.less
+	1. 流體容器 & 固定容器 公共樣式
+		margin-right:  auto;
+		margin-left:   auto;
+		padding-left:  15px;
+		padding-right: 15px;
+
+	2. 固定容器 特定樣式
+		順序不可變 ?
+
+	3. 列
+	margin-left:  -15px;
+	margin-right: -15px;
+
+	4. 行
+	// 行第一步
+	.make-grid-columns() {
+		.col-xs-1, .col-sm-1, .col-md-1, .col-lg-1,
+		.col-xs-2, .col-sm-2, .col-md-2, .col-lg-2,
+		...
+		.col-xs-12, .col-sm-12, .col-md-12, .col-lg-12 {
+			position: relative;
+			min-height: 1px;
+			padding-left: 15px;
+			padding-right: 15px;
+		}
+	}
+
+	// 行第二步
+	.make-grid(@class) {
+		// 2.1
+		.float-grid-columns(@class);
+		// 2.2
+		.loop-grid-columns(@grid-columns, @class, width);
+			.col-xs-12 {
+				width: 12/12;
+			}
+			.col-xs-11 {
+				width: 11/12;
+			}
+			...
+			.col-xs-1 {
+				width: 1/12;
+			}
+		// 2.3(行排序)
+		.loop-grid-columns(@grid-columns, @class, pull);	行排序
+		.loop-grid-columns(@grid-columns, @class, push);	行排序
+		.loop-grid-columns(@grid-columns, @class, offset);	行偏移
+	}
+
+// 2.1
+.col-xs-1, .col-xs-2, .col-xs-3, .col-xs-4, ...col-xs-12 {
+	float: left;
+}
+
+
+
+網格組合(用到 less 遞迴, boostrap v3)
+	col-lg-10 col-md-6
+	col-lg-2  col-md-6
+
+
+
+grid.less
+	// 固定容器
+	.container {
+		.container-fixed();
+		.make-grid(xs);
+		@media (min-width: @screen-sm-min) {
+			width: @container-sm;
+		}
+		@media (min-width: @screen-md-min) {
+			width: @container-md;
+		}
+		@media (min-width: @screen-lg-min) {
+			width: @container-lg;
+		}
+	}
+	// 流體容器
+	.container-fluid {
+		.container-fixed();
+	}
+	// 列
+	.row {
+		.make-row();
+	}
+	// 行
+	.make-grid-columns();
+	// 移動優先
+	.make-grid(xs);
+	@media (min-width: @screen-sm-min) {
+		.make-grid(sm);
+	}
+	@media (min-width: @screen-md-min) {
+		.make-grid(md);
+	}
+	@media (min-width: @screen-lg-min) {
+		.make-grid(lg);
+	}
+_____________________________________________________________________________________________________________________________________________________________________________________________________________________________________________
+（Bootstrap 4）
+_____________________________________________________________________________________________________________________________________________________________________________________________________________________________________________
+（Bootstrap 5）
+_variables.scss		_functions.scss
+		\	/
+bootstrap/bootstrap.scss			_index.scss	_faq.scss
+			\			/		/
+				all.scss
+				編譯
+				all.css
+
+
+

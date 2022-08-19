@@ -1,0 +1,16 @@
+Sass (Syntactically Awesome Stylesheets)是一種動態樣式語言，Sass 語法屬於縮排語法，比 css 多出好些功能(如變量、嵌套、運算,混入(Mixin)、繼承、顏色處理，函數等)，更容易閱讀。
+
+
+
+Sass 與 Scss 是什麽關系?
+
+Sass 的縮排語法，對於寫慣 css 前端的 web 開發者來說很不直觀，也不能將 css 代碼加入到 Sass 裏面，因此 sass 語法進行了改良，Sass 3 就變成了 Scss(sassy css)。與原來的語法兼容，只是用{}取代了原來的縮進。
+ 
+Less 也是一種動態樣式語言. 對 CSS 賦予了動態語言的特性，如變量，繼承，運算， 函數. Less 既可以在客戶端上運行 (支持IE 6+, Webkit, Firefox)，也可在服務端運行 (借助 Node.js)。
+
+
+
+
+
+
+

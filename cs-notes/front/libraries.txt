@@ -1,0 +1,21 @@
+popular icon libraries you can use for free
+
+1. Feather
+
+2. Font Awesome
+
+3. Bootstrap Icons
+
+4. Ionicons
+
+5. css.gg
+
+6. Tabler Icons
+
+7. React Icons
+
+
+
+
+動畫
+WOW.js

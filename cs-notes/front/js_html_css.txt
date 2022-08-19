@@ -1,0 +1,494 @@
+（Javascript）
+ES6 語法規範：
+	解構賦值
+	模板字符串
+	箭頭函數
+ES6 模塊化：
+	默認暴露
+	分別暴露
+	統一暴露
+	import、export
+包管理器
+	npm、yarn、cnpm
+原型、原型鏈
+陣列常用方法
+	過濾
+	加工
+	篩選贅值
+axios
+promise
+
+
+（Blob）
+
+
+const replaceXSSText = str => {
+  return str.replace(/[<">'&/]/g, dangerText => {
+    return {
+      '<': '&lt;',
+      '&': '&amp;',
+      '"': '&quot;',
+      '>': '&gt;',
+      "'": '&#39;',
+      '/': '&#x2F',
+    }[dangerText];
+  });
+};
+
+1.方式一
+
+if (self.frameElement && self.frameElement.tagName == "IFRAME") {
+　　alert('在iframe中');
+}
+
+2.方式二
+if (window.frames.length != parent.frames.length) {
+　　alert('在iframe中');
+}
+
+3.方式三
+if (self != top) {
+　　alert('在iframe中');
+}
+
+
+https://www.google.com/search?q=HelloWorld&t=20200811
+
+怎麼拿到上面那一串的資訊呢？
+
+URLSearchParams()、URL()、或是原生的 window.location.search
+
+
+URL()：
+const search_url = new URL('https://www.google.com/search?q=HelloWorld&t=20200811');
+// 取得完整網址
+search_url.href;	// https://www.google.com/search?q=HelloWorld&t=20200811
+
+// 取得完整網域名稱(包含子網域)
+search_url.hostname;	// www.google.com
+
+// 取得路徑
+search_url.pathname;	// /search(如果有多個可能會顯示 /report/create )
+
+// 取得通訊協定
+search_url.protocol;	// https
+
+// 取得參數
+search_url.search	// q=HelloWorld&t=20200811
+
+
+URLSearchParams()：
+這時候取到參數並不會馬上使用，整理成一個陣列，或是個別分開使用，到這邊就可以使用 URLSearchParams() 了，可以方便的拿取、刪除、或是分別使用。
+search_url.searchParams.toString();	// search%3Fq=HelloWorld&t=20200811
+for (const [key, value] of mySearchParams.entries) {} 的方式取出 key、value。
+
+const params = search_url.searchParams;
+for (let pair of params.entries()) {
+	console.log(pair);
+}	// ["q", "HelloWorld"], ["t", "20200811"]
+關於 Set.prototype.entries() 可以參考 MDN。
+這樣就可以把每一個 key、value 拆開了。
+
+
+window.location.search：
+這個方法比較慢一點，但能確保 IE 也能支援
+const query = window.location.search.sustring(1) 可以取得網址 問號(?) 後的參數，接著一樣跑迴圈可以取得 key、value。
+
+// split() 先使用 & 再使用 =，產生了陣列包陣列，["q", "HelloWorld"], ["t", "20200811"]。
+function getUrlVal(val) {
+	var query = window.location.search.substring(1);
+	var vars = query.split("&");
+	for (var i = 0; i < vars.length; i++) {
+		var pair = vars[i].split("=");
+		if (pair[0] == val) {
+			return pair[1];
+		}
+	}
+	return (false);
+}
+
+沒有使用 SPA，換頁傳值只能靠 Parameter，或是 LocalStorage。
+
+
+
+
+
+
+
+() => {}
+es6 的箭頭函數
+
+箭頭函數中的 this 會綁定在外部作用域
+沒有 arguments
+如果想返回一個對象，要加 () 包裹
+call 和 apply 不能傳入 this
+(() => {a: 1})() // 返回值為 undefiend，想返回對象，使用下面的方式
+(() => ({a: 1})()
+箭頭函數 和 lambda 表達
+lambda 在計算機科學中表示匿名函數，用來簡化操作。為一種表示方法，代表一定的輸入和輸出。
+
+step1:
+實現一個平方運算表達（x * x）：
+數學表達式(λ代表一個表達式的輸入)：
+
+λx.x * x
+用 JavaScript 實現：
+
+(function (x) {
+  return x * x;
+})()
+step2:
+在平方的基礎上再加 2(x * x + 2):
+數學表達式：
+
+(λx.x * x)(λx.x + 2)
+用 Javascript 實現:
+
+(function(x) {
+  return x + x
+})((function () {
+  return x * x
+})())
+其實就是利用了匿名函數然後再繼續嵌套。
+但是有了箭頭函數，就可以更加簡便地實現上面的操作：
+
+(x => x + 2)((x => x * x)())
+step3:
+更加優雅地實現，其實像上面這種方式，不是特別優雅，可讀性不好，需要一種能夠更加優雅地方式：
+
+上面的行為抽象出來就是：前一個的輸出做為後一個的輸入，Javascript 中提供了 reduce 這一個方法。
+const action = [
+  x => x * x,
+  x => x + 2
+];
+
+let res = action.reduce((res, cur) => cur(res), 2);
+step4:
+從上面的過程可以看出來，有兩個主要的關鍵過程：
+
+1、箭頭函數是一個匿名函數，簡化書寫
+2、箭頭函數作為變量傳遞給 reduce 函數的回調
+所以箭頭函數在很大程度上，簡化了函數式的操作。其實 lambda 表達式，在 Javascript 中就是匿名函數。
+
+箭頭函數：
+箭頭函數適合純函數的操作，如 map、filter、reduce 等
+箭頭函數內部，一般不要使用 this，因為 this 是和外部作用域綁定的，容易產生問題。
+問題 1:
+function A() {
+  this.foo = 1
+}
+
+A.prototype.bar = () => console.log(this.foo)
+
+let a = new A()
+a.bar()  //undefined
+因為對象 a，並沒有構成一個作用域。
+
+如果想讓 this 指向 A，可以這樣寫：
+
+function A() {
+  this.foo = 1;
+  this.bar = () => {
+    console.log('value', this.foo);
+  }
+}
+let a = new A();
+a.bar(); //1
+因為 bar 的聲明在函數 A 的作用域內部。
+
+問題 2:
+const A = {
+  foo: 1,
+  bar: () => {
+    console.log('value', this.foo);
+  }
+}
+let a = Object.create(A);
+a.bar(); //undefined
+如果想輸出正常的值，應該使用 function 定義：
+
+const A = {
+  foo: 1,
+  bar: function (){
+    console.log('value', this.foo);
+  }
+}
+let a = Object.create(A);
+a.bar(); // value 1
+
+
+（比較）
+以下是不正确的方法：
+
+var exp = null;
+if (exp == null)
+{
+    alert("is null");
+}
+exp 为 undefined 时，也会得到与 null 相同的结果，虽然 null 和 undefined 不一样。注意：要同时判断 null 和 undefined 时可使用本法。
+
+var exp = null;
+if (!exp)
+{
+    alert("is null");
+}
+如果 exp 为 undefined，或数字零，或 false，也会得到与 null 相同的结果，虽然 null 和二者不一样。注意：要同时判断 null、undefined、数字零、false 时可使用本法。
+
+var exp = null;
+if (typeof exp == "null")
+{
+    alert("is null");
+}
+为了向下兼容，exp 为 null 时，typeof null 总返回 object，所以不能这样判断。
+
+var exp = null;
+if (isNull(exp))
+{
+    alert("is null");
+}
+VBScript 中有 IsNull 这个函数，但 JavaScript 中没有。
+
+以下是正确的方法：
+
+var exp = null;
+if (!exp && typeof exp != "undefined" && exp != 0)
+{
+    alert("is null");
+}
+typeof exp != "undefined" 排除了 undefined；
+exp != 0 排除了数字零和 false。
+更简单的正确的方法：
+
+var exp = null;
+if (exp === null)
+{
+    alert("is null");
+}
+尽管如此，我们在 DOM 应用中，一般只需要用 (!exp) 来判断就可以了，因为 DOM 应用中，可能返回 null，可能返回 undefined，如果具体判断 null 还是 undefined 会使程序过于复杂。
+________________________________________________________________________________________________________________________________________________________________________
+https://github.com/axios/axios
+	.create
+	.get
+	.post
+	.put
+	.delete
+
+	.then
+	.catch
+
+axios(url[,config])
+
+axios回傳的物件是Promise(fulfilled狀態)，所以我們可以用.then和.catch去處理成功和失敗結果。
+
+const x = axios('https://randomuser.me/api/')
+x.then((response) => console.log(x)) //Promise {<fulfilled>: {…}}
+
+
+axios默認是GET請求。所以最簡單的寫法可以是這樣：
+axios('https://randomuser.me/api/')
+    .then( (response) => console.log(response))
+    .catch( (error) => console.log(error));
+
+
+可以直接用axio內建好的請求方法，例如是.get和.post:
+// GET請求
+axios.get('https://randomuser.me/api/')
+    .then( (response) => console.log(response))
+    .catch( (error) => console.log(error))
+
+// POST請求
+axios.post('https://hexschool-tutorial.herokuapp.com/api/signup',{
+    email: 'javascriptBasics@gmail.com',
+    password: '1234'
+})
+    .then( (response) => console.log(response))
+    .catch( (error) => console.log(error))
+
+
+例如在random user的API裏，我想指定該User是女性及美國藉，那麼我就要在URL加入...api/?gender=female&nat=us：
+axios.get('https://randomuser.me/api/?gender=female&nat=us')
+.then((response) => console.log(response)) //得出來的是類似Response的物件，裏面的data才是我們想抓的資料
+.catch((error) => console.log(error))
+
+
+另一個做法就是拆出來放在params裏面：
+axios.get('https://randomuser.me/api/',{
+    //URL参數放在params屬性裏面
+    params: {
+        gender: 'female',
+        nat: 'us'
+    }
+})
+.then((response) => console.log(response))
+.catch((error) => console.log(error))
+
+
+也可以用asycn/await去寫：
+async function getUser(){
+    try{
+        const response = await axios.get('https://randomuser.me/api/?gender=female&nat=us');
+        console.log(response);
+    }catch(error){
+        console.log(error)
+    }
+}
+
+
+同時發出多個請求：
+function getUserFemale(){
+    return axios.get('https://randomuser.me/api/?gender=female&nat=us')
+};
+
+function getUserMale(){
+    return axios.get('https://randomuser.me/api/?gender=male&nat=us')
+};
+
+Promise.all([getUserFemale(), getUserMale()])
+	.then( (response) => {
+		const femaleUser = response[0];
+		const maleUser = response[1];
+		console.log(femaleUser);
+		console.log(maleUser);
+	})
+
+axio(config物件)寫法：
+把所有東西(method、url、data...)放在一個物件裏，這個物件我們稱為 config。例如以下寫法：
+// GET 請求
+axios({
+	method: 'get',
+	url: 'https://rendomuser.me/api/?gender=female&nat=us'
+})
+.then((response) => console.log(response))
+.catch((error) => console.log(error))
+
+
+（前端渲染效能）
+1. 分時渲染: 使用 setTimeout，加載變快、每次刷新可以很快看到第一屏的數據；缺點是快速滾動頁面，會發現出現閃屏或白屏。
+2. 滾動式渲染(Lazylading Rendering): 依據每次捲動軸捲動去多渲染幾筆資料
+Lazy loading 不等於 虛擬列表/虛擬捲軸，虛擬列表每次只會渲染可視範圍的筆數
+當資料筆數過多，會渲染過多 DOM，也會卡頓
+因為捲軸往下捲才長出捲軸，捲軸 bar 比例顯示不正常，也不好捲動
+3. 分段渲染: 依據資料筆數及高度長出，虛擬捲軸 Bar，依可視範圍做渲染
+Clusterize.js 套件
+虛擬滾動(Vue-virtual-scroller)套件
+Vue 虛擬列表元件
+自己做分頁元件渲染
+
+補充
+縮減物件的大小，去除不需要的屬性
+過濾掉不需要的資料
+Render Once 假設 Component 其中一內容不會變更資料，可使用 v-once，只針對那個內容僅渲染一次
+
+_____________________________________________________________________________________________________________________________________________________________________________________________________________________________________________
+（HTML）
+當父網頁為 IE11、IE10、IE9 模式，透過IFrame內嵌網頁會沿用父網頁的文件模式，透過X-UA-Compatible亦無法改變。
+當父網頁為 IE8、IE7、IE5 模式，IFrame 內嵌的網頁可透過 X-UA-Compatible 切換與父網頁不同的 IE 模式，但 Edge、IE10、IE9 會降為 IE8。
+
+用途1: 作為可與伺服器交互資料的HTML元素的伺服器端的標示，比如input、select、textarea、和button等。我們可以在伺服器端根據其Name通過Request.Params取得元素送出的值。
+用途2: HTML元素Input type='radio'分組，我們知道radio button控件在同一個分組類，check操作是mutex的，同一時間只能選中一個radio，這個分組就是根據相同的Name屬性來實現的。
+用途3: 建立頁面中的錨點，我們知道<a href="URL">link</a>是獲得一個頁面超級連結，如果不用href屬性，而改用Name，如：<a name="PageBottom"></a>，我們就獲得了一個頁面錨點。
+用途4: 作為對象的Identity，如Applet、Object、Embed等元素。比如在Applet對像實例中，我們將使用其Name來引用該對象。
+用途5: 在IMG元素和MAP元素之間關聯的時候，如果要定義IMG的熱點區域，需要使用其屬性usemap，使usemap="#name"(被關聯的MAP元素的Name)。
+用途6: 某些特定元素的屬性，如attribute，和param。例如為Object定義參數<PARAM NAME = "appletParameter" VALUE = "value">。
+
+
+name 是識別網頁上某個控制項的名稱，
+這些控制項多半都是 Windows 或 IE 內建的物件，
+例如 Frame（其實就是 IE 瀏覽器物件）、TextArea（系統內建物件）、
+URI 物件（IE 內建物件）等等。牽涉到 name 的動作，
+多半都是資料的傳輸或是連結的開啟等等。
+
+id 是識別網頁上某個 DHTML 物件的名稱，
+對象是所有的 HTML 元件。牽涉到 id 的動作，
+多半是做動態效果的控制之用。
+
+
+1. &nbsp; 不換行空格
+No-Break Space，不換行空格。這是最常見的空格，也是一般我們鍵盤按下空白鑑會出現的字元。大部分來說我們只會使用這樣的空白，輸入多次 &nbsp; 空格也會累計。&nbsp; 的空格寬度會受字體影響。
+
+2. &ensp; 半形空格
+En Space，半形空格。en 是一個半型字元寬度的單位，寬度為 em 的一半。例如當 16px 大小的字體，半形就是 8px 的寬度。就定義上來說，一個 en 就是小寫字母 n 的寬度，大約是半個中文字寬。
+
+3. &emsp; 全形空格
+Em Space，全形空格。和半形空格同概念，em 是一個全形字元的寬度，如果字體大小是 16px，一個 em 就是 16px，大約等於一個中文字寬。
+
+4. &thinsp; 窄空格
+窄空格，顧名思義就是寬度較窄的空格，大約是 1/6 個 em 寬。
+
+5. ‌&zwnj;
+全名是 Zero Width Non Joiner，這通常是用於比較複雜的文字或特殊符號當中。首先零寬度表示這個空白不會被顯示出來，它用於分隔兩個字元排列在一起而可能發生的“連字”。也就是說，它是一個分隔元素切開兩個字元，讓它們各自產生自己相對應的文字。
+
+6. ‍&zwj;
+全名是 Zero Width Joiner。與 ZWNJ 相同的是它也是零寬度的空格，並不會被顯示在頁面上。但相反的是，它會觸發前後兩字元的連字效果。這通常是用於較複雜的語言，例如阿拉伯語或印地語等
+
+
+
+_____________________________________________________________________________________________________________________________________________________________________________________________________________________________________________
+（CSS）
+塊級上下文、行框、常規流
+
+width: 100% 跟 width: auto 不一樣
+
+d-flex justify-content-center align-items-center 置中
+
+
+Breakpoint			Class infix			Dimensions
+X-Small				None				<576px		
+Small				sm				≥576px	
+Medium				md				≥768px		
+Large				lg				≥992px		
+Extra large			xl				≥1200px
+Extra extra large		xxl				≥1400px
+
+每個斷點主要是為了容納寬度為 12 倍數的容器。這些斷點也代表了常見尺寸以及可視區域—但它們並非專門針對每個設備。取而代之的是，這些範圍幾乎是所有設備基礎。
+這些斷點可通過 Sass 原始碼自行進行自定義-您可以在 _variables.scss 的 Sass 中找到它們。
+
+
+float、absolute 不參與 margin 的折疊
+
+兩個嵌套的盒子(ul, li)中間沒有非空內容間隔，它們垂直的 margin 會合併(摺疊)
+而 li 之間也不會有 20px 的間隔而是 10px，就是兄弟折疊，當兩個普通流元素(非浮動非定位)的 magin 也會合併，比如第一個 li 的 margin-bottom 和第二個的 margin-top 會摺疊
+<ul style="margin-top:2px>
+
+<li style="margin:10px 0"></li>
+
+<li style="margin:10px 0"></li>
+
+<li style="margin:10px 0"></li>
+
+<li style="margin:10px 0"></li>
+
+<li style="margin:10px 0"></li>
+
+</ul>
+摺疊的計算：
+margin 都是正值: 取 margin 較大的
+margin 都是負值: 取絕對值較大的，然後從 0 位置負向位移
+margin 有正有負: 先取負 margin 絕對值最大的，和正 margin 值最大的 margin 相加
+相鄰的 margin 要一起計算，不能分步
+
+margin 為 200 + -120 = 80 (六個 margin 一起算不能分步)
+<div style="margin:50px 0; background-color:green; width:50px;">
+    <div style="margin:-60px 0;">
+           <div style="margin:150px 0;">A</div>
+    </div>
+</div>
+<div style="margin:-100px 0; background-color:green; width:50px;">
+    <div style="margin:-120px 0;">
+           <div style="margin:200px 0;">B</div>
+    </div>
+</div>
+
+嵌套 margin 摺疊的解決方法：
+1. 在父層盒子添加 overflow: hidden(較暴力，若有懸浮窗可能導致看不到)
+2. 不用 margin-top，改用 padding-top(如果子盒子有 border 這個方法就不適合)
+3. 給父元素添加 1px 的 padding 或者添加一個 style 不為 none 的 border，可以使用透明 border(如果設計師不能容忍 1px 的差異，這個方法就不適合)
+4. 給父元素加上浮動(如果要佔滿一行就要加上 width: 100%)
+5. 設置父元素 display: inline-block 或 display: table-cell(如果要佔滿一行那就要加上 width: 100%)
+6. 給父元素添加絕對定位(不推薦)
+
+兄弟之間 margin 摺疊解決方法：
+1. 給最後面的兄弟加上浮動
+2. 給最後面的元素加上 display: inline-block
+
+

@@ -1,0 +1,81 @@
+Vue CLI 需 Node.js 8.9或更高版本(推薦8.11.0+)。
+
+vue
+vue-cli
+vue-router
+vuex
+vue-template-compiler
+element-ui
+@storybook/vue
+@ionic/vue-router
+vue devtools
+
+
+較知名的報表
+vue-echarts
+
+漸進式 js 框架(自底向上逐層的應用)
+
+activity.vue、news.vue、hot.vue
+
+<ul id="list"></ul>
+
+<script type="text/javascript">
+	let persons = [
+		{ id:'001', name:'xx',age:18},
+		{ id:'002', name:'ss',age:19},
+		{ id:'003', name:'zz',age:20},
+	];
+命令式
+let htmlStr = '';
+persons.forEach( p => {
+	htmlStr += `<li>${p.id} - ${p.name} - ${p.age}</li>`
+});
+let list = document.getElementById('list');
+list.innerHTML = htmlStr;
+
+
+聲明式
+<ul id="list">
+	<li v-for="p in persons">
+		{{p.id}} - {{p.name}} - {{p.age}}
+	</li>
+</ul>
+
+陣列增加一個人，刪掉原先的陣列放新的效能不佳(又做字符串拚串)
+_____________________________________________________________________________________________________________________________________________________________________________________________________________________________________________
+直接用 <script> 引入
+	CDN	// src = "http://" 為了加載更快使用 CDN 加速
+NPM
+命令行工具
+
+
+如果引入 jQuery 全局多了 $、jQuery
+如果引入 Vue 全局多了 Vue 構造函數(對象或函式)
+
+
+vue.js
+5073
+// 驗證是否為 Vue 實例
+function Vue (options) {
+	if (!(this instanceof Vue)) {
+		warn('Vue is a constructor and should be called with the `new` keyword');
+	}
+	this._init(options);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+_____________________________________________________________________________________________________________________________________________________________________________________________________________________________________________

@@ -1,0 +1,55 @@
+KeyCastr(左下角顯示鍵盤輸入)
+
+Material Design Color palettes(選色工具)
+
+unDraw 插畫
+toptal 背景圖
+unsplash 免費、免授權、商用圖片
+
+Figma 繪圖軟體
+
+＊色彩
+	×深色、黑白為主
+	×或選擇單一主色及相關延伸色
+＊格線
+	×依據 Bootstrap 規則
+＊排版
+	×所有主要內容都在 container 內
+	×所有背景色、底圖都延伸至滿版寬
+＊文字
+	×內文統一 16px
+	×一律使用系統，無襯線、黑體字
+	×只有標題、重點片段文字可以加粗
+＊素材
+	×Unsplash
+	×Bootstrap icon
+	×https://undraw.co/illustrations
+	×素材一定要記錄
+
+＊元件
+	×先去除所有裝飾(圓角、漸層、陰影)
+
+＊區塊排版
+
+＊Header
+	×圖片不要有主題、深色為主(單色亦可)
+	×一定要有 calltoaction
+＊Section
+	×每個 section 底色不連貫
+	×每個 section 排版不連續
+＊Footer
+	×一律深色底、白色字
+
+
+先開畫布，桌面版選擇 desktop，開格線(Layout grid)，沒有格線做出來設計稿難以被執行。
+Navbar 放上去
+選首圖(建議不要有明確主題的，在行動版會難以呈現)
+Navbar 上面的字(Bootstrap 上文字基本上 16px)，有些 1.25 rem(16 * 1.25 = 20px)，圖片上文字不清楚可以再套背景色
+按鈕 font-size + padding-y * 2
+高度(1.25 * 16 + 0.5 * 16 * 2 = 36)
+
+
+
+
+
+
