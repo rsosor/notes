@@ -1,7 +1,7 @@
 win R -> services.msc
 postgresql-x64-14 啟動
 
-然後 postgresql 有 users，godpk 密碼忘了，postgres 密碼 rsosor
+postgresql 有 users
 conf 文件可以修改環境變量
 
 
