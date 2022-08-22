@@ -9,8 +9,59 @@ Sass 的縮排語法，對於寫慣 css 前端的 web 開發者來說很不直�
 Less 也是一種動態樣式語言. 對 CSS 賦予了動態語言的特性，如變量，繼承，運算， 函數. Less 既可以在客戶端上運行 (支持IE 6+, Webkit, Firefox)，也可在服務端運行 (借助 Node.js)。
 
 
+混合範圍
+.xkd() {
+	@w: 10px;
+	@h: 20px;
+}
+.p1 {
+	.xkd();
+	@w: 100px;
+	width: @w;
+	height: @h;
+}
+
+編譯成 CSS
+
+.p1 {
+	width: 100px;
+	height: 20px;
+}
 
 
+Mixins 返回值
+.xkd(@a, @b) {
+	@width: @a + @b;
+}
+
+.good {
+	.xkd(20px, 30px);	// 只有在引用了 .xkd 後，才能使用 @width 變量
+	width: @width;
+}
+
+編譯成 CSS
+
+.good {
+	width: 50px;
+}
 
 
+返回 Mixins
+.out(@num) {
+	inner() {
+		width: @num;
+	}
+}
 
+.xkd {
+	.out(100px);
+	.inner();
+}
+
+編譯成 CSS
+
+.xkd {
+	width: 100px;
+}
+
+定義變量、混和，scope 為調用
