@@ -377,7 +377,23 @@ Vue 虛擬列表元件
 補充
 縮減物件的大小，去除不需要的屬性
 過濾掉不需要的資料
-Render Once 假設 Component 其中一內容不會變更資料，可使用 v-once，只針對那個內容僅渲染一次
+Render Once 假設 Component 其中一內容不會變更資料，可使用 v-once，只針對那個內容僅渲染一
+
+
+（*）
+function setStar(objs){
+	var objarray=objs.split(',');
+	for(i=0;i<objarray.length;i++) {
+		var object=getElement(objarray[i]);
+		object.parentNode.previousSibling.innerHTML="<font color=red>* " + object.parentNode.previousSibling.innerHTML;
+	}
+}
+
+2.2 使用方法
+window.onload = function() {
+	setStar('licenseNumber');
+	// 這裡就是你要在它前面顯示的 Object 的 ID
+}
 
 _____________________________________________________________________________________________________________________________________________________________________________________________________________________________________________
 （HTML）
