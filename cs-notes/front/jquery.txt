@@ -59,6 +59,40 @@ jQuery 3.0 運行在 Strict Mode 下
 jQuery.when() 對於多種參數的不同解讀
 新的顯示/隱藏邏輯
 對於防止 XSS 攻擊的額外保護
+
+$(document).ready(function() {
+
+});
+
+
+$(window).ready(function () {
+
+});
+
+
+$(window).load(function() {
+
+});
+
+
+$(window).on('load', function () {
+     
+});
+
+
+$(function() {
+
+});
+
+
+(function($) {
+
+})(jQuery);
+
+
+jQuery(document).ready(function ($) {
+
+});
 _____________________________________________________________________________________________________________________________________________________________________________________________________________________________________________
 $ 是 jQuery 的核心函數，$() 就是調用 $ 這個函數
 
@@ -392,7 +426,7 @@ ajax 事件
 　　　　　　}
 　　　　}, "button");
 // jQuery 第五種監聽事件方法
-　　　　$("pody").on("click", "button", function() {
+　　　　$("body").on("click", "button", function() {
 　　　　　　alert("Hello world!");
 　　　　});
 　　});

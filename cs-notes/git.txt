@@ -221,6 +221,25 @@ git status
 git add <file>
 git add -A						// 當前目錄下所有文件加入暫存
 
+本地修改了一些文件(add not yet)，想放棄修改
+git checkout -- filename				// 單個文件/文件夾
+git checkout .						// 所有文件
+本地新增了一些文件(add not yet)，想放棄修改
+rm -rf filename						// 單個文件/文件夾
+刪除新增的文件，如果文件已經 add 並不會刪除
+git clean -xdf						// 所有文件
+刪除新增的文件和文件夾，如果文件已經 add 並不會刪除
+git clean -xdff						// 所有文件/文件夾
+
+(下面有更詳細的 reset)
+本地 git add，想放棄修改
+git reset HEAD filename
+git reset HEAD .
+
+本地 git add、git commit，想要撤銷此次 commit
+git reset commit_id
+
+
 git restore <file>					// 從 index 中回溯
 git commit -m <message>
 git commit -am <message> / git commit -a -m <message>	// -a / --all，要注意 untracked files 狀態的檔案不受此命令作用

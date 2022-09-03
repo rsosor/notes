@@ -1,4 +1,24 @@
 （Javascript）
+瀏覽器			不支持的版本	部分支持的版本		支持的版本
+IE			6-10		11	
+Edge					12-14			15-18、79-87
+Firefox			2-5		6-53			54-86
+Chrome			4-20		21-50			51-90
+Safari			3.1-7		7.1-9.1			10-13.1、14、TP
+Opera			10-12.1		15-37			38-72
+iOS Safari		3.2-6.1		7-9.3			10-13.7、14.2
+Opera Mini		all		
+Android Browser		2.1-4.3		4.4-4.4.4		81
+Opera Mobile		12-12.1					59
+Chrome for Android						87
+Firefox for Android						83
+UC Browser for Android						12.12
+Samsung Internet			4			5-13.0
+QQ Browser							10.4
+Baidu Browser				7.12	
+KaiOS Browser				2.5	
+
+
 ES6 語法規範：
 	解構賦值
 	模板字符串
@@ -111,7 +131,55 @@ function getUrlVal(val) {
 
 
 
+URL
 
+src="http://api.map.baidu.com/api?v=3.0&ak=ttihABQXoDe0DxuoBNdCt5e037OdPUtF"
+
+
+static/Echarts/echarts.js
+
+
+../../assets/images/cata.png
+
+
+@/ajax/index
+
+
+1. 最常見的 absolute path，
+src="http://api.map.baidu.com/api?v=3.0&ak=ttihABQXoDe0DxuoBNdCt5e037OdPUtF"
+直接指向目標文件。
+
+2. 大多數是 relative path，又分為以下幾種。
+
+ 一、
+當前文件同一級目錄。
+static/Echarts/echarts.js
+
+二、
+項目根目錄。
+ src="/static/aes.js"
+
+三、
+當前文件父元素。跟第一種一樣。
+'./router'
+
+四、
+'../page/home.vue'
+
+五、
+'../../static/images/pwdmodify.png'
+
+六、
+'@/xx/' 
+"@/ajax/index"
+@/ 是 webpack 設置的路徑別名。webpack build 文件夾下 webpack.base.conf.js 裡面對於 @ 是如何配置的
+resolve: {
+	extensions: ['.js', '.vue', '.json'],
+	alias: {
+		'vue$': 'vue/dist/vue.esm.js',
+		'@': resolve('src'),
+	}
+},
 
 
 
@@ -265,6 +333,12 @@ if (exp === null)
     alert("is null");
 }
 尽管如此，我们在 DOM 应用中，一般只需要用 (!exp) 来判断就可以了，因为 DOM 应用中，可能返回 null，可能返回 undefined，如果具体判断 null 还是 undefined 会使程序过于复杂。
+
+（事件處理順序）
+mousedown > blur > mouseup > click
+
+（DOM）
+（BOM）
 ________________________________________________________________________________________________________________________________________________________________________
 https://github.com/axios/axios
 	.create
@@ -377,7 +451,23 @@ Vue 虛擬列表元件
 補充
 縮減物件的大小，去除不需要的屬性
 過濾掉不需要的資料
-Render Once 假設 Component 其中一內容不會變更資料，可使用 v-once，只針對那個內容僅渲染一次
+Render Once 假設 Component 其中一內容不會變更資料，可使用 v-once，只針對那個內容僅渲染一
+
+
+（*）
+function setStar(objs){
+	var objarray=objs.split(',');
+	for(i=0;i<objarray.length;i++) {
+		var object=getElement(objarray[i]);
+		object.parentNode.previousSibling.innerHTML="<font color=red>* " + object.parentNode.previousSibling.innerHTML;
+	}
+}
+
+2.2 使用方法
+window.onload = function() {
+	setStar('licenseNumber');
+	// 這裡就是你要在它前面顯示的 Object 的 ID
+}
 
 _____________________________________________________________________________________________________________________________________________________________________________________________________________________________________________
 （HTML）
@@ -502,3 +592,28 @@ margin 為 200 + -120 = 80 (六個 margin 一起算不能分步)
 2. 給最後面的元素加上 display: inline-block
 
 
+text-align			只要是元件，都可以使用這個語法來置中，可以置中(裡面的)元件，不能置中(自己本身的)版面。
+vertical-align			只適用於行內元素與表格。兩個 div，或是兩個 p 垂直置中是辦不到的，他們預設都是 display:block。
+margin
+padding
+position
+line-height
+display (grid, flex)
+transform
+
+
+單純用 br 換行，會被視為兩個行元素，所以圖片只會跟最後一個行元素對齊
+
+<div class="box">
+  <div class="box__text">
+    Hello, this is MUKI<br />Who are you?<br />This is Line Three.
+  </div>
+  <div class="box__text">
+    <img src="picture">
+  </div>
+</div>
+
+.box__text {
+  display: table-cell;
+  vertical-align: middle;
+}
